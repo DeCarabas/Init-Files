@@ -51,12 +51,6 @@
  '(which-func-mode-global t nil (which-func))
  '(widget-editable-list-gui t)
  '(x-stretch-cursor nil))
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- )
 
 ;; add private lisp directory to load-path.
 (add-to-list 'load-path "~/site-lisp")
@@ -102,22 +96,9 @@
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 
-;; Here are some font strings that I have used in the past.
-;; Courier New:
-;;(setq my-font-choice "-*-Courier New-normal-r-*-*-12-90-*-*-c-*-*-ansi-")
-;; More Courier: (This is a bit big)
-;;(setq my-font-choice "-outline-Courier New-normal-r-normal-normal-13-97-96-96-c-*-iso10646-1")
-;; Lucida Console:
-;;(setq my-font-choice "-outline-Lucida Console-normal-r-normal-normal-13-90-96-96-c-*-iso8859-15")
-;; Bitstream Vera Sans Mono:
-;;(setq my-font-choice "-outline-Bitstream Vera Sans Mono-normal-r-normal-normal-12-90-96-96-c-*-iso10646-1")
-;; Bitstream Vera Sans Mono 12pt:
-;;(setq my-font-choice "-outline-Bitstream Vera Sans Mono-normal-r-normal-normal-13-97-96-96-c-*-iso10646-1")
-;; Consolas (Vista font!):
-(setq my-font-choice "-*-Consolas-normal-r-normal-normal-14-90-96-96-m-*-iso10646-1")
-;; Bigger consolas
-;;(setq my-font-choice "-*-Consolas-normal-r-normal-normal-19-142-96-96-c-*-iso8859-1")
-
+;; Consolas.
+;;
+(setq my-font-choice "Consolas-11")
 ;;
 ;; To obtain new font string, execute eval-expression, and eval this:
 ;;(insert(prin1-to-string(w32-select-font)))
@@ -132,9 +113,6 @@
 ;; looks like.
 (setq default-frame-alist
       `((font             . ,my-font-choice)
-        (foreground-color . "Black")
-        (background-color . "White")
-        (cursor-color     . "Black")
         (width            . 91)
         (height           . ,jd-frame-height)
         ,@default-frame-alist))
@@ -142,18 +120,22 @@
 ;; initial-frame-alist controls what the first frame looks like.
 (setq initial-frame-alist
       `((font             . ,my-font-choice)
-        (foreground-color . "Black")
-        (background-color . "White")
-        (cursor-color     . "Black")
         (width            . 91)
         (height           . ,jd-frame-height)))
 
 ;; This is just here for playing with things.
 ;;(set-frame-font my-font-choice)
 
+;; COLORZ!
+;;
+(require 'color-theme)
+(require 'color-theme-solarized)
+(color-theme-solarized-light)
+
 ;; Modeline format:
 (display-time-mode -1)
 
+;; Um, I don't know why this is *here*, but it has to be somewhere.
 (require 'ido)
 
 ;; =================================================================

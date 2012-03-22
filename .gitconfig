@@ -1,0 +1,5 @@
+[user]
+	name = John Doty
+	email = jddoty@gmail.com
+[core]
+	editor = c:/emacs/bin/emacs.exe

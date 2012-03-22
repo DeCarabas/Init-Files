@@ -1,0 +1,12 @@
+c:/src/commerce/PurchaseService/build/Microsoft.Build.targets
+c:\src\commerce\PurchaseService\build\#Microsoft.Build.targets#
+c:/src/commerce/PurchaseService/build/version/BuildNumber.targets
+c:\src\commerce\PurchaseService\build\version\#BuildNumber.targets#
+c:/src/commerce/PurchaseService/private/service/purchase/src/receiptstore/webstore/tables/receiptsByCreatedDate.table.sql
+c:\src\commerce\PurchaseService\private\service\purchase\src\receiptstore\webstore\tables\#receiptsByCreatedDate.table.sql#
+c:/src/commerce/PurchaseService/private/service/purchase/src/receiptstore/webstore/purchaseservicedb.manifest.xml
+c:\src\commerce\PurchaseService\private\service\purchase\src\receiptstore\webstore\#purchaseservicedb.manifest.xml#
+c:/src/commerce/PurchaseService/private/service/purchase/src/receiptstore/webstore/tables/receiptsByOrderId.table.sql
+c:\src\commerce\PurchaseService\private\service\purchase\src\receiptstore\webstore\tables\#receiptsByOrderId.table.sql#
+c:/src/commerce/PurchaseService/private/service/purchase/src/receiptstore/webstore/tables/receipts.table.sql
+c:\src\commerce\PurchaseService\private\service\purchase\src\receiptstore\webstore\tables\#receipts.table.sql#

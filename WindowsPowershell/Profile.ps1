@@ -2,6 +2,7 @@
 #
 $profileDir = split-path -parent $Profile
 Import-Module "$profileDir\Modules\ConsoleColors.psm1"
+#Import-Module "$profileDir\Modules\PowerSolarized.dll"
 Set-SolarizedColors -Dark
 
 # These bits of profile courtesy of http://winterdom.com/

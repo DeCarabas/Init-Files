@@ -52,6 +52,12 @@ function Add-ConsoleHelper()
                 throw Marshal.GetExceptionForHR( Marshal.GetHRForLastWin32Error() );
             }
 
+            // This appears to correct a bug in the implementation of
+            // SetConsoleScreenBufferInfoEx.
+            // 
+            info.srWindow.Right++;
+            info.srWindow.Bottom++;
+
             info.ColorTable[(int)color] = new COLORREF( newColor );
             if ( !SetConsoleScreenBufferInfoEx( hConsole, ref info ) )
             {
@@ -69,10 +75,10 @@ function Add-ConsoleHelper()
         [StructLayout( LayoutKind.Sequential )]
         internal struct SMALL_RECT
         {
-            internal short Left;
-            internal short Top;
-            internal short Right;
-            internal short Bottom;
+            internal ushort Left;
+            internal ushort Top;
+            internal ushort Right;
+            internal ushort Bottom;
         }
 
         [StructLayout( LayoutKind.Sequential )]
@@ -108,10 +114,10 @@ function Add-ConsoleHelper()
             internal int cbSize;
             internal COORD dwSize;
             internal COORD dwCursorPosition;
-            internal ushort wAttributes;
+            internal short wAttributes;
             internal SMALL_RECT srWindow;
             internal COORD dwMaximumWindowSize;
-            internal ushort wPopupAttributes;
+            internal short wPopupAttributes;
 
             [MarshalAs( UnmanagedType.Bool )]
             internal bool bFullscreenSupported;
@@ -127,69 +133,96 @@ function Add-ConsoleHelper()
 
 # These are the 16 colors for our palette.
 Add-Type -AssemblyName System.Drawing
-$base03 = [System.Drawing.Color]::FromArgb(0x002b36)
-$base02 = [System.Drawing.Color]::FromArgb(0x073642)
-$base01 = [System.Drawing.Color]::FromArgb(0x586e75)
-$base00 = [System.Drawing.Color]::FromArgb(0x657b83)
-$base0 = [System.Drawing.Color]::FromArgb(0x839496)
-$base1 = [System.Drawing.Color]::FromArgb(0x93a1a1)
-$base2 = [System.Drawing.Color]::FromArgb(0xeee8d5)
-$base3 = [System.Drawing.Color]::FromArgb(0xfdf6e3)
-$yellow = [System.Drawing.Color]::FromArgb(0xb58900)
-$orange = [System.Drawing.Color]::FromArgb(0xcb4b16)
-$red = [System.Drawing.Color]::FromArgb(0xdc322f)
-$magenta = [System.Drawing.Color]::FromArgb(0xd33682)
-$violet = [System.Drawing.Color]::FromArgb(0x6c71c4)
-$blue = [System.Drawing.Color]::FromArgb(0x268bd2)
-$cyan = [System.Drawing.Color]::FromArgb(0x2aa198)
-$green = [System.Drawing.Color]::FromArgb(0x859900)
+
+# Here's the solarized table...
+#
+# SOLARIZED HEX        16/8 TERMCOL  XTERM/HEX   L*A*B      RGB         HSB
+# --------- -------    ---- -------  ----------- ---------- ----------- -----------
+$base03  = "#002b36" #  8/4 brblack  234 #1c1c1c 15 -12 -12   0  43  54 193 100  21
+$base02  = "#073642" #  0/4 black    235 #262626 20 -12 -12   7  54  66 192  90  26
+$base01  = "#586e75" # 10/7 brgreen  240 #585858 45 -07 -07  88 110 117 194  25  46
+$base00  = "#657b83" # 11/7 bryellow 241 #626262 50 -07 -07 101 123 131 195  23  51
+$base0   = "#839496" # 12/6 brblue   244 #808080 60 -06 -03 131 148 150 186  13  59
+$base1   = "#93a1a1" # 14/4 brcyan   245 #8a8a8a 65 -05 -02 147 161 161 180   9  63
+$base2   = "#eee8d5" #  7/7 white    254 #e4e4e4 92 -00  10 238 232 213  44  11  93
+$base3   = "#fdf6e3" # 15/7 brwhite  230 #ffffd7 97  00  10 253 246 227  44  10  99
+$yellow  = "#b58900" #  3/3 yellow   136 #af8700 60  10  65 181 137   0  45 100  71
+$orange  = "#cb4b16" #  9/3 brred    166 #d75f00 50  50  55 203  75  22  18  89  80
+$red     = "#dc322f" #  1/1 red      160 #d70000 50  65  45 220  50  47   1  79  86
+$magenta = "#d33682" #  5/5 magenta  125 #af005f 50  65 -05 211  54 130 331  74  83
+$violet  = "#6c71c4" # 13/5 brmagenta 61 #5f5faf 50  15 -45 108 113 196 237  45  77
+$blue    = "#268bd2" #  4/4 blue      33 #0087ff 55 -10 -45  38 139 210 205  82  82
+$cyan    = "#2aa198" #  6/6 cyan      37 #00afaf 60 -35 -05  42 161 152 175  74  63
+$green   = "#859900" #  2/2 green     64 #5f8700 60 -20  65 133 153   0  68 100  60
 
 function Set-SolarizedColors([switch]$Light, [switch]$Dark)
 {
-    # Redefine the standard console colors to have the Solarized-Light
-    # palette.  
-    #
-    # Note that we're doing funny things here, like setting black to
-    # white, because we are trying to make it so that programs that
-    # don't redefine the palette still get a coherent scheme.
-    #
-    # We try to map with cognates, but it's not easy....
-    #
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Black,       $base03)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkGray,    $base02)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Gray,        $base01)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkBlue,    $base00)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkGreen,   $base0)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkCyan,    $base1)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkRed,     $base2)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::White,       $base3)
-
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Yellow,      $yellow)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkYellow,  $orange)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Red,         $red)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Magenta,     $magenta)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkMagenta, $violet)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Blue,        $blue)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Cyan,        $cyan)
-    [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Green,       $green)
-
-    if ($Light)
+    if ( (-not $Light) -and (-not $Dark) )
     {
-        $themefg = [ConsoleColor]::White    # $base3
-        $themebg = [ConsoleColor]::DarkBlue # $base00
-    }
-    
-    if ($Dark)
-    {
-        $themefg = [ConsoleColor]::DarkGreen # $base0
-        $themebg = [ConsoleColor]::Black     # $base03
+        $Light = $true
     }
 
-    if ($Light -or $Dark)
+    if ($Host.Name -eq "ConsoleHost")
     {
-        (Get-Host).UI.RawUI.BackgroundColor = $themebg
-        (Get-Host).UI.RawUI.ForegroundColor = $themefg
-    }
+        # Redefine the standard console colors to have the Solarized-Light
+        # palette.  
+        #
+        # TODO: Check this out as a color palette...
+        #
+        if ([ConsoleColorHelper]::GetStandardConsoleColor([ConsoleColor]::DarkGray) -ne $base03)
+        {
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkGray,    $base03)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Black,       $base02)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Green,       $base01)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Yellow,      $base00)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Blue,        $base0)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Cyan,        $base1)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Gray,        $base2)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::White,       $base3)
+            
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkYellow,  $yellow)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Red,         $orange)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkRed,     $red)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkMagenta, $magenta)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::Magenta,     $violet)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkBlue,    $blue)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkCyan,    $cyan)
+            [ConsoleColorHelper]::SetStandardConsoleColor([ConsoleColor]::DarkGreen,   $green)
+        }
+
+        if ($Light)
+        {
+            $Host.UI.RawUI.BackgroundColor            = [ConsoleColor]::White
+            $Host.UI.RawUI.ForegroundColor            = [ConsoleColor]::Yellow
+
+            $Host.PrivateData.VerboseForegroundColor  = [ConsoleColor]::Cyan
+
+            $Host.PrivateData.ProgressBackgroundColor = [ConsoleColor]::DarkGray
+            $Host.PrivateData.ProgressForegroundColor = [ConsoleColor]::Blue
+        }
+        else
+        {
+            $Host.UI.RawUI.BackgroundColor            = [ConsoleColor]::DarkGray
+            $Host.UI.RawUI.ForegroundColor            = [ConsoleColor]::Blue
+
+            $Host.PrivateData.VerboseForegroundColor  = [ConsoleColor]::Green
+
+            $Host.PrivateData.ProgressBackgroundColor = [ConsoleColor]::White
+            $Host.PrivateData.ProgressForegroundColor = [ConsoleColor]::Yellow
+        }
+
+        $Host.PrivateData.ErrorForegroundColor    = [ConsoleColor]::DarkRed
+        $Host.PrivateData.WarningForegroundColor  = [ConsoleColor]::DarkYellow
+        $Host.PrivateData.DebugForegroundColor    = [ConsoleColor]::DarkBlue
+
+        $Host.PrivateData.ErrorBackgroundColor    =
+        $Host.PrivateData.WarningBackgroundColor  =
+        $Host.PrivateData.DebugBackgroundColor    =
+        $Host.PrivateData.VerboseBackgroundColor  =
+        $Host.UI.RawUI.BackgroundColor
+
+        Clear-Host
+    }        
 }
 
 Add-ConsoleHelper

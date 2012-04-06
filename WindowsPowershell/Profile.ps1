@@ -33,9 +33,9 @@ function prompt
     # solarized colors.
     #
     $cdelim = [ConsoleColor]::DarkCyan 
-    $chost = [ConsoleColor]::Green 
-    $cloc = $csym = [ConsoleColor]::Cyan 
-    if (-not $ok) { $csym = [ConsoleColor]::Red; }
+    $chost = [ConsoleColor]::DarkGreen
+    $cloc = $csym = [ConsoleColor]::DarkCyan
+    if (-not $ok) { $csym = [ConsoleColor]::DarkRed; }
     
     write-host "$([char]0x0A7) " -n -f $csym
     write-host ([net.dns]::GetHostName()) -n -f $chost

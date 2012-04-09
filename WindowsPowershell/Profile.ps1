@@ -1,3 +1,7 @@
+# Make MSYS based things work correctly (most importantly, msysgit)
+#
+$env:TERM='msys'
+
 # Load up the colors and set the dark solarized theme.
 #
 $profileDir = split-path -parent $Profile

@@ -3,3 +3,7 @@
 	email = jddoty@gmail.com
 [core]
 	editor = c:/emacs/bin/emacs.exe
+[pretty]
+	doty = * %C(bold green)%h%Creset -%C(bold white)%d%Creset %s %C(bold)(%cr)%Creset <%aN>%Creset
+[format]
+	pretty = doty

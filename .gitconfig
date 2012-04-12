@@ -7,3 +7,6 @@
 	doty = * %C(bold green)%h%Creset -%C(bold white)%d%Creset %s %C(bold)(%cr)%Creset <%aN>%Creset
 [format]
 	pretty = doty
+[alias]
+    st = status
+    ci = commit

@@ -6,18 +6,18 @@ $env:TERM='msys'
 #
 $profileDir = split-path -parent $Profile
 Import-Module "$profileDir\Modules\ConsoleColors.psm1"
-#Import-Module "$profileDir\Modules\PowerSolarized.dll"
 Set-SolarizedColors -Dark
 
-# These bits of profile courtesy of http://winterdom.com/
+# Ensure HOME is set properly
 #
-# http://winterdom.com/2008/01/modifyingthehomeinpowershell
-# Set the $HOME variable for our use
-# and make powershell recognize ~\ as $HOME
-# in paths
-#
+$env:Home = [Environment]::GetFolderPath("Personal")
 set-variable -name HOME -value (resolve-path $env:Home) -force
 (get-psprovider FileSystem).Home = $HOME
+
+# Add the right things to the path
+#
+$env:Path = "$env:windir\Microsoft.NET\Framework64;" + $env:Path
+$env:Path = "c:\debuggers;c:\tools\x86;c:\tools\x86\bin;c:\emacs\bin" + $env:Path
 
 # Based on http://winterdom.com/2008/08/mypowershellprompt
 function shorten-path([string] $path) 

@@ -132,7 +132,7 @@
     (progn
       (require 'color-theme)
       (require 'color-theme-solarized)
-      (color-theme-solarized-dark)))
+      (color-theme-solarized-light)))
 
 ;; Modeline format:
 (display-time-mode -1)

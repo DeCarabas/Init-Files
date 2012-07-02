@@ -57,7 +57,8 @@
 (add-to-list 'load-path "~/site-lisp")
 
 ;; Choose a cc-mode/c#-mode to use. (More on this below)
-(add-to-list 'load-path "~/site-lisp/cc-mode/5.31.3")
+(add-to-list 'load-path "~/site-lisp/cc-mode/5.32.3")
+(add-to-list 'load-path "~/site-lisp/cc-mode/csharp-only")
 
 ;; Also ruby mode
 (add-to-list 'load-path "c:/ruby/lib")
@@ -133,7 +134,7 @@
     (progn
       (require 'color-theme)
       (require 'color-theme-solarized)
-      (color-theme-solarized-dark)))
+      (color-theme-solarized-light)))
 
 ;; Modeline format:
 (display-time-mode -1)
@@ -324,7 +325,7 @@
 ;; (autoload 'csharp-mode "cc-mode")
 
 ;; Here is another one that is not.
-(autoload 'csharp-mode "csharp-mode-0.6.0" "Major mode for editing C# code." t)
+(autoload 'csharp-mode "csharp-mode-0.8.6" "Major mode for editing C# code." t)
 
 (c-add-style "ms-csharp"
    '((c-basic-offset . 4)

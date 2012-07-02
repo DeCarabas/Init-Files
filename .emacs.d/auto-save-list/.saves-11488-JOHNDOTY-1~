@@ -1,0 +1,8 @@
+c:/src/xonline/private/setup/Autopilot/NpdbBootstrap/SetupNpdb.ps1
+c:\src\xonline\private\setup\Autopilot\NpdbBootstrap\#SetupNpdb.ps1#
+c:/src/xonline/private/setup/Autopilot/NpdbBootstrap/NpdbUtils.psm1
+c:\src\xonline\private\setup\Autopilot\NpdbBootstrap\#NpdbUtils.psm1#
+c:/src/iebsilver/AutopilotService/BLULab/Prime-Pvt-BluLab/machines.csv
+c:\src\iebsilver\AutopilotService\BLULab\Prime-Pvt-BluLab\#machines.csv#
+c:/src/iebsilver/AutopilotService/BLULab/Prime-Pvt-BluLab/xonline.ini
+c:\src\iebsilver\AutopilotService\BLULab\Prime-Pvt-BluLab\#xonline.ini#

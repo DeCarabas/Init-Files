@@ -109,7 +109,7 @@
 (defvar sd-web-page "http://www.dsmit.com/p4" "The home of p4.el, the basis of SD.EL.")
 
 (eval-and-compile
-  (if (< (string-to-int emacs-version) 20)
+  (if (< (string-to-number emacs-version) 20)
       (progn
     (defmacro defgroup (sym memb doc &rest args)
       t)
@@ -1171,11 +1171,11 @@ type \\[sd-print-with-rev-history]"
     (if (string-match "\\(.*\\)@\\([0-9]+\\)" file-spec)
 	(progn
 	  (setq file-name (match-string 1 file-spec))
-	  (setq change (string-to-int (match-string 2 file-spec)))))
+	  (setq change (string-to-number (match-string 2 file-spec)))))
     (if (string-match "\\(.*\\)#\\([0-9]+\\)" file-spec)
 	(progn
 	  (setq file-name (match-string 1 file-spec))
-	  (setq head-rev (string-to-int (match-string 2 file-spec)))))
+	  (setq head-rev (string-to-number (match-string 2 file-spec)))))
     (sd-exec-sd buffer (list "files" file-name) t)
     (save-excursion
       (set-buffer buffer)
@@ -1189,8 +1189,8 @@ type \\[sd-print-with-rev-history]"
       (while (< (point) (point-max))
 	(if (looking-at (concat "^\\.\\.\\. #\\([0-9]+\\) change \\([0-9]+\\)"
 				"\\s-+\\(\\w+\\) .* by \\(.*\\)@"))
-	    (let ((rev (string-to-int (match-string 1)))
-		  (ch (string-to-int (match-string 2)))
+	    (let ((rev (string-to-number (match-string 1)))
+		  (ch (string-to-number (match-string 2)))
 		  (op (match-string 3)))
 	      (cond ((and change (< change  ch))
 		     nil)
@@ -1238,11 +1238,11 @@ type \\[sd-print-with-rev-history]"
 		    (concat "^\\([0-9]+\\),?\\([0-9]*\\)\\([acd]\\)"
 			    "\\([0-9]+\\),?\\([0-9]*\\)")
 		    nil t)
-	      (let ((la (string-to-int (match-string 1)))
-		    (lb (string-to-int (match-string 2)))
+	      (let ((la (string-to-number (match-string 1)))
+		    (lb (string-to-number (match-string 2)))
 		    (op (match-string 3))
-		    (ra (string-to-int (match-string 4)))
-		    (rb (string-to-int (match-string 5))))
+		    (ra (string-to-number (match-string 4)))
+		    (rb (string-to-number (match-string 5))))
 		(if (= lb 0)
 		    (setq lb la))
 		(if (= rb 0)
@@ -1273,7 +1273,7 @@ type \\[sd-print-with-rev-history]"
 	  (move-to-column 0)
 	  (insert "  Change  Rev\n")
 	  (while (setq line (sd-read-depot-output ch-buffer))
-	    (setq rev (string-to-int line))
+	    (setq rev (string-to-number line))
 	    (setq ch (cdr (assq rev ch-alist)))
 	    (if (= rev old-rev)
 		(insert (format "%13s : " ""))
@@ -1634,11 +1634,11 @@ character events"
 	     (sd-noinput-buffer-action "print" nil t (list fn1))
 	     (sd-activate-print-buffer "*SD print*")))
 	  (action
-	   (let ((rev2 (int-to-string (1- (string-to-int rev))))
+	   (let ((rev2 (int-to-string (1- (string-to-number rev))))
 		 (fn1 (concat filename "#" rev))
 		 (fn2 nil))
 	     (setq fn2 (concat filename "#" rev2))
-	     (if (> (string-to-int rev2) 0)
+	     (if (> (string-to-number rev2) 0)
 		 (progn
 		   (sd-noinput-buffer-action
 		    "diff2" nil t
@@ -1841,7 +1841,7 @@ character events"
     (while (re-search-forward
         (concat "^[@0-9].*\\([cad+]\\)\\([0-9]*\\).*\n"
             "\\(\\(\n\\|[^@0-9\n].*\n\\)*\\)") nil t)
-      (let ((first-line (string-to-int (match-string 2)))
+      (let ((first-line (string-to-number (match-string 2)))
         (start (match-beginning 3))
         (end (match-end 3)))
     (sd-set-extent-property start end 'first-line first-line)
@@ -3026,6 +3026,39 @@ user."
   (interactive "sEnter your e-mail address: ")
   (setq sd-user-email sd-email-address))
 
+;(defun sd-detect-sd ()
+;  "Try to recursively go upwards from this directory and see if a file with
+;the name of the value of SDCONFIG is present. If so, then this is a SD
+;controlled file. Only check if `sd-use-sdconfig-exclusively' is non-nil."
+; (if (not sd-use-sdconfig-exclusively)
+;     ;; no, always call
+;     (sd-check-mode)
+;     ;; yes, use it exclusively
+;     (and (getenv "SDCONFIG")
+;	 (let ((sdconfig (getenv "SDCONFIG"))
+;	       (sd-cfg-dir (cond (buffer-file-name ;; extrapolate from name
+;				  (file-name-directory
+;				   (file-truename (buffer-file-name))))
+;				 (t default-directory) ;; hmm, use default
+;				 ))
+;	       (win32 (if (memq system-type '(ms-dos windows-nt)) t nil)))
+;	   (while (not (or (string-equal sd-cfg-dir (char-to-string directory-sep-char))
+;			   (if win32 (string-match (concat ".:\\" (char-to-string directory-sep-char) "$") sd-cfg-dir) nil)
+;			   (file-exists-p (concat sd-cfg-dir sdconfig))))
+;	     (progn
+;;	       (message sd-cfg-dir)
+;;	       (message (concat "[^\\" (char-to-string directory-sep-char) "]*\\" (char-to-string directory-sep-char) "?$"))
+;	     (setq sd-cfg-dir
+;		   (substring sd-cfg-dir 0
+;			      (string-match (concat "[^\\" (char-to-string directory-sep-char) "]*\\" (char-to-string directory-sep-char) "?$") sd-cfg-dir)))
+;	     ))
+;	   ;; if we did find a sdconfig file, this is under SD control
+;	   (if (not (or (string-equal sd-cfg-dir (char-to-string directory-sep-char))
+;			(if win32 (string-match (concat ".:\\" (char-to-string directory-sep-char) "$") sd-cfg-dir) nil)))
+;	       (sd-check-mode)
+;	     nil)))))
+
+
 (defun sd-detect-sd ()
   "Try to recursively go upwards from this directory and see if a file with
 the name of the value of SDCONFIG is present. If so, then this is a SD
@@ -3042,19 +3075,19 @@ controlled file. Only check if `sd-use-sdconfig-exclusively' is non-nil."
 				 (t default-directory) ;; hmm, use default
 				 ))
 	       (win32 (if (memq system-type '(ms-dos windows-nt)) t nil)))
-	   (while (not (or (string-equal sd-cfg-dir (char-to-string directory-sep-char))
-			   (if win32 (string-match (concat ".:\\" (char-to-string directory-sep-char) "$") sd-cfg-dir) nil)
+	   (while (not (or (string-equal sd-cfg-dir "/")
+			   (if win32 (string-match (concat ".:\\" "/" "$") sd-cfg-dir) nil)
 			   (file-exists-p (concat sd-cfg-dir sdconfig))))
 	     (progn
 ;	       (message sd-cfg-dir)
-;	       (message (concat "[^\\" (char-to-string directory-sep-char) "]*\\" (char-to-string directory-sep-char) "?$"))
+;	       (message (concat "[^\\" "/" "]*\\" "/" "?$"))
 	     (setq sd-cfg-dir
 		   (substring sd-cfg-dir 0
-			      (string-match (concat "[^\\" (char-to-string directory-sep-char) "]*\\" (char-to-string directory-sep-char) "?$") sd-cfg-dir)))
+			      (string-match (concat "[^\\" "/" "]*\\" "/" "?$") sd-cfg-dir)))
 	     ))
 	   ;; if we did find a sdconfig file, this is under SD control
-	   (if (not (or (string-equal sd-cfg-dir (char-to-string directory-sep-char))
-			(if win32 (string-match (concat ".:\\" (char-to-string directory-sep-char) "$") sd-cfg-dir) nil)))
+	   (if (not (or (string-equal sd-cfg-dir "/")
+			(if win32 (string-match (concat ".:\\" "/" "$") sd-cfg-dir) nil)))
 	       (sd-check-mode)
 	     nil)))))
 

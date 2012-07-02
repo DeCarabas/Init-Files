@@ -129,9 +129,11 @@
 
 ;; COLORZ!
 ;;
-(require 'color-theme)
-(require 'color-theme-solarized)
-(color-theme-solarized-light)
+(if (display-graphic-p)
+    (progn
+      (require 'color-theme)
+      (require 'color-theme-solarized)
+      (color-theme-solarized-dark)))
 
 ;; Modeline format:
 (display-time-mode -1)

@@ -21,6 +21,7 @@
  '(c-label-offset -4)
  '(fast-lock-cache-directories (quote ("~/flc-cache")))
  '(fast-lock-minimum-size nil)
+ '(fill-column 120)
  '(find-file-run-dired t)
  '(font-lock-global-modes t)
  '(font-lock-maximum-size nil)
@@ -56,7 +57,8 @@
 (add-to-list 'load-path "~/site-lisp")
 
 ;; Choose a cc-mode/c#-mode to use. (More on this below)
-(add-to-list 'load-path "~/site-lisp/cc-mode/5.31.3")
+(add-to-list 'load-path "~/site-lisp/cc-mode/5.32.3")
+(add-to-list 'load-path "~/site-lisp/cc-mode/csharp-only")
 
 ;; Also ruby mode
 (add-to-list 'load-path "c:/ruby/lib")
@@ -176,6 +178,7 @@
 ;; Text mode configuration.
 ;; =================================================================
 (defun my-text-mode-hook ()
+  (setq fill-column 70)
   (turn-on-auto-fill)
   (flyspell-mode))
 
@@ -314,6 +317,8 @@
   (interactive)
   (indent-region (point-min) (point-max) nil))
 
+;; (global-set-key (read-kbd-macro "C-i") 'indent-buffer)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;              C# Mode support
 ;;;
@@ -322,7 +327,7 @@
 ;; (autoload 'csharp-mode "cc-mode")
 
 ;; Here is another one that is not.
-(autoload 'csharp-mode "csharp-mode-0.6.0" "Major mode for editing C# code." t)
+(autoload 'csharp-mode "csharp-mode-0.8.6" "Major mode for editing C# code." t)
 
 (c-add-style "ms-csharp"
    '((c-basic-offset . 4)
@@ -496,3 +501,14 @@
 (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
 (add-to-list 'auto-mode-alist '("\\.lua$" . lua-mode))
 (add-to-list 'interpreter-mode-alist '("lua" . lua-mode))
+
+;; Column markers
+(require 'column-marker)
+
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
+

@@ -71,3 +71,17 @@ function prompt
 
     return ' '
 }
+
+
+function Get-APFile($Path, $Cockpit="BLUINFDPXYIH802:80")
+{
+    $localFile = join-path $pwd (split-path -leaf $Path)
+    $uri = "http://$Cockpit/files?cmd=get&path=$Path"
+    Write-Host "Getting $Path to $localFile via $uri"
+    (New-Object System.Net.Webclient).DownloadFile($uri, $localFile)
+}
+
+function Get-Url($Url)
+{
+    (New-Object System.Net.Webclient).DownloadString($Url)
+}

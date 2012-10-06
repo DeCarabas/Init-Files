@@ -10,3 +10,5 @@
 [alias]
     st = status
     ci = commit
+[push]
+	default = upstream

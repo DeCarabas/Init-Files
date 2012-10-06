@@ -317,6 +317,8 @@
   (interactive)
   (indent-region (point-min) (point-max) nil))
 
+;; (global-set-key (read-kbd-macro "C-i") 'indent-buffer)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;              C# Mode support
 ;;;

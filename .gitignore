@@ -1,0 +1,6 @@
+# Because this is in my home directory, it's best to just ignore all files for the moment.
+*
+
+# These are the things we're tracking.
+!.emacs.d
+!.gitignore

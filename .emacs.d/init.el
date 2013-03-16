@@ -53,6 +53,10 @@
  '(widget-editable-list-gui t)
  '(x-stretch-cursor nil))
 
+;; =================================================================
+;; Load Path Customization
+;; =================================================================
+
 ;; add private lisp directory to load-path.
 (add-to-list 'load-path "~/site-lisp")
 
@@ -64,14 +68,31 @@
 (add-to-list 'load-path "c:/ruby/lib")
 (add-to-list 'load-path "c:/ruby/doc/ruby/ruby-1.8.6/misc")
 
-;; If you want to have comments displayed in italics,
-;; uncomment the following line. Note that this must
-;; be done before font settings! (Emacs 20)
-(setq w32-enable-italics t)
+;; Also GO mode
+(add-to-list 'load-path "c:/go/misc/emacs" t)
+
+;; =================================================================
+;; Package installer configuration
+;; =================================================================
+
+;;; This was installed by package-install.el.
+;;; This provides support for the package system and
+;;; interfacing with ELPA, the package archive.
+;;; Move this code earlier if you want to reference
+;;; packages in your .emacs.
+(when
+    (load
+     (expand-file-name "~/.emacs.d/elpa/package.el"))
+  (package-initialize))
 
 ;; =================================================================
 ;; EMACS general look and feel 
 ;; =================================================================
+
+;; If you want to have comments displayed in italics,
+;; uncomment the following line. Note that this must
+;; be done before font settings! (Emacs 20)
+(setq w32-enable-italics t)
 
 ;; Shut off annoying sound
 (if (fboundp 'set-message-beep) (set-message-beep 'silent))
@@ -139,9 +160,6 @@
 ;; Modeline format:
 (display-time-mode -1)
 
-;; Um, I don't know why this is *here*, but it has to be somewhere.
-(require 'ido)
-
 ;; =================================================================
 ;; FUN WITH KEY BINDINGS!  YAAAAYYY!!!
 ;; =================================================================
@@ -173,6 +191,9 @@
 ;; Adaptive fill for everybody!
 (require 'filladapt)
 (setq-default filladapt-mode t)
+
+;; Also, ido mode. Which is the BEST thing. Really.
+(require 'ido)
 
 ;; =================================================================
 ;; Text mode configuration.
@@ -319,9 +340,9 @@
 
 ;; (global-set-key (read-kbd-macro "C-i") 'indent-buffer)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;              C# Mode support
-;;;
+;; =================================================================
+;; C#-Mode configuration.
+;; =================================================================
 
 ;; zbrad's csharp mode is integrated with cc-mode.  
 ;; (autoload 'csharp-mode "cc-mode")
@@ -363,16 +384,11 @@
 ;; =================================================================
 ;; "XML" Support
 ;;
-;; I used to try to use stupid old psgml and crazy validating doctype
-;; yadda yadda modes, but you know what? I never actually care about
-;; things like that. So what's the point? Use sgml-mode, which is
-;; simple and braindead and gives me colors and indentation, which is
-;; all I really want.
-;;
-;; Actually, I switched to nxml mode. Which is slightly better than
-;; sgml-mode. And stuff.
+;; nxml-mode FTW.
 ;; =================================================================
 (load "~/site-lisp/nxml-mode-20041004/rng-auto.el")
+
+(add-to-list 'auto-mode-alist '("\\.sgml$" . nxml-mode))
 
 (setq auto-mode-alist 
       (append '(
@@ -473,6 +489,21 @@
 (add-to-list 'auto-mode-alist '("\\.ps1\\'" . powershell-mode))
 (add-to-list 'auto-mode-alist '("\\.psm1\\'" . powershell-mode))
 
+;; =================================================================
+;; Go (#golang) Mode
+;;
+;; Note that apparently go-mode is too special for the standard
+;; autoload/add-to-list stuff. Good for it!
+;; =================================================================
+(require 'go-mode-load)
+
+;; =================================================================
+;; LUA Mode
+;; =================================================================
+
+(autoload 'lua-mode "lua-mode" "Lua editing mode." t)
+(add-to-list 'auto-mode-alist '("\\.lua$" . lua-mode))
+(add-to-list 'interpreter-mode-alist '("lua" . lua-mode))
 
 ;; =================================================================
 ;; Source Depot
@@ -483,32 +514,13 @@
 (setq sd-global-config "sd.ini")
 (setenv "SDCONFIG" "sd.ini")
 
-
-;;; This was installed by package-install.el.
-;;; This provides support for the package system and
-;;; interfacing with ELPA, the package archive.
-;;; Move this code earlier if you want to reference
-;;; packages in your .emacs.
-(when
-    (load
-     (expand-file-name "~/.emacs.d/elpa/package.el"))
-  (package-initialize))
-
-;;; TFS?
-(setq tfs/tf-exe  "c:\\program files(x86)\\Microsoft Visual Studio 10.0\\common7\\ide\\tf.exe")
-
-;; LUA
-(autoload 'lua-mode "lua-mode" "Lua editing mode." t)
-(add-to-list 'auto-mode-alist '("\\.lua$" . lua-mode))
-(add-to-list 'interpreter-mode-alist '("lua" . lua-mode))
-
-;; Column markers
-(require 'column-marker)
-
+;; =================================================================
+;; No idea why custom-set-faces is way down here, but OK. I must 
+;; have been thinking of something.
+;; =================================================================
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
  )
-

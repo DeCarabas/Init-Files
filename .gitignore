@@ -4,3 +4,4 @@
 # These are the things we're tracking.
 !.emacs.d
 !.gitignore
+!WindowsPowershell

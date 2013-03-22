@@ -85,3 +85,102 @@ function Get-Url($Url)
 {
     (New-Object System.Net.Webclient).DownloadString($Url)
 }
+
+function ConvertFrom-JWT($text)
+{
+    $text = $text.Trim()
+    $part = $text.Split('.')[1]
+    while($part.Length % 4) {
+        $part = $part + '='
+    }
+
+    $json = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($part))
+    return ConvertFrom-Json $json
+}
+
+function ConvertFrom-KeyType($data)
+{
+    switch([BitConverter]::ToInt16($data,0)) {
+        1 { "SessionRoot"; break; }
+        2 { "SessionRootEscrow_AES"; break; }
+        3 { "K_R_G"; break; }
+        4 { "Live_RSA"; break; }
+        5 { "ContentKey"; break; }
+        6 { "DevContentKeyEscrow_RSA"; break; }
+        7 { "ProdContentKeyEscrow_RSA"; break; }
+        8 { "XboxAutoVaultSign_RSA"; break; }
+        9 { "EscrowedDevContentKeyEKB_RSA"; break; }
+        10 { "EscrowedProdContentKeyEKB_RSA"; break; }
+        11 { "DevDurangoGlobalEscrow_RSA"; break; }
+        12 { "ProdDurangoGlobalEscrow_RSA"; break; }
+        13 { "DevKitConversionCert_RSA"; break; }
+        default { "Unknown ($_)"; break; }
+    }
+}
+
+function ConvertFrom-EKB($text)
+{
+    $ekb = @{}
+
+    $bytes = [Convert]::FromBase64String($text)
+
+    $stream = New-Object System.IO.MemoryStream
+    $stream.Write($bytes,0,$bytes.Length)
+    $stream.Position = 0
+
+    $reader = New-Object System.IO.BinaryReader($stream)
+
+    $stream.Seek(8, 'Current') | out-null
+    while($stream.Position -ne $stream.Length) {
+        $type = $reader.ReadInt16()
+        $length = $reader.ReadInt32()
+        $data = $reader.ReadBytes($length)
+        
+        switch($type){
+            1 { 
+                $ekb.EscrowedKey = ConvertFrom-KeyType($data) 
+                break
+            }
+            2 {
+                $ekb.KeyID = [System.Text.Encoding]::UTF8.GetString($data)
+                if ($ekb.KeyID.Length -eq 32) {
+                    $kid = $ekb.KeyID
+                    $gah = @() 
+                    while ($kid.Length) {
+                        $gah += @([Byte]::Parse($kid.Substring(0,2), "HexNumber"))
+                        $kid = $kid.Substring(2)
+                    }
+                    $ekb.KeyIDGuid = [Guid][byte[]]($gah)
+                }
+                break
+            }
+            3 { 
+                $ekb.EscrowingKeyType = ConvertFrom-KeyType($data)
+                break
+            }
+            4 { 
+                $ekb.EscrowingKeyID = [System.Text.Encoding]::UTF8.GetString($data)
+                break
+            }
+            5 { 
+                $ekb.EscrowMethod = switch([BitConverter]::ToInt16($data, 0)){
+                    1 { "RSAEncrypt_OAEP_SHA256"; break; }
+                    2 { "AESKeyWrap"; break; }
+                    3 { "RSAEncrypt_PKCS1_SHA256"; break; }
+                    default { "Unknown ($_)"; break; }
+                }
+                break
+            }
+            6 { 
+                $ekb.CustomData = $data
+                break
+            }
+            7 { 
+                $ekb.EscrowBlob = $data
+                break
+            }
+        }
+    }
+
+    return $ekb
+}

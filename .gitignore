@@ -1,7 +1,28 @@
-# Because this is in my home directory, it's best to just ignore all files for the moment.
-*
+.aptitude/
+.bash_history
+.bash_logout
+.bitcoin/
+.cache/
+.config/fish/fish_history
+.config/fish/fishd*
+.config/fish/generated_completions
+.histfile
+.ido.last
+.landscape/
+.lesshst
+.links2/
+.mysql_history
+.sabnzbd/
+.sickbeard/
+.ssh/
+.subversion/
+.w3m/
+.zcompdump
+bifrost
+bin/
+newznab/
+sabnzbd/
+src/
+test/
 
-# These are the things we're tracking.
-!.emacs.d
-!.gitignore
-!WindowsPowershell
+*~

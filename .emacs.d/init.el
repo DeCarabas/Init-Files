@@ -10,10 +10,10 @@
 ;; There are many like it, but this one is mine.
 
 (custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(blink-matching-paren-dont-ignore-comments t)
  '(c-echo-syntactic-information-p t)
  '(c-indent-level 4)
@@ -28,6 +28,7 @@
  '(font-lock-support-mode (quote jit-lock-mode))
  '(global-auto-revert-mode t)
  '(global-font-lock-mode t nil (font-lock))
+ '(ido-enable-flex-matching t)
  '(ido-mode (quote both) nil (ido))
  '(indent-tabs-mode nil)
  '(inhibit-startup-screen t)
@@ -519,8 +520,8 @@
 ;; have been thinking of something.
 ;; =================================================================
 (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  )

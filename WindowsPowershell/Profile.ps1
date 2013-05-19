@@ -184,3 +184,7 @@ function ConvertFrom-EKB($text)
 
     return $ekb
 }
+
+function ConvertFrom-Base64UTF8($base64) {
+    return [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($base64))
+}

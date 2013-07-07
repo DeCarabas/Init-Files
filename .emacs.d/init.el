@@ -39,6 +39,7 @@
  '(mouse-buffer-menu-mode-mult 0)
  '(org-hide-leading-stars t)
  '(org-odd-levels-only t)
+ '(package-archives (quote (("gnu" . "http://elpa.gnu.org/packages/") ("marmalade" . "http://marmalade-repo.org/packages/"))))
  '(rmail-mail-new-frame t)
  '(scroll-conservatively 1)
  '(scroll-step 1)
@@ -71,20 +72,6 @@
 
 ;; Also GO mode
 (add-to-list 'load-path "c:/go/misc/emacs" t)
-
-;; =================================================================
-;; Package installer configuration
-;; =================================================================
-
-;;; This was installed by package-install.el.
-;;; This provides support for the package system and
-;;; interfacing with ELPA, the package archive.
-;;; Move this code earlier if you want to reference
-;;; packages in your .emacs.
-(when
-    (load
-     (expand-file-name "~/.emacs.d/elpa/package.el"))
-  (package-initialize))
 
 ;; =================================================================
 ;; EMACS general look and feel 
@@ -496,7 +483,7 @@
 ;; Note that apparently go-mode is too special for the standard
 ;; autoload/add-to-list stuff. Good for it!
 ;; =================================================================
-(require 'go-mode-load)
+;;(require 'go-mode-load)
 
 ;; =================================================================
 ;; LUA Mode

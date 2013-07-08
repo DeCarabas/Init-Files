@@ -163,8 +163,6 @@
 ;; =================================================================
 ;; FUN WITH KEY BINDINGS!  YAAAAYYY!!!
 ;; =================================================================
-;; (Note:  I secretly think the use of read-kbd-macro below is dorky.
-;; This from the man commenting his .emacs file.)
 (global-set-key (read-kbd-macro "M-g") 'goto-line)
 (global-set-key (read-kbd-macro "C-q") 'copy-region-as-kill)
 (global-set-key (read-kbd-macro "C-w") 'kill-region)

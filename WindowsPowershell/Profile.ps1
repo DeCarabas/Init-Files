@@ -184,3 +184,14 @@ function ConvertFrom-EKB($text)
 
     return $ekb
 }
+
+function Wrap-Text ($txt)
+{
+    $t = [string]$txt
+    while($t.Length -gt 77) {
+        $t.Substring(0, 77)
+        $t = $t.Substring(77)
+    }
+    $t
+}
+

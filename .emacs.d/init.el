@@ -10,10 +10,10 @@
 ;; There are many like it, but this one is mine.
 
 (custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(blink-matching-paren-dont-ignore-comments t)
  '(c-echo-syntactic-information-p t)
  '(c-indent-level 4)
@@ -28,6 +28,7 @@
  '(font-lock-support-mode (quote jit-lock-mode))
  '(global-auto-revert-mode t)
  '(global-font-lock-mode t nil (font-lock))
+ '(ido-enable-flex-matching t)
  '(ido-mode (quote both) nil (ido))
  '(indent-tabs-mode nil)
  '(inhibit-startup-screen t)
@@ -38,6 +39,7 @@
  '(mouse-buffer-menu-mode-mult 0)
  '(org-hide-leading-stars t)
  '(org-odd-levels-only t)
+ '(package-archives (quote (("gnu" . "http://elpa.gnu.org/packages/") ("marmalade" . "http://marmalade-repo.org/packages/"))))
  '(rmail-mail-new-frame t)
  '(scroll-conservatively 1)
  '(scroll-step 1)
@@ -70,20 +72,6 @@
 
 ;; Also GO mode
 (add-to-list 'load-path "c:/go/misc/emacs" t)
-
-;; =================================================================
-;; Package installer configuration
-;; =================================================================
-
-;;; This was installed by package-install.el.
-;;; This provides support for the package system and
-;;; interfacing with ELPA, the package archive.
-;;; Move this code earlier if you want to reference
-;;; packages in your .emacs.
-(when
-    (load
-     (expand-file-name "~/.emacs.d/elpa/package.el"))
-  (package-initialize))
 
 ;; =================================================================
 ;; EMACS general look and feel 
@@ -493,7 +481,7 @@
 ;; Note that apparently go-mode is too special for the standard
 ;; autoload/add-to-list stuff. Good for it!
 ;; =================================================================
-(require 'go-mode-load)
+;;(require 'go-mode-load)
 
 ;; =================================================================
 ;; LUA Mode
@@ -517,8 +505,8 @@
 ;; have been thinking of something.
 ;; =================================================================
 (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  )

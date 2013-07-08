@@ -2,7 +2,7 @@
 	name = John Doty
 	email = jddoty@gmail.com
 [core]
-	editor = c:/emacs/bin/emacs.exe
+	editor = emacs
 [pretty]
 	doty = * %C(bold green)%h%Creset -%C(bold white)%d%Creset %s %C(bold)(%cr)%Creset <%aN>%Creset
 [format]

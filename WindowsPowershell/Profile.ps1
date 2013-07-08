@@ -49,20 +49,30 @@ function prompt
 { 
     $ok = $?
 
-    if (!$global:SolarizedColors)
+    if ($Host.Name -eq "ConsoleHost")
     {
-        Set-SolarizedColors -Dark
-        $global:SolarizedColors = $true
-    }
+        if (!$global:SolarizedColors)
+        {
+            Set-SolarizedColors -Dark
+            $global:SolarizedColors = $true
+        }
 
-    # Our "theme", as it were. Note that we assume the use of the
-    # solarized colors.
-    #
-    $cdelim = [ConsoleColor]::DarkCyan 
-    $chost = [ConsoleColor]::DarkGreen
-    $cloc = $csym = [ConsoleColor]::DarkCyan
-    if (-not $ok) { $csym = [ConsoleColor]::DarkRed; }
-    
+        # Our "theme", as it were. Note that we assume the use of the
+        # solarized colors.
+        #
+        $cdelim = [ConsoleColor]::DarkCyan 
+        $chost = [ConsoleColor]::DarkGreen
+        $cloc = $csym = [ConsoleColor]::DarkCyan
+        if (-not $ok) { $csym = [ConsoleColor]::DarkRed; }
+    }
+    else
+    {
+        $cdelim = [ConsoleColor]::Gray 
+        $chost = [ConsoleColor]::Green
+        $cloc = $csym = [ConsoleColor]::Gray
+        if (-not $ok) { $csym = [ConsoleColor]::Red; }        
+    }
+   
     write-host "$([char]0x0A7) " -n -f $csym
     write-host ([net.dns]::GetHostName()) -n -f $chost
     write-host ' {' -n -f $cdelim
@@ -195,3 +205,6 @@ function Wrap-Text ($txt)
     $t
 }
 
+function ConvertFrom-Base64UTF8($base64) {
+    return [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($base64))
+}

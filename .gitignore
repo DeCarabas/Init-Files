@@ -1,7 +1,108 @@
-# Because this is in my home directory, it's best to just ignore all files for the moment.
-*
+.aptitude/
+.bash_history
+.bash_logout
+.bitcoin/
+Bitlocker/
+Calibre Library/
+CardMinder/
+.cache/
+.config/fish/fish_history
+.config/fish/fishd*
+.config/fish/generated_completions
+Diablo III/
+DnD - 3.5/
+DnD - 4.0/
+DnD - Mesh/
+DnD/
+Doty Family/
+Downloads/
+.DS_Store
+.gem/
+.gimp-2.6/
+.histfile
+.ido.last
+.landscape/
+.lesshst
+.links2/
+.mysql_history
+.sabnzbd/
+.sickbeard/
+.ssh/
+.subversion/
+.thumbnails/
+.VirtualBox/
+.w3m/
+.zcompdump
+Backup/
+bifrost
+bin/
+go-ext/
+newznab/
+sabnzbd/
+src/
+test/
 
-# These are the things we're tracking.
-!.emacs.d
-!.gitignore
-!WindowsPowershell
+*~
+*.acdb
+*.elc
+*.docx
+*.htm
+*.exe
+*.txt
+*.rdp
+*.xbel
+*.xls
+*.xlsm
+*.xlsx
+*.zip
+
+_viminfo
+
+Database1.accdb
+Dungeon Tiles.vss
+Endless Space/
+Expression/
+Fax/
+Fiddler2/
+IISExpress/
+Inform/
+John's Quicken Data.QDF-backup
+KentuckyRouteZero/
+LINQPad Queries/
+Memoir Class Manual.pdf
+My Games/
+My Kindle Content/
+My Received Files/
+My Shapes/
+My Sharing Folders.lnk
+New folder/
+OneNote Notebooks/
+Playing.vsd
+Protege-1996-1.pdf
+Purchased/
+Quicken/
+SampleExplorer.Settings.xml
+Saved Games/
+ScanSnap/
+Seesmic/
+Shared/
+Shiner/
+SimCity 4/
+Tales of the City/
+Taxes/
+Telltale Games/
+Thumbs.db
+Tokens.vsd
+VirtualBox VMs/
+Visual Studio 11/
+Visual Studio 2005/
+Visual Studio 2008/
+Visual Studio 2010/
+Visual Studio 2012/
+WorldWorks/
+backupcert.pfx
+ddi/
+desktop.ini
+lshort.pdf
+notes
+rallymaker/

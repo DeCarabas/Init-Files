@@ -60,10 +60,10 @@ function prompt
         # Our "theme", as it were. Note that we assume the use of the
         # solarized colors.
         #
-        $cdelim = [ConsoleColor]::DarkCyan 
-        $chost = [ConsoleColor]::DarkGreen
-        $cloc = $csym = [ConsoleColor]::DarkCyan
-        if (-not $ok) { $csym = [ConsoleColor]::DarkRed; }
+        $cdelim = ConvertFrom-SolarizedColor "base1"
+        $chost = ConvertFrom-SolarizedColor "green"
+        $cloc = $csym = ConvertFrom-SolarizedColor "base0"
+        if (-not $ok) { $csym = ConvertFrom-SolarizedColor "red" }
     }
     else
     {
@@ -207,4 +207,55 @@ function Wrap-Text ($txt)
 
 function ConvertFrom-Base64UTF8($base64) {
     return [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($base64))
+}
+
+function Get-TFSWorkspace(
+    [string]$path = ((pwd).Path)
+)
+{
+    [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.Client")
+    [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.VersionControl.Client")
+    [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.WorkItemTracking.Client")
+    [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.Build.Client")
+
+    function InitServerAndWorkspaceFromWSInfo( $wsInfo )
+    {
+        $tfs = New-Object Microsoft.TeamFoundation.Client.TfsTeamProjectCollection( $wsInfo.ServerUri )
+        $versionControlServer = $tfs.GetService([Microsoft.TeamFoundation.VersionControl.Client.VersionControlServer])
+
+        return @{
+          "BuildServer"= $tfs.GetService([Microsoft.TeamFoundation.Build.Client.IBuildServer]);
+          "VersionControl"=$versionControlServer;
+          "WorkItems"=$tfs.GetService([Microsoft.TeamFoundation.WorkItemTracking.Client.WorkItemStore]);
+          "Workspace"=$versionControlServer.GetWorkspace($wsInfo);
+        }
+    }
+
+    # is there only 1 workspace in our cache file?  If so, use that one regardless of the hint
+    $workspaceInfos = [Microsoft.TeamFoundation.VersionControl.Client.Workstation]::Current.GetAllLocalWorkspaceInfo()
+    if ($workspaceInfos.Length -eq 1)
+    {
+        InitServerAndWorkspaceFromWSInfo($workspaceInfos[0])
+		return
+    }
+
+	$current = $path
+	do
+	{
+		$workspaceInfos = [Microsoft.TeamFoundation.VersionControl.Client.Workstation]::Current.GetLocalWorkspaceInfoRecursively($current)
+		if ($workspaceInfos.Length -gt 1)
+		{
+			throw 'More than one workspace matches the workspace hint "{0}": {1}' -f
+				$current, [string]::join(', ', @($workspaceInfos | %{ $_.Name}))
+		}
+		
+		$current = split-path -parent $current
+	} while (($workspaceInfos.Length -ne 1) -and $current)
+    
+	if (-not $workspaceInfos)
+	{
+       throw "Could not figure out a workspace based on $path"
+	}
+	
+	return InitServerAndWorkspaceFromWSInfo( $workspaceInfos[0] )
 }

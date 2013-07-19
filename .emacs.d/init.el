@@ -70,9 +70,6 @@
 (add-to-list 'load-path "c:/ruby/lib")
 (add-to-list 'load-path "c:/ruby/doc/ruby/ruby-1.8.6/misc")
 
-;; Also GO mode
-(add-to-list 'load-path "c:/go/misc/emacs" t)
-
 ;; =================================================================
 ;; EMACS general look and feel 
 ;; =================================================================

@@ -116,7 +116,7 @@
 	   [(1 0)
 	    nil "Support for OWL Manchester Notation" single])
  (org .
-      [(20130708)
+      [(20130715)
        nil "Outline-based notes management and organizer" tar])
  (quarter-plane .
 		[(0 1)
@@ -146,7 +146,7 @@
 	  [(1 0 4)
 	   nil "Sokoban game for emacs" tar])
  (svg-clock .
-	    [(0 4)
+	    [(0 5)
 	     nil "Analog clock using Scalable Vector Graphics" single])
  (tNFA .
        [(0 1 1)

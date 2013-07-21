@@ -438,10 +438,10 @@
 ;; I use the new-and-improved 'smart' mode in ci.exe, so that I am
 ;; always searching the right catalog.
 ;;
-(setq ci-machine               nil)
-(setq ci-catalog               nil)
-(setq ci-scope                 nil)
-(setq ci-use-smart-mode        't)
+(setq ci-machine               "EDGE-IDX-02")
+(setq ci-catalog               "Xbox")
+(setq ci-scope                 "\\\\EDGE-IDX-02\\Xbox\\xb_dev\\")
+(setq ci-use-smart-mode        'f)
 (setq ci-define-c++-properties 't)
 ;; 
 ;; If you want to limit yourself to a fixed catalog...
@@ -496,6 +496,28 @@
 (sd-set-sd-executable "c:/tools/x86/sd.exe")
 (setq sd-global-config "sd.ini")
 (setenv "SDCONFIG" "sd.ini")
+
+;; =================================================================
+;; Code Folding
+;; =================================================================
+(global-set-key (kbd "C-+")             'hs-toggle-hiding)
+(global-set-key (kbd "C-<kp-add>")      'hs-toggle-hiding)
+(global-set-key (kbd "C-<kp-subtract>") 'hs-hide-all)
+
+(add-hook 'c-mode-common-hook   'hs-minor-mode)
+(add-hook 'emacs-lisp-mode-hook 'hs-minor-mode)
+(add-hook 'java-mode-hook       'hs-minor-mode)
+(add-hook 'lisp-mode-hook       'hs-minor-mode)
+(add-hook 'perl-mode-hook       'hs-minor-mode)
+(add-hook 'sh-mode-hook         'hs-minor-mode)
+
+(defun display-code-line-counts (ov)
+  (when (eq 'code (overlay-get ov 'hs))
+    (overlay-put ov 'help-echo
+                 (buffer-substring (overlay-start ov)
+                                   (overlay-end ov)))))
+
+(setq hs-set-up-overlay 'display-code-line-counts)
 
 ;; =================================================================
 ;; No idea why custom-set-faces is way down here, but OK. I must 

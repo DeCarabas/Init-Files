@@ -45,18 +45,24 @@ function shorten-path([string] $path)
 
 $global:SolarizedColors = $false
 
+if ($Host.Name -eq "ConsoleHost")
+{
+    Set-SolarizedColors -Dark
+    $global:SolarizedColors = $true
+    
+    # Doing this screws up the colors in the window, and the only way to 
+    # make it look remotely pretty is to do this.
+    #
+    cls
+}
+
+
 function prompt 
 { 
     $ok = $?
 
     if ($Host.Name -eq "ConsoleHost")
     {
-        if (!$global:SolarizedColors)
-        {
-            Set-SolarizedColors -Dark
-            $global:SolarizedColors = $true
-        }
-
         # Our "theme", as it were. Note that we assume the use of the
         # solarized colors.
         #

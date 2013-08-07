@@ -209,53 +209,88 @@ function ConvertFrom-Base64UTF8($base64) {
     return [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($base64))
 }
 
-function Get-TFSWorkspace(
-    [string]$path = ((pwd).Path)
-)
+# XBOX HELPER FUNCTIONS
+
+function Get-XboxDeployedPackageInfo() 
 {
-    [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.Client")
-    [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.VersionControl.Client")
-    [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.WorkItemTracking.Client")
-    [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.Build.Client")
+    xbrun /o reg query '\"HKU\S-1-5-21-2702878673-795188819-444038987-501\Software\Classes\Local Settings\Software\microsoft\windows\currentversion\appmodel\repository\packages"' /s
+}
 
-    function InitServerAndWorkspaceFromWSInfo( $wsInfo )
-    {
-        $tfs = New-Object Microsoft.TeamFoundation.Client.TfsTeamProjectCollection( $wsInfo.ServerUri )
-        $versionControlServer = $tfs.GetService([Microsoft.TeamFoundation.VersionControl.Client.VersionControlServer])
+# function Get-XboxConnectedAddresses() 
+# {
+#     $addrs = @{}
 
-        return @{
-          "BuildServer"= $tfs.GetService([Microsoft.TeamFoundation.Build.Client.IBuildServer]);
-          "VersionControl"=$versionControlServer;
-          "WorkItems"=$tfs.GetService([Microsoft.TeamFoundation.WorkItemTracking.Client.WorkItemStore]);
-          "Workspace"=$versionControlServer.GetWorkspace($wsInfo);
-        }
-    }
+#     $results = xbconnect
+#     $reading = $false
+#     foreach($line in $results) 
+#     {
+#         if ($line.IndexOf("XBTP connections") -ge 0) 
+#         {
+#             $reading = $true
+#         }
+#         elseif ($reading)
+#         {
+#             $parts = $line.Split(@(' '), 'RemoveEmptyEntries')
+#             $key = $parts[0].Substring(0, $parts[0].Length - 1)
+#             $value = $parts[1]
+#             if ($value -eq 'Unreachable.')
+#             {
+#                 continue
+#             }
 
-    # is there only 1 workspace in our cache file?  If so, use that one regardless of the hint
-    $workspaceInfos = [Microsoft.TeamFoundation.VersionControl.Client.Workstation]::Current.GetAllLocalWorkspaceInfo()
-    if ($workspaceInfos.Length -eq 1)
-    {
-        InitServerAndWorkspaceFromWSInfo($workspaceInfos[0])
-		return
-    }
+#             $addrs[$key] = $value
+#         }
+#     }
 
-	$current = $path
-	do
-	{
-		$workspaceInfos = [Microsoft.TeamFoundation.VersionControl.Client.Workstation]::Current.GetLocalWorkspaceInfoRecursively($current)
-		if ($workspaceInfos.Length -gt 1)
-		{
-			throw 'More than one workspace matches the workspace hint "{0}": {1}' -f
-				$current, [string]::join(', ', @($workspaceInfos | %{ $_.Name}))
-		}
-		
-		$current = split-path -parent $current
-	} while (($workspaceInfos.Length -ne 1) -and $current)
-    
-	if (-not $workspaceInfos)
-	{
-       throw "Could not figure out a workspace based on $path"
-	}
-	
-	return InitServerAndWorkspaceFromWSInfo( $workspaceInfos[0] )
+#     return $addrs
+# }
+
+function Connect-XboxHostTelnet() 
+{
+    $addr = xbconnect -b 
+    telnet $addr
+}
+
+function Invoke-XboxHost($command)
+{
+    xbrun /x/host /o $command
+}
+
+function Copy-XboxSystemFile($sourceFile, $targetFile)
+{
+    Write-Host "Unlinking Host OS and System OS..."
+    Invoke-XboxHost "xvtool -w 1"
+
+    Write-Host "Shutting down System OS..."
+    Invoke-XboxHost "xvtool -s 2"
+
+    Write-Host "Mounting System XVD..."
+    Invoke-XboxHost "xvdutil -m f:\system.xvd"
+
+    Write-Host "Copying file..."
+    xbcp /x/host $sourceFile "Xg:$targetFile"
+
+    Write-Host "Unmounting System XVD..."
+    Invoke-XboxHost "xvdutil -umdn 3"
+
+    Write-Host "Rebooting..."
+    xbreboot /x/host
+}
+
+function Connect-XboxSystemKD()
+{
+    $addr = xbconnect -b
+    windbg -k "net:port=50038,target=$addr"
+}
+
+function Connect-XboxGameKD()
+{
+    $addr = xbconnect -b
+    windbg -k "net:port=50039,target=$addr"
+}
+
+function Connect-XboxHostKD()
+{
+    $addr = xbconnect -b
+    windbg -k "net:port=,target=$addr"
 }

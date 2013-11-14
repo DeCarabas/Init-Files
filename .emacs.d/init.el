@@ -520,7 +520,9 @@
 ;; =================================================================
 (global-set-key (kbd "C-+")             'hs-toggle-hiding)
 (global-set-key (kbd "C-<kp-add>")      'hs-toggle-hiding)
+(global-set-key (kbd "M-<kp-add>")      'hs-toggle-hiding)
 (global-set-key (kbd "C-<kp-subtract>") 'hs-hide-all)
+(global-set-key (kbd "M-<kp-subtract>") 'hs-hide-all)
 
 (add-hook 'c-mode-common-hook   'hs-minor-mode)
 (add-hook 'emacs-lisp-mode-hook 'hs-minor-mode)

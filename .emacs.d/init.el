@@ -473,14 +473,6 @@
 (add-to-list 'auto-mode-alist '("\\.psm1\\'" . powershell-mode))
 
 ;; =================================================================
-;; Go (#golang) Mode
-;;
-;; Note that apparently go-mode is too special for the standard
-;; autoload/add-to-list stuff. Good for it!
-;; =================================================================
-;;(require 'go-mode-load)
-
-;; =================================================================
 ;; LUA Mode
 ;; =================================================================
 
@@ -518,6 +510,16 @@
                                    (overlay-end ov)))))
 
 (setq hs-set-up-overlay 'display-code-line-counts)
+
+;; =================================================================
+;; Go (#golang) Mode
+;;
+;; Note that apparently go-mode is too special for the standard
+;; autoload/add-to-list stuff. Good for it!
+;; =================================================================
+(require 'go-mode-load)
+;;(require 'go-autocomplete)
+;;(require 'auto-complete-config)
 
 ;; =================================================================
 ;; No idea why custom-set-faces is way down here, but OK. I must 

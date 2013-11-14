@@ -324,6 +324,31 @@
 
 ;; (global-set-key (read-kbd-macro "C-i") 'indent-buffer)
 
+;; IDL
+(c-add-style "ms-idl"
+  '("gnu"
+    (c-basic-offset . 4)
+    (c-offsets-alist . ((c                     . c-lineup-C-comments)
+                        (inclass               . +)
+                        (access-label          . -)
+                        (defun-block-intro     . +)
+                        (substatement-open     . 0)
+                        (statement-block-intro . +)
+                        (innamespace           . +)
+                        (statement-case-intro  . +)
+                        (statement-case-open   . 0)
+                        (brace-list-intro      . +)
+                        (substatement          . +)
+                        (arglist-intro         . +)
+                        (arglist-close         . 0)
+                        (statement-case-open   . +)
+                        ))))
+
+(defun my-idl-mode-hook ()
+  (c-set-style "ms-idl"))
+
+(add-hook 'idl-mode-hook    'my-idl-mode-hook)
+
 ;; =================================================================
 ;; C#-Mode configuration.
 ;; =================================================================

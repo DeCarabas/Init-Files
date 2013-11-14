@@ -21,7 +21,7 @@
  '(c-label-offset -4)
  '(fast-lock-cache-directories (quote ("~/flc-cache")))
  '(fast-lock-minimum-size nil)
- '(fill-column 120)
+ '(fill-column 77)
  '(find-file-run-dired t)
  '(font-lock-global-modes t)
  '(font-lock-maximum-size nil)
@@ -218,6 +218,7 @@
   (turn-on-auto-fill)
   (flyspell-prog-mode)
   (define-key c-mode-base-map "\C-m" 'c-context-line-break)
+  (set-fill-column 120)
   (local-set-key "}" 'indent-on-closing-bracket))
 
 (add-hook 'c-mode-common-hook 'my-c-common-hook)

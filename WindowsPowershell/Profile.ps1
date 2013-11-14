@@ -30,6 +30,12 @@ if ($interactive)
     #
     $env:Path = "$env:windir\Microsoft.NET\Framework64;" + $env:Path
     $env:Path = "c:\debuggers;c:\tools\x86;c:\tools\x86\bin;c:\emacs\bin" + $env:Path
+
+    # Fun times with diffs and the like.
+    #
+    $env:SDPWDIFF = 'odd.exe'
+    $env:SDVDIFF  = 'odd.exe -l!'
+    $env:SDVCDIFF = 'odd.exe -ld'
 }
 
 # Based on http://winterdom.com/2008/08/mypowershellprompt
@@ -215,88 +221,48 @@ function ConvertFrom-Base64UTF8($base64) {
     return [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($base64))
 }
 
-# XBOX HELPER FUNCTIONS
 
-function Get-XboxDeployedPackageInfo() 
+function Save-Change($ChangeNumber, $Description)
 {
-    xbrun /o reg query '\"HKU\S-1-5-21-2702878673-795188819-444038987-501\Software\Classes\Local Settings\Software\microsoft\windows\currentversion\appmodel\repository\packages"' /s
+    if (!$ChangeNumber) { $ChangeNumber = "default" }
+    if (!$Description) { $Description = "Change-$ChangeNumber" }
+
+    $PackPath = Resolve-Path "~\dpk"
+    if (!(Test-Path $PackPath)) 
+    {
+        mkdir $PackPath | out-null
+    }
+
+    # Get Unique number...    
+    $Date = Get-Date
+    $Prefix = "$($Date.Year).$($Date.Month.ToString('00')).$($Date.Day.ToString('00'))"
+
+    $Index = "00"
+    $items = @(Get-ChildItem $PackPath -Filter "$Prefix*.dpk" | Sort-Object -Property FullName -Descending)
+    if ($items.Length -gt 0)
+    {
+        $idx = [int]($items[0].FullName.Split('.')[3]) + 1
+        $Index = $idx.ToString('00')
+    }
+    
+    $PackFile = "$PackPath\$Prefix.$Index.$Description.dpk"
+    Write-Host "Packing change '$ChangeNumber' to '$PackFile'..."
+    sdp pack $PackFile -c $ChangeNumber 
 }
 
-# function Get-XboxConnectedAddresses() 
-# {
-#     $addrs = @{}
-
-#     $results = xbconnect
-#     $reading = $false
-#     foreach($line in $results) 
-#     {
-#         if ($line.IndexOf("XBTP connections") -ge 0) 
-#         {
-#             $reading = $true
-#         }
-#         elseif ($reading)
-#         {
-#             $parts = $line.Split(@(' '), 'RemoveEmptyEntries')
-#             $key = $parts[0].Substring(0, $parts[0].Length - 1)
-#             $value = $parts[1]
-#             if ($value -eq 'Unreachable.')
-#             {
-#                 continue
-#             }
-
-#             $addrs[$key] = $value
-#         }
-#     }
-
-#     return $addrs
-# }
-
-function Connect-XboxHostTelnet() 
+function Convert-HexNumberToGuid($hn)
 {
-    $addr = xbconnect -b 
-    telnet $addr
+    $gah = @() 
+    while ($hn.Length) 
+    {
+        $gah += @([Byte]::Parse($hn.Substring(0,2), "HexNumber"))
+        $hn = $hn.Substring(2)
+    }
+    return [Guid][byte[]]($gah)
 }
 
-function Invoke-XboxHost($command)
-{
-    xbrun /x/host /o $command
-}
+function global:bld { build $args }
+function global:bz  { build -PZM $args }
+function global:bcz { build -cPZM $args }
 
-function Copy-XboxSystemFile($sourceFile, $targetFile)
-{
-    Write-Host "Unlinking Host OS and System OS..."
-    Invoke-XboxHost "xvtool -w 1"
 
-    Write-Host "Shutting down System OS..."
-    Invoke-XboxHost "xvtool -s 2"
-
-    Write-Host "Mounting System XVD..."
-    Invoke-XboxHost "xvdutil -m f:\system.xvd"
-
-    Write-Host "Copying file..."
-    xbcp /x/host $sourceFile "Xg:$targetFile"
-
-    Write-Host "Unmounting System XVD..."
-    Invoke-XboxHost "xvdutil -umdn 3"
-
-    Write-Host "Rebooting..."
-    xbreboot /x/host
-}
-
-function Connect-XboxSystemKD()
-{
-    $addr = xbconnect -b
-    windbg -k "net:port=50038,target=$addr"
-}
-
-function Connect-XboxGameKD()
-{
-    $addr = xbconnect -b
-    windbg -k "net:port=50039,target=$addr"
-}
-
-function Connect-XboxHostKD()
-{
-    $addr = xbconnect -b
-    windbg -k "net:port=,target=$addr"
-}

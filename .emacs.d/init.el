@@ -188,7 +188,6 @@
 
 (add-hook 'text-mode-hook 'my-text-mode-hook)
 
-
 ;; =================================================================
 ;; CC-Mode configuration.  Stuff that makes working in IDL, C, and 
 ;; C++ a whole lot more tolerable.
@@ -546,8 +545,15 @@
 ;; autoload/add-to-list stuff. Good for it!
 ;; =================================================================
 (require 'go-mode-load)
-;;(require 'go-autocomplete)
-;;(require 'auto-complete-config)
+(add-hook 'go-mode-hook   'auto-complete-mode)
+
+;; Autocomplete is in the package manager, so we must defer configuration of
+;; autocomplete until after the package manager has done its thing. It's
+;; fairly easy, but.
+(eval-after-load "go-mode"
+  `(progn
+     (require 'go-autocomplete)
+     (require 'auto-complete-config)))
 
 ;; =================================================================
 ;; No idea why custom-set-faces is way down here, but OK. I must 

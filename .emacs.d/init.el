@@ -71,6 +71,17 @@
 (add-to-list 'load-path "c:/ruby/doc/ruby/ruby-1.8.6/misc")
 
 ;; =================================================================
+;; Initialize Packages
+;; =================================================================
+;;
+;; I appreciate that the package developers feel like the packages should be
+;; initialized after this file, but, well.... I want to customize things here
+;; and it's hard to do that without the relevant packages loaded.
+;;
+(package-initialize)
+(setq package-enable-at-startup nil)
+
+;; =================================================================
 ;; EMACS general look and feel 
 ;; =================================================================
 
@@ -545,7 +556,7 @@
 ;; autoload/add-to-list stuff. Good for it!
 ;; =================================================================
 (require 'go-mode-load)
-(add-hook 'go-mode-hook   'auto-complete-mode)
+(add-hook 'go-mode-hook 'auto-complete-mode)
 
 ;; Autocomplete is in the package manager, so we must defer configuration of
 ;; autocomplete until after the package manager has done its thing. It's

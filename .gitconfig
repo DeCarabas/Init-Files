@@ -2,7 +2,8 @@
 	name = John Doty
 	email = jddoty@gmail.com
 [core]
-	editor = emacs
+	editor = c:/chocolatey/bin/emacs.bat
+	autocrlf = true
 [pretty]
 	doty = * %C(bold green)%h%Creset -%C(bold white)%d%Creset %s %C(bold)(%cr)%Creset <%aN>%Creset
 [format]

@@ -21,7 +21,7 @@
  '(c-label-offset -4)
  '(fast-lock-cache-directories (quote ("~/flc-cache")))
  '(fast-lock-minimum-size nil)
- '(fill-column 120)
+ '(fill-column 77)
  '(find-file-run-dired t)
  '(font-lock-global-modes t)
  '(font-lock-maximum-size nil)
@@ -188,7 +188,6 @@
 
 (add-hook 'text-mode-hook 'my-text-mode-hook)
 
-
 ;; =================================================================
 ;; CC-Mode configuration.  Stuff that makes working in IDL, C, and 
 ;; C++ a whole lot more tolerable.
@@ -218,6 +217,7 @@
   (turn-on-auto-fill)
   (flyspell-prog-mode)
   (define-key c-mode-base-map "\C-m" 'c-context-line-break)
+  (set-fill-column 120)
   (local-set-key "}" 'indent-on-closing-bracket))
 
 (add-hook 'c-mode-common-hook 'my-c-common-hook)
@@ -322,6 +322,31 @@
   (indent-region (point-min) (point-max) nil))
 
 ;; (global-set-key (read-kbd-macro "C-i") 'indent-buffer)
+
+;; IDL
+(c-add-style "ms-idl"
+  '("gnu"
+    (c-basic-offset . 4)
+    (c-offsets-alist . ((c                     . c-lineup-C-comments)
+                        (inclass               . +)
+                        (access-label          . -)
+                        (defun-block-intro     . +)
+                        (substatement-open     . 0)
+                        (statement-block-intro . +)
+                        (innamespace           . +)
+                        (statement-case-intro  . +)
+                        (statement-case-open   . 0)
+                        (brace-list-intro      . +)
+                        (substatement          . +)
+                        (arglist-intro         . +)
+                        (arglist-close         . 0)
+                        (statement-case-open   . +)
+                        ))))
+
+(defun my-idl-mode-hook ()
+  (c-set-style "ms-idl"))
+
+(add-hook 'idl-mode-hook    'my-idl-mode-hook)
 
 ;; =================================================================
 ;; C#-Mode configuration.
@@ -473,14 +498,6 @@
 (add-to-list 'auto-mode-alist '("\\.psm1\\'" . powershell-mode))
 
 ;; =================================================================
-;; Go (#golang) Mode
-;;
-;; Note that apparently go-mode is too special for the standard
-;; autoload/add-to-list stuff. Good for it!
-;; =================================================================
-;;(require 'go-mode-load)
-
-;; =================================================================
 ;; LUA Mode
 ;; =================================================================
 
@@ -502,7 +519,9 @@
 ;; =================================================================
 (global-set-key (kbd "C-+")             'hs-toggle-hiding)
 (global-set-key (kbd "C-<kp-add>")      'hs-toggle-hiding)
+(global-set-key (kbd "M-<kp-add>")      'hs-toggle-hiding)
 (global-set-key (kbd "C-<kp-subtract>") 'hs-hide-all)
+(global-set-key (kbd "M-<kp-subtract>") 'hs-hide-all)
 
 (add-hook 'c-mode-common-hook   'hs-minor-mode)
 (add-hook 'emacs-lisp-mode-hook 'hs-minor-mode)
@@ -518,6 +537,23 @@
                                    (overlay-end ov)))))
 
 (setq hs-set-up-overlay 'display-code-line-counts)
+
+;; =================================================================
+;; Go (#golang) Mode
+;;
+;; Note that apparently go-mode is too special for the standard
+;; autoload/add-to-list stuff. Good for it!
+;; =================================================================
+(require 'go-mode-load)
+(add-hook 'go-mode-hook   'auto-complete-mode)
+
+;; Autocomplete is in the package manager, so we must defer configuration of
+;; autocomplete until after the package manager has done its thing. It's
+;; fairly easy, but.
+(eval-after-load "go-mode"
+  `(progn
+     (require 'go-autocomplete)
+     (require 'auto-complete-config)))
 
 ;; =================================================================
 ;; No idea why custom-set-faces is way down here, but OK. I must 

@@ -49,18 +49,18 @@ function shorten-path([string] $path)
     return ($loc -replace '\\(\.?)([^\\]{3})[^\\]*(?=\\)','\$1$2')
 }
 
-$global:SolarizedColors = $false
+$global:SolarizedColors = $true
 
-if ($Host.Name -eq "ConsoleHost")
-{
-    Set-SolarizedColors -Dark
-    $global:SolarizedColors = $true
+# if ($Host.Name -eq "ConsoleHost")
+# {
+#    Set-SolarizedColors -Dark
+#    $global:SolarizedColors = $true
     
     # Doing this screws up the colors in the window, and the only way to 
     # make it look remotely pretty is to do this.
     #
-    cls
-}
+    # cls
+# }
 
 
 function prompt 
@@ -264,5 +264,3 @@ function Convert-HexNumberToGuid($hn)
 function global:bld { build $args }
 function global:bz  { build -PZM $args }
 function global:bcz { build -cPZM $args }
-
-

@@ -556,6 +556,14 @@
      (require 'auto-complete-config)))
 
 ;; =================================================================
+;; Org-Mode
+;; =================================================================
+(require 'org)
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(setq org-log-done t)
+
+;; =================================================================
 ;; No idea why custom-set-faces is way down here, but OK. I must 
 ;; have been thinking of something.
 ;; =================================================================
@@ -565,3 +573,4 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+

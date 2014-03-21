@@ -134,7 +134,9 @@
    go-mode                  ; Go programming language mode
    filladapt                ; Adaptive fills
    flyspell                 ; Spell-checking
+
    flymake                  ; Compiling
+   flycheck                 ; Checking
 
    go-autocomplete          ; Autocomplete for golang
    popup                    ; Pretty completions?
@@ -601,18 +603,14 @@
 
 ;; =================================================================
 ;; Go (#golang) Mode
-;;
-;; Note that apparently go-mode is too special for the standard
-;; autoload/add-to-list stuff. Good for it!
 ;; =================================================================
-;;(require 'go-autocomplete)
-;;(require 'auto-complete-config)
 
 (require 'go-mode)
 (require 'go-autocomplete)
 (require 'auto-complete-config)
 
 (defun my-go-mode-hook ()
+  (flycheck-mode)
   (auto-complete-mode))
 
 (add-hook 'go-mode-hook 'my-go-mode-hook)

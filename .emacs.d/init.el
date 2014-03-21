@@ -133,13 +133,19 @@
    lua-mode                 ; LUA
    go-mode                  ; Go programming language mode
    filladapt                ; Adaptive fills
+   flyspell                 ; Spell-checking
+   flymake                  ; Compiling
 
    go-autocomplete          ; Autocomplete for golang
    popup                    ; Pretty completions?
 
+   ts-mode                  ; Typescript ?
+
    ;; ----- PROVISIONAL (for whatever that's worth)
    auto-complete-nxml       ; Auto-complete for nxml (maybe?)
    ))
+
+
 
 ;; =================================================================
 ;; GET THE PACKAGES
@@ -305,6 +311,8 @@
 
 (add-hook 'c-mode-common-hook 'my-c-common-hook)
 
+;; Don't know why I need this all of a sudden...
+(require 'flymake)
 
 ;; To make working w/ idl files easier:
 (defun idl-insert-guid ()

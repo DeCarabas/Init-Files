@@ -609,6 +609,13 @@
 ;;(require 'auto-complete-config)
 
 (require 'go-mode)
+(require 'go-autocomplete)
+(require 'auto-complete-config)
+
+(defun my-go-mode-hook ()
+  (auto-complete-mode))
+
+(add-hook 'go-mode-hook 'my-go-mode-hook)
 
 ;; =================================================================
 ;; Org-Mode

@@ -51,17 +51,16 @@ function shorten-path([string] $path)
 
 $global:SolarizedColors = $true
 
-# if ($Host.Name -eq "ConsoleHost")
-# {
-#    Set-SolarizedColors -Dark
-#    $global:SolarizedColors = $true
+if ($Host.Name -eq "ConsoleHost")
+{
+   Set-SolarizedColors -Dark
+   $global:SolarizedColors = $true
     
-    # Doing this screws up the colors in the window, and the only way to 
-    # make it look remotely pretty is to do this.
-    #
-    # cls
-# }
-
+   # Doing this screws up the colors in the window, and the only way to 
+   # make it look remotely pretty is to do this.
+   #
+   cls
+}
 
 function prompt 
 { 

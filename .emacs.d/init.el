@@ -106,7 +106,16 @@
 
 ;; Consolas.
 ;;
-(setq my-font-choice "Consolas-11")
+(require 'cl)
+(defun font-existsp (font)
+  (if (null (x-list-fonts font))
+      nil t))
+
+(setq my-font-choice
+      (find-if 
+       'font-existsp
+       '("Consolas-11" "Inconsolata-11")))
+
 ;;
 ;; To obtain new font string, execute eval-expression, and eval this:
 ;;(insert(prin1-to-string(w32-select-font)))

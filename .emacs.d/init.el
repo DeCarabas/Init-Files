@@ -141,6 +141,8 @@
    go-autocomplete          ; Autocomplete for golang
    popup                    ; Pretty completions?
 
+   python-mode              ; Python
+
    ts-mode                  ; Typescript ?
 
    ;; ----- PROVISIONAL (for whatever that's worth)
@@ -256,7 +258,7 @@
 ;; Drunken men who don't know where they are, and no longer care.
 ;; =================================================================
 
-;; Get rid of old versions of files
+;; Get rid of old versions of files; I never liked those #foo# turds.
 (setq delete-old-versions t)
 
 ;; Font Menus
@@ -539,8 +541,7 @@
 (setq auto-mode-alist
       (cons '("\\.py$" . python-mode) auto-mode-alist))
 (setq interpreter-mode-alist
-      (cons '("python" . python-mode)
-            interpreter-mode-alist))
+      (cons '("python" . python-mode) interpreter-mode-alist))
 
 ;; =================================================================
 ;; JavaScript Support

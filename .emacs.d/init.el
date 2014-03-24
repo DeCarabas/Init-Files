@@ -8,7 +8,16 @@
 
 ;; This is my .emacs.
 ;; There are many like it, but this one is mine.
-
+;;
+;; 2014/03/21 - Started to re-work it based on https://github.com/dimitri/emacs-kicker/blob/master/init.el
+;;
+;;              This emacs file has been around for a very long time, and it
+;;              has accumulated a lot of stuff. I'd like to try to clean it
+;;              up a little bit.... 
+;;
+;;              ...turns out that lots of the customization still makes
+;;              sense. But fetching the packages is still the hard part.
+;;
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -41,6 +50,7 @@
  '(org-odd-levels-only t)
  '(package-archives (quote (("gnu" . "http://elpa.gnu.org/packages/") ("marmalade" . "http://marmalade-repo.org/packages/"))))
  '(rmail-mail-new-frame t)
+ '(safe-local-variable-values (quote ((eval ignore-errors "Write-contents-functions is a buffer-local alternative to before-save-hook" (add-hook (quote write-contents-functions) (lambda nil (delete-trailing-whitespace) nil)) (require (quote whitespace)) "Sometimes the mode needs to be toggled off and on." (whitespace-mode 0) (whitespace-mode 1)) (whitespace-line-column . 80) (whitespace-style face trailing lines-tail) (require-final-newline . t))))
  '(scroll-conservatively 1)
  '(scroll-step 1)
  '(sd-user-email "johndoty@microsoft.com")
@@ -56,19 +66,102 @@
  '(x-stretch-cursor nil))
 
 ;; =================================================================
+;; Basic setup -- bootstrap el-get
+;; =================================================================
+
+(require 'cl)
+
+(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
+
+(unless (require 'el-get nil t)
+  (with-current-buffer
+      ;; NOTE: In order for this to work, you need cygwin and the version of
+      ;; openssl from there. (If you see an error like 'symbol's value as
+      ;; variable is void: return:0' then this is what is broken.)
+      (url-retrieve-synchronously
+       "https://github.com/dimitri/el-get/raw/master/el-get-install.el")
+    (end-of-buffer)
+    (copy-to-buffer (get-buffer "*scratch*") (point-min) (point-max))
+    (eval-print-last-sexp)))
+
+;; =================================================================
+;; Custom recipies. Not quire sure how this works.
+;; =================================================================
+(setq
+ el-get-sources
+ '(
+   (:name smex				     ; a better (ido like) M-x
+          :after (progn
+                   (setq smex-save-file "~/.emacs.d/.smex-items")
+                   (global-set-key (kbd "M-x") 'smex)
+                   (global-set-key (kbd "M-X") 'smex-major-mode-commands)))
+   
+   (:name magit				; git meet emacs, and a binding
+          :after (progn
+                   (global-set-key (kbd "C-x C-z") 'magit-status)))
+   
+   (:name goto-last-change	    ; move pointer back to last change
+          :after (progn
+                   ;; when using AZERTY keyboard, consider C-x C-_
+                   (global-set-key (kbd "C-x C-/") 'goto-last-change)))
+
+   (:name auto-complete
+          :after (progn
+                   (require 'auto-complete)))
+   ))
+
+(add-to-list 'el-get-recipe-path "~/.emacs.d/el-get-user/recipes")
+
+;; =================================================================
+;; Custom packages
+;; =================================================================
+
+(setq
+ my:el-get-packages
+ '(
+   el-get				    ; el-get is self-hosting
+   escreen            		; screen for emacs, C-\ C-h
+   switch-window			; takes over C-x o
+   auto-complete			; complete as you type with overlays
+   zencoding-mode			; http://www.emacswiki.org/emacs/ZenCoding
+   ruby-mode                ; Major mode for editing Ruby files
+   color-theme              ; Color themes
+   color-theme-solarized    ; ...Solarized
+   csharp-mode              ; C# mode
+   js2-mode                 ; Improved JS mode
+   PowerShell-Mode          ; Powershell mode
+   lua-mode                 ; LUA
+   go-mode                  ; Go programming language mode
+   filladapt                ; Adaptive fills
+   flyspell                 ; Spell-checking
+
+   flymake                  ; Compiling
+   flycheck                 ; Checking
+
+   go-autocomplete          ; Autocomplete for golang
+   popup                    ; Pretty completions?
+
+   python-mode              ; Python
+
+   ts-mode                  ; Typescript ?
+
+   ;; ----- PROVISIONAL (for whatever that's worth)
+   auto-complete-nxml       ; Auto-complete for nxml (maybe?)
+   ))
+
+
+
+;; =================================================================
+;; GET THE PACKAGES
+;; =================================================================
+(el-get 'sync my:el-get-packages)
+
+;; =================================================================
 ;; Load Path Customization
 ;; =================================================================
 
 ;; add private lisp directory to load-path.
 (add-to-list 'load-path "~/site-lisp")
-
-;; Choose a cc-mode/c#-mode to use. (More on this below)
-(add-to-list 'load-path "~/site-lisp/cc-mode/5.32.3")
-(add-to-list 'load-path "~/site-lisp/cc-mode/csharp-only")
-
-;; Also ruby mode
-(add-to-list 'load-path "c:/ruby/lib")
-(add-to-list 'load-path "c:/ruby/doc/ruby/ruby-1.8.6/misc")
 
 ;; =================================================================
 ;; Initialize Packages
@@ -117,7 +210,16 @@
 
 ;; Consolas.
 ;;
-(setq my-font-choice "Consolas-11")
+(require 'cl)
+(defun font-existsp (font)
+  (if (and (fboundp 'x-list-fonts) (null (x-list-fonts font)))
+      nil t))
+
+(setq my-font-choice
+      (find-if 
+       'font-existsp
+       '("Consolas-11" "Inconsolata-11")))
+
 ;;
 ;; To obtain new font string, execute eval-expression, and eval this:
 ;;(insert(prin1-to-string(w32-select-font)))
@@ -176,7 +278,7 @@
 ;; Drunken men who don't know where they are, and no longer care.
 ;; =================================================================
 
-;; Get rid of old versions of files
+;; Get rid of old versions of files; I never liked those #foo# turds.
 (setq delete-old-versions t)
 
 ;; Font Menus
@@ -233,6 +335,8 @@
 
 (add-hook 'c-mode-common-hook 'my-c-common-hook)
 
+;; Don't know why I need this all of a sudden...
+(require 'flymake)
 
 ;; To make working w/ idl files easier:
 (defun idl-insert-guid ()
@@ -262,23 +366,23 @@
 
 ;; My c-mode stuff:
 (c-add-style "ms-c"
-  '("gnu"
-    (c-basic-offset . 4)
-    (c-offsets-alist . ((c                     . c-lineup-C-comments)
-                        (inclass               . +)
-                        (access-label          . -)
-                        (defun-block-intro     . +)
-                        (substatement-open     . 0)
-                        (statement-block-intro . +)
-                        (innamespace           . +)
-                        (statement-case-intro  . +)
-                        (statement-case-open   . 0)
-                        (brace-list-intro      . +)
-                        (substatement          . +)
-                        (arglist-intro         . +)
-                        (arglist-close         . 0)
-                        (statement-case-open   . +)
-                        ))))
+             '("gnu"
+               (c-basic-offset . 4)
+               (c-offsets-alist . ((c                     . c-lineup-C-comments)
+                                   (inclass               . +)
+                                   (access-label          . -)
+                                   (defun-block-intro     . +)
+                                   (substatement-open     . 0)
+                                   (statement-block-intro . +)
+                                   (innamespace           . +)
+                                   (statement-case-intro  . +)
+                                   (statement-case-open   . 0)
+                                   (brace-list-intro      . +)
+                                   (substatement          . +)
+                                   (arglist-intro         . +)
+                                   (arglist-close         . 0)
+                                   (statement-case-open   . +)
+                                   ))))
 
 (defun my-c-mode-hook ()
   (c-set-style "ms-c"))
@@ -332,27 +436,27 @@
   (interactive)
   (indent-region (point-min) (point-max) nil))
 
-;; (global-set-key (read-kbd-macro "C-i") 'indent-buffer)
+(global-set-key (read-kbd-macro "C-c TAB") 'indent-buffer)
 
 ;; IDL
 (c-add-style "ms-idl"
-  '("gnu"
-    (c-basic-offset . 4)
-    (c-offsets-alist . ((c                     . c-lineup-C-comments)
-                        (inclass               . +)
-                        (access-label          . -)
-                        (defun-block-intro     . +)
-                        (substatement-open     . 0)
-                        (statement-block-intro . +)
-                        (innamespace           . +)
-                        (statement-case-intro  . +)
-                        (statement-case-open   . 0)
-                        (brace-list-intro      . +)
-                        (substatement          . +)
-                        (arglist-intro         . +)
-                        (arglist-close         . 0)
-                        (statement-case-open   . +)
-                        ))))
+             '("gnu"
+               (c-basic-offset . 4)
+               (c-offsets-alist . ((c                     . c-lineup-C-comments)
+                                   (inclass               . +)
+                                   (access-label          . -)
+                                   (defun-block-intro     . +)
+                                   (substatement-open     . 0)
+                                   (statement-block-intro . +)
+                                   (innamespace           . +)
+                                   (statement-case-intro  . +)
+                                   (statement-case-open   . 0)
+                                   (brace-list-intro      . +)
+                                   (substatement          . +)
+                                   (arglist-intro         . +)
+                                   (arglist-close         . 0)
+                                   (statement-case-open   . +)
+                                   ))))
 
 (defun my-idl-mode-hook ()
   (c-set-style "ms-idl"))
@@ -367,29 +471,31 @@
 ;; (autoload 'csharp-mode "cc-mode")
 
 ;; Here is another one that is not.
-(autoload 'csharp-mode "csharp-mode-0.8.6" "Major mode for editing C# code." t)
+;;(autoload 'csharp-mode "csharp-mode-0.8.6" "Major mode for editing C# code." t)
+
+;; We're using the one loaded by the package manager, though.
 
 (c-add-style "ms-csharp"
-   '((c-basic-offset . 4)
-     (c-comment-only-line-offset . (0 . 0))
-     (c-offsets-alist . ((c                     . c-lineup-C-comments)
-                         (inclass               . +)
-                         (namespace-open        . 0)
-                         (namespace-close       . 0)
-                         (innamespace           . +)
-                         (class-open            . 0)
-                         (class-close           . 0)
-                         (defun-open            . 0)
-                         (defun-close           . 0)
-                         (defun-block-intro     . +)
-                         (inline-open           . 0)
-                         (statement-block-intro . +)
-                         (brace-list-intro      . +)
-                         (block-open            . -)
-                         (substatement-open     . 0)
-                         (arglist-intro         . +)
-                         (arglist-close         . 0)
-                         ))))
+             '((c-basic-offset . 4)
+               (c-comment-only-line-offset . (0 . 0))
+               (c-offsets-alist . ((c                     . c-lineup-C-comments)
+                                   (inclass               . +)
+                                   (namespace-open        . 0)
+                                   (namespace-close       . 0)
+                                   (innamespace           . +)
+                                   (class-open            . 0)
+                                   (class-close           . 0)
+                                   (defun-open            . 0)
+                                   (defun-close           . 0)
+                                   (defun-block-intro     . +)
+                                   (inline-open           . 0)
+                                   (statement-block-intro . +)
+                                   (brace-list-intro      . +)
+                                   (block-open            . -)
+                                   (substatement-open     . 0)
+                                   (arglist-intro         . +)
+                                   (arglist-close         . 0)
+                                   ))))
 
 (defun my-csharp-mode-hook ()
   (turn-on-font-lock)
@@ -405,7 +511,6 @@
 ;;
 ;; nxml-mode FTW.
 ;; =================================================================
-(load "~/site-lisp/nxml-mode-20041004/rng-auto.el")
 
 (add-to-list 'auto-mode-alist '("\\.sgml$" . nxml-mode))
 
@@ -456,44 +561,13 @@
 (setq auto-mode-alist
       (cons '("\\.py$" . python-mode) auto-mode-alist))
 (setq interpreter-mode-alist
-      (cons '("python" . python-mode)
-            interpreter-mode-alist))
+      (cons '("python" . python-mode) interpreter-mode-alist))
 
 ;; =================================================================
 ;; JavaScript Support
 ;; =================================================================
 (autoload 'js2-mode "js2" nil t)
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-
-;; =================================================================
-;; Content indexing support.  This is so I can look for neat things.
-;; (Using this instead of etags for now.)
-;; =================================================================
-(load "ci")
-;;
-;; I use the new-and-improved 'smart' mode in ci.exe, so that I am
-;; always searching the right catalog.
-;;
-(setq ci-machine               "EDGE-IDX-02")
-(setq ci-catalog               "Xbox")
-(setq ci-scope                 "\\\\EDGE-IDX-02\\Xbox\\xb_dev\\")
-(setq ci-use-smart-mode        'f)
-(setq ci-define-c++-properties 't)
-;; 
-;; If you want to limit yourself to a fixed catalog...
-;;
-;;(setq ci-catalog  "Code")
-;;(setq ci-scope    "\\")
-;;
-(global-set-key "\M-." 'ci)
-(global-set-key "\M->" 'ci-def)
-
-;; =================================================================
-;; VB Mode
-;; =================================================================
-(autoload 'visual-basic-mode "visual-basic-mode" "Visual Basic mode." t)
-(setq auto-mode-alist (append '(("\\.\\(frm\\|bas\\|cls\\)$" .
-                                visual-basic-mode)) auto-mode-alist))
 
 ;; =================================================================
 ;; Ruby Mode
@@ -511,7 +585,6 @@
 ;; =================================================================
 ;; LUA Mode
 ;; =================================================================
-
 (autoload 'lua-mode "lua-mode" "Lua editing mode." t)
 (add-to-list 'auto-mode-alist '("\\.lua$" . lua-mode))
 (add-to-list 'interpreter-mode-alist '("lua" . lua-mode))
@@ -551,20 +624,24 @@
 
 ;; =================================================================
 ;; Go (#golang) Mode
-;;
-;; Note that apparently go-mode is too special for the standard
-;; autoload/add-to-list stuff. Good for it!
 ;; =================================================================
-(require 'go-mode-load)
-(add-hook 'go-mode-hook 'auto-complete-mode)
+(require 'go-mode)
+(require 'go-autocomplete)
+(require 'auto-complete-config)
 
-;; Autocomplete is in the package manager, so we must defer configuration of
-;; autocomplete until after the package manager has done its thing. It's
-;; fairly easy, but.
-(eval-after-load "go-mode"
-  `(progn
-     (require 'go-autocomplete)
-     (require 'auto-complete-config)))
+(defun my-go-mode-hook ()
+  (flycheck-mode)
+  (auto-complete-mode))
+
+(add-hook 'go-mode-hook 'my-go-mode-hook)
+
+;; =================================================================
+;; Org-Mode
+;; =================================================================
+(require 'org)
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(setq org-log-done t)
 
 ;; =================================================================
 ;; No idea why custom-set-faces is way down here, but OK. I must 
@@ -576,3 +653,4 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+

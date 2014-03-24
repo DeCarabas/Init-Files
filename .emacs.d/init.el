@@ -201,7 +201,7 @@
 ;;
 (require 'cl)
 (defun font-existsp (font)
-  (if (null (x-list-fonts font))
+  (if (and (fboundp 'x-list-fonts) (null (x-list-fonts font)))
       nil t))
 
 (setq my-font-choice

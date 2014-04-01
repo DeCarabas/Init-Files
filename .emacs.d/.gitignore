@@ -10,7 +10,7 @@ places
 .svn
 .DS_Store
 tramp
-
+ac-comphist.dat
 
 ## directories
 backups/*

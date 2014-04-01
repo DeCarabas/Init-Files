@@ -1,6 +1,6 @@
 ;;; init.el --- Where all the magic begins
 ;;
-;; Part of the Emacs Starter Kit
+;; This was cribbed from the Emacs Starter Kit, but is special for doty.
 ;;
 ;; This is the first thing to get loaded.
 ;;

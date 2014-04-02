@@ -473,11 +473,14 @@
 
 (defun my-nxml-hook ()
   (turn-on-auto-fill)
+  (set-fill-column 120)
+
   (local-set-key "\C-m" 'newline-and-indent)
   (local-set-key ">"    'nxml-indent-on-tag-close)
 
   ;; Why does nxml not play well with font lock mode, huh?
-  (local-set-key (read-kbd-macro "C-x f") 'nxml-fontify-buffer))
+  (local-set-key (kbd "<C-return>") 'nxml-complete)
+  (local-set-key (read-kbd-macro "C-x f") 'font-lock-fontify-buffer))
 
 (add-hook 'nxml-mode-hook 'my-nxml-hook)
 

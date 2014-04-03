@@ -86,6 +86,8 @@
 
    'python-mode              ; Python
 
+   'tss                      ; Typescript, ala https://github.com/aki2o/emacs-tss
+
    ;; ----- PROVISIONAL (for whatever that's worth)
    'auto-complete-nxml       ; Auto-complete for nxml (maybe?)
    'magit                    ; Magit?
@@ -576,3 +578,18 @@
 (define-key global-map "\C-ca" 'org-agenda)
 (setq org-log-done t)
 
+
+;; =================================================================
+;; Typescript-Mode
+;; =================================================================
+(autoload 'typescript-mode "typescript" nil t)
+(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
+
+(require 'tss)
+  (setq tss-popup-help-key "C-:")
+  (setq tss-jump-to-definition-key "C->")
+  (tss-config-default)
+(defun my-typescript-hook ()
+)
+
+(add-hook 'typescript-mode-hook 'my-typescript-hook)

@@ -49,9 +49,9 @@ function shorten-path([string] $path)
     return ($loc -replace '\\(\.?)([^\\]{3})[^\\]*(?=\\)','\$1$2')
 }
 
-$global:SolarizedColors = $true
+$global:SolarizedColors = $false
 
-if ($Host.Name -eq "ConsoleHost")
+if (($Host.Name -eq "ConsoleHost") -and ("$env:CMDER_ROOT" -eq ''))
 {
    Set-SolarizedColors -Dark
    $global:SolarizedColors = $true
@@ -66,7 +66,7 @@ function prompt
 { 
     $ok = $?
 
-    if ($Host.Name -eq "ConsoleHost")
+    if ($global:SolarizedColors)
     {
         # Our "theme", as it were. Note that we assume the use of the
         # solarized colors.

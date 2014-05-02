@@ -178,7 +178,7 @@
         (height           . ,jd-frame-height)))
 
 ;; This is just here for playing with things.
-;;(set-frame-font my-font-choice)
+;; (set-frame-font my-font-choice)
 
 ;; COLORZ!
 ;;
@@ -586,10 +586,12 @@
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
 
 (require 'tss)
-  (setq tss-popup-help-key "C-:")
-  (setq tss-jump-to-definition-key "C->")
-  (tss-config-default)
-(defun my-typescript-hook ()
-)
+(setq tss-popup-help-key "C-:")
+(setq tss-jump-to-definition-key "C->")
+(tss-config-default)
 
-(add-hook 'typescript-mode-hook 'my-typescript-hook)
+;; =================================================================
+;; Archive mode for appx
+;; =================================================================
+(add-to-list 'auto-mode-alist '("\\.appx\\'" . archive-mode))
+(add-to-list 'auto-coding-alist '("\\.appx\\'" . no-conversion))

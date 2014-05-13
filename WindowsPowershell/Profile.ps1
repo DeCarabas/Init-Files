@@ -49,19 +49,6 @@ function shorten-path([string] $path)
     return ($loc -replace '\\(\.?)([^\\]{3})[^\\]*(?=\\)','\$1$2')
 }
 
-$global:SolarizedColors = $false
-
-if (($Host.Name -eq "ConsoleHost") -and ("$env:CMDER_ROOT" -eq ''))
-{
-   Set-SolarizedColors -Dark
-   $global:SolarizedColors = $true
-    
-   # Doing this screws up the colors in the window, and the only way to 
-   # make it look remotely pretty is to do this.
-   #
-   cls
-}
-
 function prompt 
 { 
     $ok = $?

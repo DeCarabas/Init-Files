@@ -14,11 +14,7 @@ if ($interactive)
     #
     $env:TERM='msys'
     
-    # Load up the colors and set the dark solarized theme.
-    #
     $profileDir = split-path -parent $Profile
-    Import-Module "$profileDir\Modules\ConsoleColors.psm1"
-    # Set-SolarizedColors -Dark
 
     # Ensure HOME is set properly
     #
@@ -250,3 +246,71 @@ function Convert-HexNumberToGuid($hn)
 function global:bld { build $args }
 function global:bz  { build -PZM $args }
 function global:bcz { build -cPZM $args }
+
+function Get-TFSWorkspace(
+  [string]$path = ((pwd).Path)
+)
+{
+  [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.Client")
+  [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.VersionControl.Client")
+  [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.WorkItemTracking.Client")
+  [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.Build.Client")
+  
+  function InitServerAndWorkspaceFromWSInfo( $wsInfo )
+  {
+    $tfs = New-Object Microsoft.TeamFoundation.Client.TfsTeamProjectCollection( $wsInfo.ServerUri )
+    $versionControlServer = $tfs.GetService([Microsoft.TeamFoundation.VersionControl.Client.VersionControlServer])
+    
+    return @{
+      "BuildServer"= $tfs.GetService([Microsoft.TeamFoundation.Build.Client.IBuildServer]);
+      "VersionControl"=$versionControlServer;
+      "WorkItems"=$tfs.GetService([Microsoft.TeamFoundation.WorkItemTracking.Client.WorkItemStore]);
+      "Workspace"=$versionControlServer.GetWorkspace($wsInfo);
+    }
+  }
+  
+  # is there only 1 workspace in our cache file?  If so, use that one regardless of the hint
+  $workspaceInfos = [Microsoft.TeamFoundation.VersionControl.Client.Workstation]::Current.GetAllLocalWorkspaceInfo()
+  if ($workspaceInfos.Length -eq 1)
+  {
+    InitServerAndWorkspaceFromWSInfo($workspaceInfos[0])
+    return
+  }
+  
+  $current = $path
+  do
+  {
+    $workspaceInfos = [Microsoft.TeamFoundation.VersionControl.Client.Workstation]::Current.GetLocalWorkspaceInfoRecursively($current)
+    if ($workspaceInfos.Length -gt 1)
+    {
+      throw 'More than one workspace matches the workspace hint "{0}": {1}' -f
+      $current, [string]::join(', ', @($workspaceInfos | %{ $_.Name}))
+    }
+    
+    $current = split-path -parent $current
+  } while (($workspaceInfos.Length -ne 1) -and $current)
+  
+  if (-not $workspaceInfos)
+  {
+    throw "Could not figure out a workspace based on $path"
+  }
+  
+  return InitServerAndWorkspaceFromWSInfo( $workspaceInfos[0] )
+}
+
+function Start-IIS(
+  [string]$Path = ".",
+  [string]$Port = "8080",
+  [string]$CLR,
+  [switch]$SysTray,
+  [string]$TraceLevel
+)
+{
+  $iis_args = @("/path:$Path")
+  if ($Port) { $iis_args += @("/port:$Port") }
+  if ($CLR) { $iis_args += @("/clr:$CLR") }
+  if ($SysTray) { $iis_args += @("/systray:true") }
+  if ($TraceLevel) { $iis_args += @("/trace:$TraceLevel") }
+
+  Start-Process -Wait -NoNewWindow -FilePath "${env:ProgramFiles}\IIS Express\iisexpress.exe" -ArgumentList $iis_args
+}

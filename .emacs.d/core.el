@@ -218,10 +218,14 @@
 ;; In addition, make sure various things are working properly with xterm-keys
 ;; on under tmux. (This has been the most reliable way to get putty to send
 ;; the right keystrokes into emacs.)
-(if (getenv "TMUX")
+(defadvice terminal-init-screen
+  ;; The advice is named `tmux', and is run before `terminal-init-screen' runs.
+  (before tmux activate)
+  "Apply xterm keymap, allowing use of keys passed through tmux."
+  (if (getenv "TMUX")
     (let ((map (copy-keymap xterm-function-map)))
-      (set-keymap-parent map (keymap-parent input-decode-map))
-      (set-keymap-parent input-decode-map map)))
+    (set-keymap-parent map (keymap-parent input-decode-map))
+    (set-keymap-parent input-decode-map map))))
 
 ;; =================================================================
 ;; Random Goo.

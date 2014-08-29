@@ -384,7 +384,7 @@
                                    (brace-list-intro      . +)
                                    (substatement          . +)
                                    (arglist-intro         . +)
-                                   (arglist-close         . 0)
+                                   (arglist-close         . +)
                                    (statement-case-open   . +)
                                    ))))
 
@@ -392,6 +392,21 @@
   (c-set-style "ms-idl"))
 
 (add-hook 'idl-mode-hook    'my-idl-mode-hook)
+
+;; http://stackoverflow.com/questions/23553881/emacs-indenting-of-c11-lambda-functions-cc-mode/23553882#23553882
+;; For such a wonderfully small function, it works REALLY REALLY well.
+(defadvice c-lineup-arglist (around my activate)
+  "Improve indentation of continued C++11 lambda function opened as argument."
+  (setq ad-return-value
+        (if (and (equal major-mode 'c++-mode)
+                 (ignore-errors
+                   (save-excursion
+                     (goto-char (c-langelem-pos langelem))
+                     ;; Detect "[...](" or "[...]{". preceded by "," or "(",
+                     ;;   and with unclosed brace.
+                     (looking-at ".*[(,][ \t]*\\[[^]]*\\][ \t]*[({][^}]*$"))))
+            0                           ; no additional indent
+          ad-do-it)))                   ; default behavior
 
 ;; =================================================================
 ;; C#-Mode configuration.
@@ -514,6 +529,12 @@
 (autoload 'powershell-mode "powershell-mode" nil t)
 (add-to-list 'auto-mode-alist '("\\.ps1\\'" . powershell-mode))
 (add-to-list 'auto-mode-alist '("\\.psm1\\'" . powershell-mode))
+
+(defun my-powershell-hook()
+  (set (make-local-variable 'powershell-indent) 2)
+  (set (make-local-variable 'powershell-continuation-indent) 2))
+
+(add-hook 'powershell-mode-hook 'my-powershell-hook)
 
 ;; =================================================================
 ;; LUA Mode

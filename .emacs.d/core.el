@@ -65,9 +65,9 @@
 
 (defvar my-packages
   (list 
-   'switch-window	    ; takes over C-x o
-   'auto-complete	    ; complete as you type with overlays
-   'zencoding-mode  	    ; http://www.emacswiki.org/emacs/ZenCoding
+   'switch-window	         ; takes over C-x o
+   'auto-complete	         ; complete as you type with overlays
+   'zencoding-mode  	     ; http://www.emacswiki.org/emacs/ZenCoding
    'ruby-mode                ; Major mode for editing Ruby files
    'color-theme              ; Color themes...
    'color-theme-solarized    ; ...Solarized
@@ -88,7 +88,16 @@
 
    'tss                      ; Typescript, ala https://github.com/aki2o/emacs-tss
 
-   ;; ----- PROVISIONAL (for whatever that's worth)
+   ;; Clojure stuffs
+   'clojure-mode            
+   'clojure-test-mode
+   'cider
+   'cider-decompile
+   'cider-tracing
+   'ac-nrepl                 ; Autocomplete for Clojure
+
+   'paredit                  ; Also good for lisps?
+
    'auto-complete-nxml       ; Auto-complete for nxml (maybe?)
    'magit                    ; Magit?
    )
@@ -141,7 +150,7 @@
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 
-;; Consolas.
+;; Consolas. (And, to a lesser extent, Inconsolata.)
 ;;
 (require 'cl)
 (defun font-existsp (font)
@@ -205,6 +214,18 @@
 (global-set-key (read-kbd-macro "M-3") 'delete-frame)
 
 (global-set-key (read-kbd-macro "C-x f") 'font-lock-fontify-buffer)
+
+;; In addition, make sure various things are working properly with xterm-keys
+;; on under tmux. (This has been the most reliable way to get putty to send
+;; the right keystrokes into emacs.)
+(defadvice terminal-init-screen
+  ;; The advice is named `tmux', and is run before `terminal-init-screen' runs.
+  (before tmux activate)
+  "Apply xterm keymap, allowing use of keys passed through tmux."
+  (if (getenv "TMUX")
+    (let ((map (copy-keymap xterm-function-map)))
+    (set-keymap-parent map (keymap-parent input-decode-map))
+    (set-keymap-parent input-decode-map map))))
 
 ;; =================================================================
 ;; Random Goo.
@@ -364,7 +385,8 @@
 (defun indent-buffer ()
   "Indent the entire current buffer based on the current mode"
   (interactive)
-  (indent-region (point-min) (point-max) nil))
+  (indent-region (point-min) (point-max))
+  (whitespace-cleanup))
 
 (global-set-key (read-kbd-macro "C-c TAB") 'indent-buffer)
 
@@ -582,11 +604,11 @@
 
 (require 'go-mode)
 (require 'auto-complete-config)
-;(require 'go-autocomplete)
+(require 'go-autocomplete)
 
 (defun my-go-mode-hook ()
   (flycheck-mode)
-  ;(auto-complete-mode)
+  (auto-complete-mode)
   )
 
 (add-hook 'go-mode-hook 'my-go-mode-hook)
@@ -616,3 +638,18 @@
 ;; =================================================================
 (add-to-list 'auto-mode-alist '("\\.appx\\'" . archive-mode))
 (add-to-list 'auto-coding-alist '("\\.appx\\'" . no-conversion))
+
+;; ===
+;; Clojure
+;; ===
+(require 'ac-nrepl)
+(defun my-cider-mode-hook ()
+  ; (paredit-mode)
+  (ac-nrepl-setup)
+  (auto-complete-mode)
+  (cider-turn-on-eldoc-mode)
+  )
+
+(add-hook 'cider-repl-mode-hook 'my-cider-mode-hook)
+(add-hook 'cider-mode-hook 'my-cider-mode-hook)
+(add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)

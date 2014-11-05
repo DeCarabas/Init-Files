@@ -60,7 +60,7 @@
       '(("gnu"         . "http://elpa.gnu.org/packages/")
         ("org"         . "http://orgmode.org/elpa/")
         ("melpa"       . "http://melpa.milkbox.net/packages/")
-        ("marmalade"   . "http://marmalade-repo.org/packages/")))
+        ("marmalade"   . "https://marmalade-repo.org/packages/")))
 (package-initialize)
 
 (defvar my-packages
@@ -84,7 +84,7 @@
    'go-autocomplete          ; Autocomplete for golang
    'popup                    ; Pretty completions?
 
-   ; 'python-mode              ; Python
+   'python-mode              ; Python
 
    'tss                      ; Typescript, ala https://github.com/aki2o/emacs-tss
 

@@ -84,17 +84,9 @@
    'go-autocomplete          ; Autocomplete for golang
    'popup                    ; Pretty completions?
 
-   'python-mode              ; Python
+   ; 'python-mode              ; Python
 
    'tss                      ; Typescript, ala https://github.com/aki2o/emacs-tss
-
-   ;; Clojure stuffs
-   'clojure-mode            
-   'clojure-test-mode
-   'cider
-   'cider-decompile
-   'cider-tracing
-   'ac-nrepl                 ; Autocomplete for Clojure
 
    'paredit                  ; Also good for lisps?
 
@@ -638,18 +630,3 @@
 ;; =================================================================
 (add-to-list 'auto-mode-alist '("\\.appx\\'" . archive-mode))
 (add-to-list 'auto-coding-alist '("\\.appx\\'" . no-conversion))
-
-;; ===
-;; Clojure
-;; ===
-(require 'ac-nrepl)
-(defun my-cider-mode-hook ()
-  ; (paredit-mode)
-  (ac-nrepl-setup)
-  (auto-complete-mode)
-  (cider-turn-on-eldoc-mode)
-  )
-
-(add-hook 'cider-repl-mode-hook 'my-cider-mode-hook)
-(add-hook 'cider-mode-hook 'my-cider-mode-hook)
-(add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)

@@ -1,6 +1,6 @@
 [user]
 	name = John Doty
-	email = jddoty@gmail.com
+	email = john@d0ty.me
 [core]
 	editor = c:/chocolatey/bin/emacs.bat
 	autocrlf = true

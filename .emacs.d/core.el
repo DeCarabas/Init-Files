@@ -33,6 +33,9 @@
 ;;              sense. But fetching the packages is still the hard part.
 ;;
 
+;; Make sure we start the server?
+;;
+(server-start)
 
 ;; =================================================================
 ;; Various bits of path setup (init-dir is defined by init.el)
@@ -234,7 +237,7 @@
 (require 'filladapt)
 (setq-default filladapt-mode t)
 
-;; Also, ido mode. Which is the BEST thing. Really.
+;; We're going to stop doing ido and start doing helm, maybe?
 (require 'ido)
 
 ;; =================================================================

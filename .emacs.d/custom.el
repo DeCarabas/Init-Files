@@ -43,6 +43,8 @@
  '(transient-mark-mode t)
  '(truncate-lines t)
  '(use-dialog-box nil)
+ '(web-mode-code-indent-offset 2)
+ '(web-mode-css-indent-offset 2)
  '(which-func-mode-global t nil (which-func))
  '(widget-editable-list-gui t)
  '(x-stretch-cursor nil))

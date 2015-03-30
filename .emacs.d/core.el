@@ -40,7 +40,6 @@
 ;; =================================================================
 ;; Various bits of path setup (init-dir is defined by init.el)
 ;; =================================================================
-(add-to-list 'load-path init-dir)
 (setq autoload-file (concat init-dir "loaddefs.el"))
 (setq package-user-dir (concat init-dir "elpa"))
 (setq custom-file (concat init-dir "custom.el"))
@@ -79,7 +78,6 @@
    'color-theme-solarized    ; ...Solarized
    'csharp-mode              ; C# mode
    'js2-mode                 ; Improved JS mode
-   'powershell-mode          ; Powershell mode
    'lua-mode                 ; LUA
    'go-mode                  ; Go programming language mode
    'flyspell                 ; Spell-checking

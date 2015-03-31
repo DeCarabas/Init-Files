@@ -323,3 +323,19 @@ function Get-ProductById(
   $x = Invoke-WebRequest "https://displaycatalog.md.mp.microsoft.com/products/$($ProductId)?fieldsTemplate=Full&market=$($Market)&language=$($Language)" -Headers @{ 'MS-Contract-Version'=5; }
   return convertfrom-json $x.Content
 }
+
+function Get-ProductByContentId(
+  [string]$ContentId,
+  [switch]$Raw,
+  [string]$Market='US',
+  [string]$Language='en-US')
+{
+  $x = Invoke-WebRequest "https://displaycatalog.md.mp.microsoft.com/skus?rank=ContentId&count=1&alternateId=$($ContentId)&market=$($Market)&language=$($Language)&fieldsTemplate=Full" -Headers @{ 'MS-Contract-Version'=5; }
+  if ($Raw) {
+    return $x.Content
+  } else {
+    $y = convertfrom-json $x.Content
+    return $y.DisplaySkuSearchResult.Products[0]
+  }
+}
+

@@ -3,4 +3,5 @@
 .config/fish/generated_completions
 _viminfo
 .emacs.d/url/cookies
-
+.emacs.d/ido.last
+.emacs.d/server

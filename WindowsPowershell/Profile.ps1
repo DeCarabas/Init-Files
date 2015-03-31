@@ -314,3 +314,12 @@ function Start-IIS(
 
   Start-Process -Wait -NoNewWindow -FilePath "${env:ProgramFiles}\IIS Express\iisexpress.exe" -ArgumentList $iis_args
 }
+
+function Get-ProductById(
+  [string]$ProductId,
+  [string]$Market='US',
+  [string]$Language='en-US')
+{
+  $x = Invoke-WebRequest "https://displaycatalog.md.mp.microsoft.com/products/$($ProductId)?fieldsTemplate=Full&market=$($Market)&language=$($Language)" -Headers @{ 'MS-Contract-Version'=5; }
+  return convertfrom-json $x.Content
+}

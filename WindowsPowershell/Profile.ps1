@@ -13,7 +13,7 @@ if ($interactive)
     # Make MSYS based things work correctly (most importantly, msysgit)
     #
     $env:TERM='msys'
-    
+
     $profileDir = split-path -parent $Profile
 
     # Ensure HOME is set properly
@@ -21,7 +21,7 @@ if ($interactive)
     $env:Home = [Environment]::GetFolderPath("Personal")
     set-variable -name HOME -value (resolve-path $env:Home) -force
     (get-psprovider FileSystem).Home = $HOME
-    
+
     # Add the right things to the path
     #
     $env:Path = "$env:windir\Microsoft.NET\Framework64;" + $env:Path
@@ -35,9 +35,9 @@ if ($interactive)
 }
 
 # Based on http://winterdom.com/2008/08/mypowershellprompt
-function shorten-path([string] $path) 
+function shorten-path([string] $path)
 {
-    $loc = $path.Replace($HOME, '~') 
+    $loc = $path.Replace($HOME, '~')
     # remove prefix for UNC paths
     $loc = $loc -replace '^[^:]+::', ''
     # make path shorter like tabs in Vim,
@@ -45,8 +45,8 @@ function shorten-path([string] $path)
     return ($loc -replace '\\(\.?)([^\\]{3})[^\\]*(?=\\)','\$1$2')
 }
 
-function prompt 
-{ 
+function prompt
+{
     $ok = $?
 
     if ($global:SolarizedColors)
@@ -61,12 +61,12 @@ function prompt
     }
     else
     {
-        $cdelim = [ConsoleColor]::Gray 
+        $cdelim = [ConsoleColor]::Gray
         $chost = [ConsoleColor]::Green
         $cloc = $csym = [ConsoleColor]::Gray
-        if (-not $ok) { $csym = [ConsoleColor]::Red; }        
+        if (-not $ok) { $csym = [ConsoleColor]::Red; }
     }
-   
+
     write-host "$([char]0x0A7) " -n -f $csym
     write-host ([net.dns]::GetHostName()) -n -f $chost
     write-host ' {' -n -f $cdelim
@@ -139,17 +139,17 @@ function ConvertFrom-EKB($text)
         $type = $reader.ReadInt16()
         $length = $reader.ReadInt32()
         $data = $reader.ReadBytes($length)
-        
+
         switch($type){
-            1 { 
-                $ekb.EscrowedKey = ConvertFrom-KeyType($data) 
+            1 {
+                $ekb.EscrowedKey = ConvertFrom-KeyType($data)
                 break
             }
             2 {
                 $ekb.KeyID = [System.Text.Encoding]::UTF8.GetString($data)
                 if ($ekb.KeyID.Length -eq 32) {
                     $kid = $ekb.KeyID
-                    $gah = @() 
+                    $gah = @()
                     while ($kid.Length) {
                         $gah += @([Byte]::Parse($kid.Substring(0,2), "HexNumber"))
                         $kid = $kid.Substring(2)
@@ -158,15 +158,15 @@ function ConvertFrom-EKB($text)
                 }
                 break
             }
-            3 { 
+            3 {
                 $ekb.EscrowingKeyType = ConvertFrom-KeyType($data)
                 break
             }
-            4 { 
+            4 {
                 $ekb.EscrowingKeyID = [System.Text.Encoding]::UTF8.GetString($data)
                 break
             }
-            5 { 
+            5 {
                 $ekb.EscrowMethod = switch([BitConverter]::ToInt16($data, 0)){
                     1 { "RSAEncrypt_OAEP_SHA256"; break; }
                     2 { "AESKeyWrap"; break; }
@@ -175,11 +175,11 @@ function ConvertFrom-EKB($text)
                 }
                 break
             }
-            6 { 
+            6 {
                 $ekb.CustomData = $data
                 break
             }
-            7 { 
+            7 {
                 $ekb.EscrowBlob = $data
                 break
             }
@@ -210,12 +210,12 @@ function Save-Change($ChangeNumber, $Description)
     if (!$Description) { $Description = "Change-$ChangeNumber" }
 
     $PackPath = Resolve-Path "~\dpk"
-    if (!(Test-Path $PackPath)) 
+    if (!(Test-Path $PackPath))
     {
         mkdir $PackPath | out-null
     }
 
-    # Get Unique number...    
+    # Get Unique number...
     $Date = Get-Date
     $Prefix = "$($Date.Year).$($Date.Month.ToString('00')).$($Date.Day.ToString('00'))"
 
@@ -226,16 +226,16 @@ function Save-Change($ChangeNumber, $Description)
         $idx = [int]($items[0].FullName.Split('.')[3]) + 1
         $Index = $idx.ToString('00')
     }
-    
+
     $PackFile = "$PackPath\$Prefix.$Index.$Description.dpk"
     Write-Host "Packing change '$ChangeNumber' to '$PackFile'..."
-    sdp pack $PackFile -c $ChangeNumber 
+    sdp pack $PackFile -c $ChangeNumber
 }
 
 function Convert-HexNumberToGuid($hn)
 {
-    $gah = @() 
-    while ($hn.Length) 
+    $gah = @()
+    while ($hn.Length)
     {
         $gah += @([Byte]::Parse($hn.Substring(0,2), "HexNumber"))
         $hn = $hn.Substring(2)
@@ -255,12 +255,12 @@ function Get-TFSWorkspace(
   [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.VersionControl.Client")
   [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.WorkItemTracking.Client")
   [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.TeamFoundation.Build.Client")
-  
+
   function InitServerAndWorkspaceFromWSInfo( $wsInfo )
   {
     $tfs = New-Object Microsoft.TeamFoundation.Client.TfsTeamProjectCollection( $wsInfo.ServerUri )
     $versionControlServer = $tfs.GetService([Microsoft.TeamFoundation.VersionControl.Client.VersionControlServer])
-    
+
     return @{
       "BuildServer"= $tfs.GetService([Microsoft.TeamFoundation.Build.Client.IBuildServer]);
       "VersionControl"=$versionControlServer;
@@ -268,7 +268,7 @@ function Get-TFSWorkspace(
       "Workspace"=$versionControlServer.GetWorkspace($wsInfo);
     }
   }
-  
+
   # is there only 1 workspace in our cache file?  If so, use that one regardless of the hint
   $workspaceInfos = [Microsoft.TeamFoundation.VersionControl.Client.Workstation]::Current.GetAllLocalWorkspaceInfo()
   if ($workspaceInfos.Length -eq 1)
@@ -276,7 +276,7 @@ function Get-TFSWorkspace(
     InitServerAndWorkspaceFromWSInfo($workspaceInfos[0])
     return
   }
-  
+
   $current = $path
   do
   {
@@ -286,15 +286,15 @@ function Get-TFSWorkspace(
       throw 'More than one workspace matches the workspace hint "{0}": {1}' -f
       $current, [string]::join(', ', @($workspaceInfos | %{ $_.Name}))
     }
-    
+
     $current = split-path -parent $current
   } while (($workspaceInfos.Length -ne 1) -and $current)
-  
+
   if (-not $workspaceInfos)
   {
     throw "Could not figure out a workspace based on $path"
   }
-  
+
   return InitServerAndWorkspaceFromWSInfo( $workspaceInfos[0] )
 }
 
@@ -315,27 +315,154 @@ function Start-IIS(
   Start-Process -Wait -NoNewWindow -FilePath "${env:ProgramFiles}\IIS Express\iisexpress.exe" -ArgumentList $iis_args
 }
 
-function Get-ProductById(
-  [string]$ProductId,
-  [string]$Market='US',
-  [string]$Language='en-US')
-{
-  $x = Invoke-WebRequest "https://displaycatalog.md.mp.microsoft.com/products/$($ProductId)?fieldsTemplate=Full&market=$($Market)&language=$($Language)" -Headers @{ 'MS-Contract-Version'=5; }
-  return convertfrom-json $x.Content
-}
 
-function Get-ProductByContentId(
-  [string]$ContentId,
+function Find-CatalogProducts(
+  [string]$CatalogQuery,
   [switch]$Raw,
   [string]$Market='US',
   [string]$Language='en-US')
 {
-  $x = Invoke-WebRequest "https://displaycatalog.md.mp.microsoft.com/skus?rank=ContentId&count=1&alternateId=$($ContentId)&market=$($Market)&language=$($Language)&fieldsTemplate=Full" -Headers @{ 'MS-Contract-Version'=5; }
+  $local:ErrorActionPreference = "Stop"
+
+  $hdr = @{ 'MS-CV'="LxFzVzL+JUG/kPoc.103"; }
+  $x = Invoke-WebRequest "https://displaycatalog.md.mp.microsoft.com/v6/products?rank=ProductSearchApps&query=$CatalogQuery&market=$Market&languages=$Language&fieldsTemplate=Full" -Headers $hdr
   if ($Raw) {
     return $x.Content
   } else {
     $y = convertfrom-json $x.Content
-    return $y.DisplaySkuSearchResult.Products[0]
+    return $y.DisplayProductSearchResult.Products
   }
 }
 
+
+function Get-CatalogProduct(
+  [string]$ProductId = $null,
+  [string]$PackageFamilyName = $null,
+  [string]$ContentId = $null,
+  [string]$LegacyPhoneProductId = $null,
+  [string]$LegacyDesktopProductId = $null,
+  [switch]$Raw,
+  [string]$Market='US',
+  [string]$Language='en-US')
+{
+  $hdr = @{ 'MS-CV'="LxFzVzL+JUG/kPoc.99"; }
+  $local:ErrorActionPreference = "Stop"
+
+  if ($ProductId) {
+    $url = "https://displaycatalog.md.mp.microsoft.com/v6.0/products/$($ProductId)?fieldsTemplate=Full&market=$($Market)&languages=$($Language)"
+  } elseif ($PackageFamilyName) {
+    $url = "https://displaycatalog.md.mp.microsoft.com/v6.0/products?rank=PackageFamilyName&alternateId=$($PackageFamilyName)&market=$($Market)&languages=$($Language)&fieldsTemplate=Full"
+  } elseif ($LegacyPhoneProductId) {
+    $url = "https://displaycatalog.md.mp.microsoft.com/v6.0/products?rank=LegacyWindowsPhoneProductId&alternateId=$($LegacyPhoneProductId)&market=$($Market)&languages=$($Language)&fieldsTemplate=Full"
+  } elseif ($LegacyDesktopProductId) {
+    $url = "https://displaycatalog.md.mp.microsoft.com/v6.0/skus?rank=WuCategoryId&alternateId=$($LegacyDesktopProductId)&market=$($Market)&languages=$($Language)&fieldsTemplate=Full"
+  } else {
+    $url = "https://displaycatalog.md.mp.microsoft.com/v6.0/skus?rank=ContentId&alternateId=$($ContentId)&market=$($Market)&languages=$($Language)&fieldsTemplate=Full"
+  }
+
+  write-host $url
+
+  $x = Invoke-WebRequest $url -Headers $hdr
+  if ($Raw) {
+    return $x.Content
+  } else {
+    $y = convertfrom-json $x.Content
+    if ($y.Product) {
+      return $y.Product
+    } elseif ($y.DisplayProductSearchResult) {
+      return $y.DisplayProductSearchResult.Products[0]
+    } elseif ($y.DisplaySkuSearchResult) {
+      return $y.DisplaySkuSearchResult.Products[0]
+    }
+  }
+}
+
+function Get-MSATicket()
+{
+  $local:ErrorActionPreference = "Stop"
+
+  # ALL OF THIS IS NECESSARY. (By trial and error.)
+  $req = [Windows.Security.Authentication.OnlineId.OnlineIdServiceTicketRequest,Windows.Security.Authentication.OnlineId,ContentType=WindowsRuntime]::new("www.microsoft.com", "mbi_ssl")
+
+  $x = [System.Collections.Generic.List[Windows.Security.Authentication.OnlineId.OnlineIdServiceTicketRequest]]::new()
+  $x.Add($req)
+
+  $authn = new-object "Windows.Security.Authentication.OnlineId.OnlineIdAuthenticator,Windows.Security.Authentication.OnlineId,ContentType=WindowsRuntime"
+  $authn.ApplicationId = "{d6d5a677-0872-4ab0-9442-bb792fce85c5}"
+  $ar = $authn.AuthenticateUserAsync($x,  [Windows.Security.Authentication.OnlineId.CredentialPromptType]::DoNotPrompt)
+  while ($ar.Status -ne [Windows.Foundation.AsyncStatus]::Completed) { start-sleep -milliseconds 10 }
+  return $ar.GetResults().Tickets.Value
+}
+
+function Get-Entitlements(
+  $ProductTypes=@('Application','Durable','Consumable','UnmanagedConsumable'),
+  $ProductId=$null,
+  $SkuId=$null,
+  $Market='US'
+)
+{
+  $local:ErrorActionPreference = "Stop"
+  $ticket = Get-MSATicket
+
+  $req = @{
+    'beneficiaries' = @(
+      @{
+        'identityType' = 'msa';
+        'identityValue' = Get-MSATicket;
+        'localTicketReference' = 'yes';
+      }
+    );
+    'productTypes' = $ProductTypes;
+    'market' = $Market;
+    'validityType' = 'Valid';
+  }
+
+  if ($ProductId) {
+    $psid = @{ 'productId' = $ProductId; }
+    if ($SkuId) {
+      $psid.skuId = $SkuId
+    }
+    $req.productSkuIds = @( $psid )
+  }
+
+  #TODO: Make the pipeline work for you, man
+
+  $its = @()
+  $ct = $null
+  do {
+    if ($ct) {
+      $req.continuationToken = $ct
+    }
+    $rj = ConvertTo-Json $req
+
+    $result = Invoke-WebRequest -Uri "https://collections.md.mp.microsoft.com/v6.0/collections/query" -Body $rj -ContentType "application/json" -Method "POST"
+
+    $resp = ConvertFrom-Json $result.Content
+    $its = $its + $resp.items
+    $ct = $resp.continuationToken
+  } while($ct)
+
+  return $its
+}
+
+function Revoke-Order(
+  $OrderId,
+  $Market='US',
+  $Language='en-us'
+)
+{
+  $local:ErrorActionPreference = "Stop"
+  $ticket = Get-MSATicket
+
+  $req = @{
+    'clientContext' = @{
+      'client' = 'DotyPowershellExtravaganza'
+    };
+    'orderState' = 'Refunded';
+  }
+
+  $headers = @{ "Authorization"="WLID1.0=$ticket"; }
+  $body = ConvertTo-Json $req
+  $result = Invoke-WebRequest -Uri "https://purchase.md.mp.microsoft.com/v6.0/users/me/orders/$OrderId" -Body $body -ContentType "application/json" -Method "PUT" -Headers $headers
+  return ConvertFrom-Json $result.Content
+}

@@ -15,7 +15,7 @@
 ;;              real initialization file, for code and junk. init.el just
 ;;              does the package load stuff now. Don't know why package init
 ;;              was built to work like it does in emacs 24, but oh well.
-;; 
+;;
 ;;              Abandoning el-get for ELPA; ELPA seems more official and more
 ;;              like what I want anyhow. Of course, this needs the
 ;;              two-file-dance, but it's worth it. Much of the infrastructure
@@ -71,10 +71,10 @@
 (package-initialize)
 
 (defvar my-packages
-  (list 
-   'switch-window	         ; takes over C-x o
-   'auto-complete	         ; complete as you type with overlays
-   'zencoding-mode  	     ; http://www.emacswiki.org/emacs/ZenCoding
+  (list
+   'switch-window            ; takes over C-x o
+   'auto-complete            ; complete as you type with overlays
+   'zencoding-mode           ; http://www.emacswiki.org/emacs/ZenCoding
    'ruby-mode                ; Major mode for editing Ruby files
    'color-theme              ; Color themes...
    'color-theme-solarized    ; ...Solarized
@@ -115,7 +115,7 @@
 (add-to-list 'load-path "~/site-lisp")
 
 ;; =================================================================
-;; EMACS general look and feel 
+;; EMACS general look and feel
 ;; =================================================================
 
 ;; If you want to have comments displayed in italics,
@@ -156,7 +156,7 @@
       nil t))
 
 (setq my-font-choice
-      (find-if 
+      (find-if
        'font-existsp
        '("Consolas-11" "Inconsolata-11")))
 
@@ -254,17 +254,17 @@
 (add-hook 'text-mode-hook 'my-text-mode-hook)
 
 ;; =================================================================
-;; CC-Mode configuration.  Stuff that makes working in IDL, C, and 
+;; CC-Mode configuration.  Stuff that makes working in IDL, C, and
 ;; C++ a whole lot more tolerable.
 ;; =================================================================
 ;;
-;; Hey, I know what!  Let's force enter to indent the line we're adding, 
+;; Hey, I know what!  Let's force enter to indent the line we're adding,
 ;; automatically!  That might be nifty!
 ;;
 ;; Turn on fill mode for c-mode, and put c-context-line-break in
 ;; for newlines.
 ;;
-;; Also, to get the neat vs-like behaviour, indent the block when you 
+;; Also, to get the neat vs-like behaviour, indent the block when you
 ;; type a closing curly brace...
 ;;
 (defun indent-on-closing-bracket (arg)
@@ -346,6 +346,7 @@
 
 (defun my-c-mode-hook ()
   (c-set-style "ms-c"))
+
 (add-hook 'c-mode-hook    'my-c-mode-hook)
 (add-hook 'c++-mode-hook  'my-c-mode-hook)
 (add-hook 'java-mode-hook 'my-c-mode-hook)
@@ -363,10 +364,10 @@
 
 (defun add-todo-keyword (word)
   (font-lock-add-keywords 'c++-mode
-                          (list (list (concat "\\<\\(" word "\\):") 
+                          (list (list (concat "\\<\\(" word "\\):")
                                       1 font-lock-warning-face t)))
   (font-lock-add-keywords 'c-mode
-                          (list (list (concat "\\<\\(" word "\\):") 
+                          (list (list (concat "\\<\\(" word "\\):")
                                       1 font-lock-warning-face t)))
   (font-lock-add-keywords 'java-mode
                           (list (list (concat "\\<\\(" word "\\):")
@@ -443,7 +444,7 @@
 ;; C#-Mode configuration.
 ;; =================================================================
 
-;; zbrad's csharp mode is integrated with cc-mode.  
+;; zbrad's csharp mode is integrated with cc-mode.
 ;; (autoload 'csharp-mode "cc-mode")
 
 ;; Here is another one that is not.
@@ -490,7 +491,7 @@
 
 (add-to-list 'auto-mode-alist '("\\.sgml$" . nxml-mode))
 
-(setq auto-mode-alist 
+(setq auto-mode-alist
       (append '(
                 ("\\.sgml$"    . nxml-mode)
                 ("\\.idd$"     . nxml-mode)

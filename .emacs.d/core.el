@@ -27,15 +27,17 @@
 ;;
 ;;              This emacs file has been around for a very long time, and it
 ;;              has accumulated a lot of stuff. I'd like to try to clean it
-;;              up a little bit.... 
+;;              up a little bit....
 ;;
 ;;              ...turns out that lots of the customization still makes
 ;;              sense. But fetching the packages is still the hard part.
 ;;
 
-;; Make sure we start the server?
-;;
-(server-start)
+;; =================================================================
+;; First, before anything... server goop.
+;; =================================================================
+(require 'server)
+(if (not (server-running-p)) (server-start))
 
 ;; =================================================================
 ;; Various bits of path setup (init-dir is defined by init.el)

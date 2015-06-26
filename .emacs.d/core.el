@@ -240,6 +240,9 @@
 ;; We're going to stop doing ido and start doing helm, maybe?
 (require 'ido)
 
+;; Cleanup all the whitespaces.
+(add-hook 'before-save-hook 'whitespace-cleanup)
+
 ;; =================================================================
 ;; Text mode configuration.
 ;; =================================================================

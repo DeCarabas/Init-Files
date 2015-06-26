@@ -313,8 +313,16 @@
 
 (add-to-list 'auto-mode-alist '("\\.h\\'"   . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.w\\'"   . c++-mode))
+
+(defun my-makefile-hook ()
+  (setq-local indent-tabs-mode nil) ;; Makefiles haven't needed tabs for a long time.
+  )
+
+(add-hook 'makefile-mode-hook 'my-makefile-hook)
+
 (add-to-list 'auto-mode-alist '("makefile"  . makefile-mode))
 (add-to-list 'auto-mode-alist '("sources"   . makefile-mode))
+(add-to-list 'auto-mode-alist '("dirs"      . makefile-mode))
 
 ;; My c-mode stuff:
 (c-add-style "ms-c"

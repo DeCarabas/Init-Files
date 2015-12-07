@@ -708,10 +708,9 @@
   (interactive)
   (dolist
       (ev (split-string
-           (shell-command-to-string "cmd /c \" \"%ProgramFiles(x86)%\\Microsoft Visual Studio 14.0\\Common7\\Tools\\VsDevCmd.bat\" && set \"")
+           (shell-command-to-string "cmd /c \" \"%ProgramFiles(x86)%\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat\" x64 && set \"")
            "[\n]+"))
     (letrec ((spev (split-string ev "="))
              (vn (car spev))
              (vv (cadr spev)))
       (setenv vn vv))))
-  )

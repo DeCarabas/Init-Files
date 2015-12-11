@@ -6,11 +6,11 @@ function new-link($link, $target) {
   }
 }
 
-$ignore = @(".gitignore", "setup.ps1")
+$ignore = @(".gitignore", "setup.ps1", "setup.cmd")
 
 Get-ChildItem . |
   ? { !$ignore.Contains($_.Name) } |
-  % { 
+  % {
     $l = split-path -leaf $_.FullName
     $p = split-path -parent (split-path -parent $_.FullName)
     $t = join-path $p $l
@@ -18,6 +18,6 @@ Get-ChildItem . |
     if (test-path $t) {
       remove-item -recurse -force $t
     }
-    
+
     new-link $t $($_.FullName)
   }

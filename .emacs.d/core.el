@@ -576,15 +576,6 @@
 (add-to-list 'interpreter-mode-alist '("lua" . lua-mode))
 
 ;; =================================================================
-;; Source Depot
-;; =================================================================
-(load-library "sd")
-(setq sd-use-sdconfig-exclusively t)
-(sd-set-sd-executable "c:/tools/x86/sd.exe")
-(setq sd-global-config "sd.ini")
-(setenv "SDCONFIG" "sd.ini")
-
-;; =================================================================
 ;; Code Folding
 ;; =================================================================
 (global-set-key (kbd "C-+")             'hs-toggle-hiding)

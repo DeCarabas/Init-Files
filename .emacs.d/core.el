@@ -344,8 +344,27 @@
                                    (statement-case-open   . +)
                                    ))))
 
+(c-add-style "fb-c"
+             '("gnu"
+               (c-basic-offset . 2)
+               (c-offsets-alist . ((c                     . c-lineup-C-comments)
+                                   (inclass               . +)
+                                   (access-label          . -)
+                                   (defun-block-intro     . +)
+                                   (substatement-open     . 0)
+                                   (statement-block-intro . +)
+                                   (innamespace           . +)
+                                   (statement-case-intro  . +)
+                                   (statement-case-open   . 0)
+                                   (brace-list-intro      . +)
+                                   (substatement          . +)
+                                   (arglist-intro         . +)
+                                   (arglist-close         . 0)
+                                   (statement-case-open   . +)
+                                   ))))
+
 (defun my-c-mode-hook ()
-  (c-set-style "ms-c"))
+  (c-set-style "fb-c"))
 
 (add-hook 'c-mode-hook    'my-c-mode-hook)
 (add-hook 'c++-mode-hook  'my-c-mode-hook)
@@ -641,12 +660,13 @@
 (add-to-list 'auto-coding-alist '("\\.appx\\'" . no-conversion))
 
 ;; =================================================================
-;; Some build stuff; I swiped this from handmade-hero
+;; Some build stuff; I swiped this from handmade-hero. Good for
+;; unibuild setups.
 ;; =================================================================
 (when (featurep 'w32)
   (setq doty-makescript "build.bat"))
 
-(when (featurep 'aquamacs)
+(when (featurep 'cocoa)
   (setq doty-makescript "./build.macosx"))
 
 (when (featurep 'x)
@@ -705,3 +725,6 @@
              (vn (car spev))
              (vv (cadr spev)))
       (setenv vn vv))))
+
+;; Dirty hack but it makes tramp run faster
+(setq vc-handled-backends nil)

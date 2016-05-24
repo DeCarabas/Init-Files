@@ -151,14 +151,18 @@
 ;; Consolas. (And, to a lesser extent, Inconsolata.)
 ;;
 (require 'cl)
-(defun font-existsp (font)
-  (if (and (fboundp 'x-list-fonts) (null (x-list-fonts font)))
-      nil t))
+(defun font-candidate (&rest fonts)
+  "Return existing font which first match."
+  (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
 
 (setq my-font-choice
-      (find-if
-       'font-existsp
-       '("Consolas-11" "Inconsolata-11")))
+      (font-candidate
+       "Input Mono-12:weight=light"
+       "Consolas-10"
+       "Inconsolata-11"))
+
+;; This is just here for playing with things.
+;; (set-frame-font my-font-choice)
 
 ;;
 ;; To obtain new font string, execute eval-expression, and eval this:
@@ -183,9 +187,6 @@
       `((font             . ,my-font-choice)
         (width            . 91)
         (height           . ,jd-frame-height)))
-
-;; This is just here for playing with things.
-;; (set-frame-font my-font-choice)
 
 ;; COLORZ!
 ;;

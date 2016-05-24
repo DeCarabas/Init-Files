@@ -243,6 +243,11 @@
 ;; Cleanup all the whitespaces.
 (add-hook 'before-save-hook 'whitespace-cleanup)
 
+;; On MacOS we need to specify the path to aspell explicitly because PATH is
+;; a broken pile of garbage.
+(if (file-executable-p "/usr/local/bin/aspell")
+    (setq ispell-program-name "/usr/local/bin/aspell"))
+
 ;; =================================================================
 ;; Text mode configuration.
 ;; =================================================================

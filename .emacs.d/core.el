@@ -569,6 +569,12 @@
 (setq interpreter-mode-alist
       (cons '("python" . python-mode) interpreter-mode-alist))
 
+(defun my-python-hook ()
+  (flycheck-mode)
+  )
+
+(add-hook 'python-mode-hook 'my-python-hook)
+
 ;; =================================================================
 ;; JavaScript Support
 ;; =================================================================

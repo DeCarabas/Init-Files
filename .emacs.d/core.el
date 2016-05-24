@@ -87,6 +87,8 @@
    'flymake                  ; Compiling
    'flycheck                 ; Checking
 
+   'exec-path-from-shell     ; Fix path on MacOS
+
    'go-autocomplete          ; Autocomplete for golang
    'popup                    ; Pretty completions?
 
@@ -244,10 +246,9 @@
 ;; Cleanup all the whitespaces.
 (add-hook 'before-save-hook 'whitespace-cleanup)
 
-;; On MacOS we need to specify the path to aspell explicitly because PATH is
-;; a broken pile of garbage.
-(if (file-executable-p "/usr/local/bin/aspell")
-    (setq ispell-program-name "/usr/local/bin/aspell"))
+;; Fix path loading on MacOS X
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-initialize))
 
 ;; =================================================================
 ;; Text mode configuration.

@@ -731,5 +731,7 @@
              (vv (cadr spev)))
       (setenv vn vv))))
 
-;; Dirty hack but it makes tramp run faster
-(setq vc-handled-backends nil)
+;; Dirty hack but it makes tramp run faster. This is for when you're experimenting with
+;; using emacs locally but editing files on your FB devserver. Honestly I think you're
+;; better off just using Nuclide and leaving emacs for other stuff.
+;; (setq vc-handled-backends nil)

@@ -283,7 +283,17 @@
   (flyspell-prog-mode)
   (define-key c-mode-base-map "\C-m" 'c-context-line-break)
   (set-fill-column 120)
-  (local-set-key "}" 'indent-on-closing-bracket))
+  (local-set-key "}" 'indent-on-closing-bracket)
+
+  ; Handle super-tabbify (ctrl-' expands; my fingers are to used to TAB doing
+  ; the right thing in emacs for me to change at this point.
+  (setq dabbrev-case-replace t)
+  (setq dabbrev-case-fold-search t)
+  (setq dabbrev-upcase-means-case-search t)
+
+  ; Abbrevation expansion
+  (abbrev-mode 1)
+  (define-key c-mode-base-map [(control ?')] 'dabbrev-expand))
 
 (add-hook 'c-mode-common-hook 'my-c-common-hook)
 
@@ -315,7 +325,7 @@
 (add-to-list 'auto-mode-alist '("\\.w\\'"   . c++-mode))
 
 (defun my-makefile-hook ()
-  (setq-local indent-tabs-mode nil) ;; Makefiles haven't needed tabs for a long time.
+  (setq-local indent-tabs-mode t) ;; Makefiles haven't needed tabs for a long time.
   )
 
 (add-hook 'makefile-mode-hook 'my-makefile-hook)
@@ -578,11 +588,11 @@
 ;; =================================================================
 ;; Source Depot
 ;; =================================================================
-(load-library "sd")
-(setq sd-use-sdconfig-exclusively t)
-(sd-set-sd-executable "c:/tools/x86/sd.exe")
-(setq sd-global-config "sd.ini")
-(setenv "SDCONFIG" "sd.ini")
+;; (load-library "sd")
+;; (setq sd-use-sdconfig-exclusively t)
+;; (sd-set-sd-executable "c:/tools/x86/sd.exe")
+;; (setq sd-global-config "sd.ini")
+;; (setenv "SDCONFIG" "sd.ini")
 
 ;; =================================================================
 ;; Code Folding
@@ -713,4 +723,5 @@
     (letrec ((spev (split-string ev "="))
              (vn (car spev))
              (vv (cadr spev)))
-      (setenv vn vv))))
+      (setenv vn vv)))
+  (message "Set visual studio environment variables"))

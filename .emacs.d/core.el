@@ -54,9 +54,12 @@
 (defconst engshare-master (getenv "ADMIN_SCRIPTS"))
 (if (file-exists-p (expand-file-name "master.emacs" master-dir))
     (load-library (expand-file-name "master.emacs" master-dir))
-  (load-library (expand-file-name "master.emacs" engshare-master)))
+  (if (file-exists-p (expand-file-name "master.emacs" engshare-master))
+      (load-library (expand-file-name "master.emacs" engshare-master))))
 
-(if (string-match-p ".+\.prn1\.facebook\.com" (getenv "HOSTNAME"))
+(if (and
+     (getenv "HOSTNAME")
+     (string-match-p ".+\.prn1\.facebook\.com" (getenv "HOSTNAME")))
     (setq url-proxy-services
           '(("no_proxy" . "^\\(localhost\\|10.*\\)")
             ("http" . "fwdproxy:8080")

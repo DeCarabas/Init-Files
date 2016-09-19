@@ -31,13 +31,29 @@
  '(org-hide-leading-stars t)
  '(org-odd-levels-only t)
  '(rmail-mail-new-frame t)
- '(safe-local-variable-values (quote ((eval ignore-errors "Write-contents-functions is a buffer-local alternative to before-save-hook" (add-hook (quote write-contents-functions) (lambda nil (delete-trailing-whitespace) nil)) (require (quote whitespace)) "Sometimes the mode needs to be toggled off and on." (whitespace-mode 0) (whitespace-mode 1)) (whitespace-line-column . 80) (whitespace-style face trailing lines-tail) (require-final-newline . t))))
+ '(safe-local-variable-values
+   (quote
+    ((eval ignore-errors "Write-contents-functions is a buffer-local alternative to before-save-hook"
+           (add-hook
+            (quote write-contents-functions)
+            (lambda nil
+              (delete-trailing-whitespace)
+              nil))
+           (require
+            (quote whitespace))
+           "Sometimes the mode needs to be toggled off and on."
+           (whitespace-mode 0)
+           (whitespace-mode 1))
+     (whitespace-line-column . 80)
+     (whitespace-style face trailing lines-tail)
+     (require-final-newline . t))))
  '(scroll-conservatively 1)
  '(scroll-step 1)
  '(sd-user-email "johndoty@microsoft.com")
  '(sd-verbose nil)
  '(show-paren-mode t)
  '(show-paren-style (quote parenthesis))
+ '(solarized-termcolors 256)
  '(tab-width 4)
  '(tags-revert-without-query t)
  '(transient-mark-mode t)
@@ -45,6 +61,7 @@
  '(use-dialog-box nil)
  '(web-mode-code-indent-offset 2)
  '(web-mode-css-indent-offset 2)
+ '(web-mode-enable-sql-detection t)
  '(which-func-mode-global t nil (which-func))
  '(widget-editable-list-gui t)
  '(x-stretch-cursor nil))

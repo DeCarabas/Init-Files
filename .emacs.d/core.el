@@ -48,6 +48,21 @@
 (load custom-file)
 
 ;; =================================================================
+;; FB STUFF
+;; =================================================================
+(defconst master-dir (getenv "LOCAL_ADMIN_SCRIPTS"))
+(defconst engshare-master (getenv "ADMIN_SCRIPTS"))
+(if (file-exists-p (expand-file-name "master.emacs" master-dir))
+    (load-library (expand-file-name "master.emacs" master-dir))
+  (load-library (expand-file-name "master.emacs" engshare-master)))
+
+(if (string-match-p ".+\.prn1\.facebook\.com" (getenv "HOSTNAME"))
+    (setq url-proxy-services
+          '(("no_proxy" . "^\\(localhost\\|10.*\\)")
+            ("http" . "fwdproxy:8080")
+            ("https" . "fwdproxy:8080"))))
+
+;; =================================================================
 ;; Common stuff that's needed once
 ;; =================================================================
 (require 'cl)
@@ -78,6 +93,7 @@
    'ruby-mode                ; Major mode for editing Ruby files
    'color-theme              ; Color themes...
    'color-theme-solarized    ; ...Solarized
+   'color-theme-monokai      ; ...Monokai
    'csharp-mode              ; C# mode
    'js2-mode                 ; Improved JS mode
    'lua-mode                 ; LUA
@@ -195,8 +211,8 @@
 (if (display-graphic-p)
     (progn
       (require 'color-theme)
-      (require 'color-theme-solarized)
-      (color-theme-solarized)))
+      (require 'color-theme-monokai)
+      (color-theme-monokai)))
 
 ;; Modeline format:
 (display-time-mode -1)

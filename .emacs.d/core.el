@@ -214,8 +214,8 @@
 (if (display-graphic-p)
     (progn
       (require 'color-theme)
-      (require 'color-theme-monokai)
-      (color-theme-monokai)))
+      (require 'color-theme-solarized)
+      (color-theme-solarized)))
 
 ;; Modeline format:
 (display-time-mode -1)

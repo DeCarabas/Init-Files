@@ -52,18 +52,31 @@
 ;; =================================================================
 (defconst master-dir (getenv "LOCAL_ADMIN_SCRIPTS"))
 (defconst engshare-master (getenv "ADMIN_SCRIPTS"))
-(if (file-exists-p (expand-file-name "master.emacs" master-dir))
-    (load-library (expand-file-name "master.emacs" master-dir))
-  (if (file-exists-p (expand-file-name "master.emacs" engshare-master))
-      (load-library (expand-file-name "master.emacs" engshare-master))))
+(defconst is-fb-environment
+  (or (file-exists-p (expand-file-name "master.emacs" master-dir))
+      (file-exists-p (expand-file-name "master.emacs" engshare-master))))
 
-(if (and
-     (getenv "HOSTNAME")
-     (string-match-p ".+\.prn1\.facebook\.com" (getenv "HOSTNAME")))
-    (setq url-proxy-services
-          '(("no_proxy" . "^\\(localhost\\|10.*\\)")
-            ("http" . "fwdproxy:8080")
-            ("https" . "fwdproxy:8080"))))
+(if is-fb-environment
+    (progn
+      ;; Load the master.emacs file which apparently has stuff in it I want?
+      (if (file-exists-p (expand-file-name "master.emacs" master-dir))
+          (load-library (expand-file-name "master.emacs" master-dir))
+        (if (file-exists-p (expand-file-name "master.emacs" engshare-master))
+            (load-library (expand-file-name "master.emacs" engshare-master))))
+
+      ;; Set up the proxy for working properly from the devserver.
+      (if (and
+           (getenv "HOSTNAME")
+           (string-match-p ".+\.prn1\.facebook\.com" (getenv "HOSTNAME")))
+          (setq url-proxy-services
+                '(("no_proxy" . "^\\(localhost\\|10.*\\)")
+                  ("http" . "fwdproxy:8080")
+                  ("https" . "fwdproxy:8080"))))
+
+      ;; Hack support for stuff in www
+      (setq hack-for-hiphop-root (expand-file-name "www" "~"))
+      (load "/home/engshare/tools/hack-for-hiphop")
+      ))
 
 ;; =================================================================
 ;; Common stuff that's needed once

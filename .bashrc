@@ -112,3 +112,5 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
+
+[ -s "/Users/doty/.dnx/dnvm/dnvm.sh" ] && . "/Users/doty/.dnx/dnvm/dnvm.sh" # Load dnvm

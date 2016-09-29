@@ -61,10 +61,13 @@
 ;; Packages
 ;; =================================================================
 (setq package-archives
-      '(("gnu"         . "http://elpa.gnu.org/packages/")
+      '(
+        ("gnu"         . "http://elpa.gnu.org/packages/")
         ("org"         . "http://orgmode.org/elpa/")
         ("melpa"       . "http://melpa.org/packages/")
-        ("marmalade"   . "https://marmalade-repo.org/packages/")))
+        ;("marmalade"   . "http://marmalade-repo.org/packages/")
+        )
+      )
 (when (< emacs-major-version 24)
   ;; For important compatibility libraries like cl-lib
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
@@ -86,6 +89,8 @@
 
    'flymake                  ; Compiling
    'flycheck                 ; Checking
+
+   'exec-path-from-shell     ; Fix path on MacOS
 
    'go-autocomplete          ; Autocomplete for golang
    'popup                    ; Pretty completions?
@@ -151,14 +156,18 @@
 ;; Consolas. (And, to a lesser extent, Inconsolata.)
 ;;
 (require 'cl)
-(defun font-existsp (font)
-  (if (and (fboundp 'x-list-fonts) (null (x-list-fonts font)))
-      nil t))
+(defun font-candidate (&rest fonts)
+  "Return existing font which first match."
+  (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
 
 (setq my-font-choice
-      (find-if
-       'font-existsp
-       '("Consolas-11" "Inconsolata-11")))
+      (font-candidate
+       "Input Mono-12:weight=light"
+       "Consolas-10"
+       "Inconsolata-11"))
+
+;; This is just here for playing with things.
+;; (set-frame-font my-font-choice)
 
 ;;
 ;; To obtain new font string, execute eval-expression, and eval this:
@@ -184,16 +193,13 @@
         (width            . 91)
         (height           . ,jd-frame-height)))
 
-;; This is just here for playing with things.
-;; (set-frame-font my-font-choice)
-
 ;; COLORZ!
 ;;
 (if (display-graphic-p)
     (progn
       (require 'color-theme)
       (require 'color-theme-solarized)
-      (color-theme-solarized-light)))
+      (color-theme-solarized)))
 
 ;; Modeline format:
 (display-time-mode -1)
@@ -242,6 +248,10 @@
 
 ;; Cleanup all the whitespaces.
 (add-hook 'before-save-hook 'whitespace-cleanup)
+
+;; Fix path loading on MacOS X
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-initialize))
 
 ;; =================================================================
 ;; Text mode configuration.
@@ -354,8 +364,27 @@
                                    (statement-case-open   . +)
                                    ))))
 
+(c-add-style "fb-c"
+             '("gnu"
+               (c-basic-offset . 2)
+               (c-offsets-alist . ((c                     . c-lineup-C-comments)
+                                   (inclass               . +)
+                                   (access-label          . -)
+                                   (defun-block-intro     . +)
+                                   (substatement-open     . 0)
+                                   (statement-block-intro . +)
+                                   (innamespace           . +)
+                                   (statement-case-intro  . +)
+                                   (statement-case-open   . 0)
+                                   (brace-list-intro      . +)
+                                   (substatement          . +)
+                                   (arglist-intro         . +)
+                                   (arglist-close         . 0)
+                                   (statement-case-open   . +)
+                                   ))))
+
 (defun my-c-mode-hook ()
-  (c-set-style "ms-c"))
+  (c-set-style "fb-c"))
 
 (add-hook 'c-mode-hook    'my-c-mode-hook)
 (add-hook 'c++-mode-hook  'my-c-mode-hook)
@@ -553,6 +582,12 @@
 (setq interpreter-mode-alist
       (cons '("python" . python-mode) interpreter-mode-alist))
 
+(defun my-python-hook ()
+  (flycheck-mode)
+  )
+
+(add-hook 'python-mode-hook 'my-python-hook)
+
 ;; =================================================================
 ;; JavaScript Support
 ;; =================================================================
@@ -660,12 +695,13 @@
 (add-to-list 'auto-coding-alist '("\\.appx\\'" . no-conversion))
 
 ;; =================================================================
-;; Some build stuff; I swiped this from handmade-hero
+;; Some build stuff; I swiped this from handmade-hero. Good for
+;; unibuild setups.
 ;; =================================================================
 (when (featurep 'w32)
   (setq doty-makescript "build.bat"))
 
-(when (featurep 'aquamacs)
+(when (featurep 'cocoa)
   (setq doty-makescript "./build.macosx"))
 
 (when (featurep 'x)

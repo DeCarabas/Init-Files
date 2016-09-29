@@ -35,3 +35,5 @@ alias l='ls -CF'
 if [ -f ~/.zsh_aliases ]; then
     . ~/.zsh_aliases
 fi
+
+[ -s "/Users/doty/.dnx/dnvm/dnvm.sh" ] && . "/Users/doty/.dnx/dnvm/dnvm.sh" # Load dnvm

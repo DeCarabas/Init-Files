@@ -1,6 +1,8 @@
 .config/fish/fish_history
 .config/fish/fishd*
 .config/fish/generated_completions
+.config/xbuild/pkgconfig-cache-2.xml
+.config/.isolated-storage
 _viminfo
 .emacs.d/url/cookies
 .emacs.d/ido.last

@@ -28,6 +28,7 @@
  '(js2-strict-trailing-comma-warning nil)
  '(make-backup-files nil)
  '(mouse-buffer-menu-mode-mult 0)
+ '(org-export-backends (quote (ascii html icalendar latex md)))
  '(org-hide-leading-stars t)
  '(org-odd-levels-only t)
  '(rmail-mail-new-frame t)

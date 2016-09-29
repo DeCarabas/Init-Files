@@ -108,7 +108,6 @@
    'ruby-mode                ; Major mode for editing Ruby files
    'color-theme              ; Color themes...
    'color-theme-solarized    ; ...Solarized
-   'color-theme-monokai      ; ...Monokai
    'csharp-mode              ; C# mode
    'js2-mode                 ; Improved JS mode
    'lua-mode                 ; LUA

@@ -4,16 +4,23 @@
 (require 'json)
 (require 'url)
 
-;; TODO: Make this actually a variable.
-(defconst doty-quip-api-key
-  "UU9RQU1BcTNCdU0=|1506626374|H13gPE9bkDAkHQp9PtTlX8i78wYvtSBwEJgLAuChnXs=")
+;; Customization groups
+(defgroup quip-api nil
+  "Customization options for using the Quip API")
+
+(defcustom quip-api-key nil
+  "Your API key for Quip. Get it from https://fb.quip.com/api/personal-token"
+  :type 'string)
 
 (defun quip-invoke-json (path method params)
   "Submit a request to the Quip API. Returns the parsed JSON from the response."
+  (if (not quip-api-key)
+      (error "The custom variable quip-api-key is undefined.
+Use custom-set-variable to set it before using quip."))
   (let
       ((url (concat "https://platform.quip.com/1/" path))
        (url-request-method method)
-       (url-request-extra-headers `(("Authorization" . ,(concat "Bearer " doty-quip-api-key))
+       (url-request-extra-headers `(("Authorization" . ,(concat "Bearer " quip-api-key))
                                     ("Content-Type" . "application/x-www-form-urlencoded")))
        (url-request-data
         (mapconcat (lambda (pair) (format "%s=%s" (car pair) (url-hexify-string (cdr pair))))

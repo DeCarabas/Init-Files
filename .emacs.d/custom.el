@@ -31,6 +31,8 @@
  '(org-export-backends (quote (ascii html icalendar latex md)))
  '(org-hide-leading-stars t)
  '(org-odd-levels-only t)
+ '(quip-api-key
+   "UU9RQU1BcTNCdU0=|1506626374|H13gPE9bkDAkHQp9PtTlX8i78wYvtSBwEJgLAuChnXs=")
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values
    (quote

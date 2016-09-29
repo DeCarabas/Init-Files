@@ -48,6 +48,33 @@
 (load custom-file)
 
 ;; =================================================================
+;; FB STUFF
+;; =================================================================
+(defconst master-dir (getenv "LOCAL_ADMIN_SCRIPTS"))
+(defconst engshare-master (getenv "ADMIN_SCRIPTS"))
+(defconst is-fb-environment
+  (or (file-exists-p (expand-file-name "master.emacs" master-dir))
+      (file-exists-p (expand-file-name "master.emacs" engshare-master))))
+
+(if is-fb-environment
+    (progn
+      ;; Load the master.emacs file which apparently has stuff in it I want?
+      (if (file-exists-p (expand-file-name "master.emacs" master-dir))
+          (load-library (expand-file-name "master.emacs" master-dir))
+        (if (file-exists-p (expand-file-name "master.emacs" engshare-master))
+            (load-library (expand-file-name "master.emacs" engshare-master))))
+
+      ;; Set up the proxy for working properly from the devserver.
+      (if (and
+           (getenv "HOSTNAME")
+           (string-match-p ".+\.prn1\.facebook\.com" (getenv "HOSTNAME")))
+          (setq url-proxy-services
+                '(("no_proxy" . "^\\(localhost\\|10.*\\)")
+                  ("http" . "fwdproxy:8080")
+                  ("https" . "fwdproxy:8080"))))
+      ))
+
+;; =================================================================
 ;; Common stuff that's needed once
 ;; =================================================================
 (require 'cl)
@@ -81,6 +108,7 @@
    'ruby-mode                ; Major mode for editing Ruby files
    'color-theme              ; Color themes...
    'color-theme-solarized    ; ...Solarized
+   'color-theme-monokai      ; ...Monokai
    'csharp-mode              ; C# mode
    'js2-mode                 ; Improved JS mode
    'lua-mode                 ; LUA
@@ -153,56 +181,64 @@
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 
-;; Consolas. (And, to a lesser extent, Inconsolata.)
+;; Modeline format:
+(display-time-mode -1)
+
+;; ================================================================
+;; Fonts and windows and the like, only if graphics.
+;; ================================================================
+;;
+;; (I added this because for some reason on 2016-09-26 my emacs started
+;; segfaulting on my devserver when it called find-font, and I'll be damned
+;; if I'm going to debug it.)
 ;;
 (require 'cl)
-(defun font-candidate (&rest fonts)
-  "Return existing font which first match."
-  (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
-
-(setq my-font-choice
-      (font-candidate
-       "Input Mono-12:weight=light"
-       "Consolas-10"
-       "Inconsolata-11"))
-
-;; This is just here for playing with things.
-;; (set-frame-font my-font-choice)
-
-;;
-;; To obtain new font string, execute eval-expression, and eval this:
-;;(insert(prin1-to-string(w32-select-font)))
-;; This will show the required string in the scratch buffer.
-
-(setq jd-frame-height
-      (cond ((> (display-pixel-height) 900) 60)
-            ((> (display-pixel-height) 768) 48)
-            ('t 40)))
-
-;; frame settings.  default-frame-alist controls what a default frame
-;; looks like.
-(setq default-frame-alist
-      `((font             . ,my-font-choice)
-        (width            . 91)
-        (height           . ,jd-frame-height)
-        ,@default-frame-alist))
-
-;; initial-frame-alist controls what the first frame looks like.
-(setq initial-frame-alist
-      `((font             . ,my-font-choice)
-        (width            . 91)
-        (height           . ,jd-frame-height)))
-
-;; COLORZ!
-;;
 (if (display-graphic-p)
     (progn
+      ;; Consolas. (And, to a lesser extent, Inconsolata.)
+      ;;
+      (defun font-candidate (&rest fonts)
+        "Return existing font which first match."
+        (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
+
+      (setq my-font-choice
+            (font-candidate
+             "Input Mono-12:weight=light"
+             "Consolas-10"
+             "Inconsolata-11"))
+
+      ;; This is just here for playing with things.
+      ;; (set-frame-font my-font-choice)
+
+      ;;
+      ;; To obtain new font string, execute eval-expression, and eval this:
+      ;;(insert(prin1-to-string(w32-select-font)))
+      ;; This will show the required string in the scratch buffer.
+
+      (setq jd-frame-height
+            (cond ((> (display-pixel-height) 900) 60)
+                  ((> (display-pixel-height) 768) 48)
+                  ('t 40)))
+
+      ;; frame settings.  default-frame-alist controls what a default frame
+      ;; looks like.
+      (setq default-frame-alist
+            `((font             . ,my-font-choice)
+              (width            . 91)
+              (height           . ,jd-frame-height)
+              ,@default-frame-alist))
+
+      ;; initial-frame-alist controls what the first frame looks like.
+      (setq initial-frame-alist
+            `((font             . ,my-font-choice)
+              (width            . 91)
+              (height           . ,jd-frame-height)))
+
+      ;; COLORZ!
+      ;;
       (require 'color-theme)
       (require 'color-theme-solarized)
       (color-theme-solarized)))
-
-;; Modeline format:
-(display-time-mode -1)
 
 ;; =================================================================
 ;; FUN WITH KEY BINDINGS!  YAAAAYYY!!!
@@ -384,7 +420,7 @@
                                    ))))
 
 (defun my-c-mode-hook ()
-  (c-set-style "fb-c"))
+  (c-set-style (if is-fb-environment "fb-c" "ms-c")))
 
 (add-hook 'c-mode-hook    'my-c-mode-hook)
 (add-hook 'c++-mode-hook  'my-c-mode-hook)
@@ -761,3 +797,45 @@
              (vv (cadr spev)))
       (setenv vn vv)))
   (message "Set visual studio environment variables"))
+
+;; =================================================================
+;; PHP stuff
+;; =================================================================
+(if is-fb-environment
+    (progn
+      ;; Hack support for stuff in www
+      (setq hack-for-hiphop-root (expand-file-name "www" "~"))
+      (load "/home/engshare/tools/hack-for-hiphop")
+
+      (load-library (expand-file-name "emacs-packages/hh-client.el" master-dir))
+      (require 'hh-client)
+
+      (defun my-fb-php-hook ()
+        (global-set-key (kbd "M-.") 'hh-client-find-definition))
+      (add-hook 'php-mode-hook 'my-fb-php-hook)
+      ))
+
+(if is-fb-environment
+    (progn
+
+      (flycheck-define-checker python-fb-flake8
+        "A Python syntax and style checker using FB's Flake8."
+        :command ("flake8")
+        :standard-input f
+        :error-filter (lambda (errors)
+                        (let ((errors (flycheck-sanitize-errors errors)))
+                          (seq-do #'flycheck-flake8-fix-error-level errors)
+                          errors))
+        :error-patterns
+        ((warning line-start
+                  "stdin:" line ":" (optional column ":") " "
+                  (id (one-or-more (any alpha)) (one-or-more digit)) " "
+                  (message (one-or-more not-newline))
+                  line-end))
+        :modes python-mode)
+
+      (add-hook 'python-mode-hook
+                (lambda ()
+                  (flycheck-select-checker `python-fb-flake8)
+                  ))
+      ))

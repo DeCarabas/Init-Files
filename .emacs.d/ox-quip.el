@@ -29,4 +29,24 @@
       (let ((new-quip-id (org-quip-publish-quip content)))
         (org-quip-put-thread-identifier new-quip-id)))))
 
+;;
+
+;; Org-to-quip filter:
+;;
+;; So, Quip HTML is a very specific, strict subset of HTML. Quip has only a
+;; few different block types, and it can't do certain things (like
+;; multi-paragraph list items.)
+;;
+;; Structure:
+;;  - A list of top-level items:
+;;
+;;    Headlines: <h1> <h2> <h3>
+;;    Block quotes: <blockquote>
+;;    Code block: <pre>
+;;
+;;    <h3>
+;;
+;;
+
+
 (provide 'ox-quip)

@@ -1,38 +1,39 @@
-;; =================================================================
-;; Filename: .emacs
-;; Emacs initialization file
-;; John Doty
-;;
-;; john@d0ty.me
-;; =================================================================
-
-;; This is my .emacs.
-;; There are many like it, but this one is mine.
-;;
-;;  (Well, it *was*.... but then I adopted starter-kit, because why not?)
-;;
-;; 2014/03/31 - Well, it isn't actually named .emacs anymore; but this is the
-;;              real initialization file, for code and junk. init.el just
-;;              does the package load stuff now. Don't know why package init
-;;              was built to work like it does in emacs 24, but oh well.
-;;
-;;              Abandoning el-get for ELPA; ELPA seems more official and more
-;;              like what I want anyhow. Of course, this needs the
-;;              two-file-dance, but it's worth it. Much of the infrastructure
-;;              is based on starter-kit:
-;;
-;;                  https://github.com/eschulte/emacs24-starter-kit/blob/master/starter-kit.org
-;;
-;; 2014/03/21 - Started to re-work it based on https://github.com/dimitri/emacs-kicker/blob/master/init.el
-;;
-;;              This emacs file has been around for a very long time, and it
-;;              has accumulated a lot of stuff. I'd like to try to clean it
-;;              up a little bit....
-;;
-;;              ...turns out that lots of the customization still makes
-;;              sense. But fetching the packages is still the hard part.
-;;
-
+;;; core.el -- Summary
+;;; Emacs initialization file
+;;; john@d0ty.me
+;;;
+;;; Commentary:
+;;; This is my .emacs.
+;;; There are many like it, but this one is mine.
+;;;
+;;; 2016/12/03 - Just a note: been using Emacs far more heavily as my core
+;;;              editor @ FB for some reason.  (They push a set of packages
+;;;              called Nuclide for the Atom editor, but I stopped using
+;;;              that.)
+;;;
+;;; 2014/03/31 - Well, it isn't actually named .emacs anymore; but this is
+;;;              the real initialization file, for code and junk.  init.el
+;;;              just does the package load stuff now.  Don't know why
+;;;              package init was built to work like it does in Emacs 24, but
+;;;              oh well.
+;;;
+;;;              Abandoning el-get for ELPA; ELPA seems more official and
+;;;              more like what I want anyhow.  Of course, this needs the
+;;;              two-file-dance, but it's worth it.  Much of the
+;;;              infrastructure is based on starter-kit:
+;;;
+;;;                  https://github.com/eschulte/emacs24-starter-kit/blob/master/starter-kit.org
+;;;
+;;; 2014/03/21 - Started to re-work it based on https://github.com/dimitri/emacs-kicker/blob/master/init.el
+;;;
+;;;              This Emacs file has been around for a very long time, and it
+;;;              has accumulated a lot of stuff.  I'd like to try to clean it
+;;;              up a little bit....
+;;;
+;;;              ...turns out that lots of the customization still makes
+;;;              sense.  But fetching the packages is still the hard part.
+;;;
+;;; Code:
 ;; =================================================================
 ;; First, before anything... server goop.
 ;; =================================================================
@@ -88,13 +89,10 @@
 ;; Packages
 ;; =================================================================
 (setq package-archives
-      '(
-        ("gnu"         . "http://elpa.gnu.org/packages/")
+      '(("gnu"         . "http://elpa.gnu.org/packages/")
         ("org"         . "http://orgmode.org/elpa/")
         ("melpa"       . "http://melpa.org/packages/")
-        ;("marmalade"   . "http://marmalade-repo.org/packages/")
-        )
-      )
+        ("marmalade"   . "https://marmalade-repo.org/packages/")))
 (when (< emacs-major-version 24)
   ;; For important compatibility libraries like cl-lib
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
@@ -102,34 +100,30 @@
 
 (defvar my-packages
   (list
-   'switch-window            ; takes over C-x o
    'auto-complete            ; complete as you type with overlays
-   'zencoding-mode           ; http://www.emacswiki.org/emacs/ZenCoding
-   'ruby-mode                ; Major mode for editing Ruby files
+   'auto-complete-nxml       ; Auto-complete for nxml
    'color-theme              ; Color themes...
+   'color-theme-monokai      ; ...Monokai
    'color-theme-solarized    ; ...Solarized
    'csharp-mode              ; C# mode
-   'js2-mode                 ; Improved JS mode
-   'lua-mode                 ; LUA
-   'go-mode                  ; Go programming language mode
-   'flyspell                 ; Spell-checking
-
-   'flymake                  ; Compiling
-   'flycheck                 ; Checking
-
    'exec-path-from-shell     ; Fix path on MacOS
-
+   'flycheck                 ; Checking
+   'flymake                  ; Compiling
+   'flyspell                 ; Spell-checking
    'go-autocomplete          ; Autocomplete for golang
+   'go-mode                  ; Go programming language mode
+   'js2-mode                 ; Improved JS mode
+   'json-mode                ; JSON mode
+   'lua-mode                 ; LUA
+   'magit                    ; Magit! SO GOOD.
+   'paredit                  ; Also good for lisps.
    'popup                    ; Pretty completions?
-
    'python-mode              ; Python
-
+   'ruby-mode                ; Major mode for editing Ruby files
+   'switch-window            ; takes over C-x o
    'tss                      ; Typescript, ala https://github.com/aki2o/emacs-tss
-
-   'paredit                  ; Also good for lisps?
-
-   'auto-complete-nxml       ; Auto-complete for nxml (maybe?)
-   'magit                    ; Magit?
+   'web-mode                 ; Mixed mode web editing
+   'zencoding-mode           ; http://www.emacswiki.org/emacs/ZenCoding
    )
   "Libraries that should be installed by default.")
 
@@ -176,7 +170,6 @@
 (blink-cursor-mode 0)
 
 ;; No tool bars! No menu bars! I don't use that stuff anyway.
-;;
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 
@@ -231,13 +224,7 @@
       (setq initial-frame-alist
             `((font             . ,my-font-choice)
               (width            . 91)
-              (height           . ,jd-frame-height)))
-
-      ;; COLORZ!
-      ;;
-      (require 'color-theme)
-      (require 'color-theme-solarized)
-      (color-theme-solarized)))
+              (height           . ,jd-frame-height)))))
 
 ;; =================================================================
 ;; FUN WITH KEY BINDINGS!  YAAAAYYY!!!
@@ -328,17 +315,7 @@
   (flyspell-prog-mode)
   (define-key c-mode-base-map "\C-m" 'c-context-line-break)
   (set-fill-column 120)
-  (local-set-key "}" 'indent-on-closing-bracket)
-
-  ; Handle super-tabbify (ctrl-' expands; my fingers are to used to TAB doing
-  ; the right thing in emacs for me to change at this point.
-  (setq dabbrev-case-replace t)
-  (setq dabbrev-case-fold-search t)
-  (setq dabbrev-upcase-means-case-search t)
-
-  ; Abbrevation expansion
-  (abbrev-mode 1)
-  (define-key c-mode-base-map [(control ?')] 'dabbrev-expand))
+  (local-set-key "}" 'indent-on-closing-bracket))
 
 (add-hook 'c-mode-common-hook 'my-c-common-hook)
 
@@ -370,7 +347,7 @@
 (add-to-list 'auto-mode-alist '("\\.w\\'"   . c++-mode))
 
 (defun my-makefile-hook ()
-  (setq-local indent-tabs-mode t) ;; Makefiles haven't needed tabs for a long time.
+  (setq-local indent-tabs-mode nil) ;; Makefiles haven't needed tabs for a long time.
   )
 
 (add-hook 'makefile-mode-hook 'my-makefile-hook)
@@ -608,6 +585,50 @@
 (add-hook 'nxml-mode-hook 'my-nxml-hook)
 
 ;; =================================================================
+;; Flycheck
+;; =================================================================
+(require 'flycheck)
+;; disable jshint since we prefer eslint checking
+(setq-default flycheck-disabled-checkers
+              (append flycheck-disabled-checkers
+                      '(javascript-jshint)))
+
+;; use eslint with web-mode for jsx files
+(flycheck-add-mode 'javascript-eslint 'web-mode)
+
+;; customize flycheck temp file prefix
+(setq-default flycheck-temp-prefix ".flycheck")
+
+;; disable json-jsonlist checking for json files
+(setq-default flycheck-disabled-checkers
+              (append flycheck-disabled-checkers
+                      '(json-jsonlist)))
+
+(flycheck-define-checker python-fb-flake8
+  "A Python syntax and style checker using FB's Flake8."
+  :command ("flake8")
+  :standard-input nil
+  :error-filter (lambda (errors)
+                  (let ((errors (flycheck-sanitize-errors errors)))
+                    (seq-do #'flycheck-flake8-fix-error-level errors)
+                    errors))
+  :error-patterns
+  ((warning line-start
+            "stdin:" line ":" (optional column ":") " "
+            (id (one-or-more (any alpha)) (one-or-more digit)) " "
+            (message (one-or-more not-newline))
+            line-end))
+  :modes python-mode)
+
+(when is-fb-environment
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (flycheck-select-checker `python-fb-flake8)))
+  )
+
+(global-flycheck-mode)
+
+;; =================================================================
 ;; Python Support
 ;; =================================================================
 (autoload 'python-mode "python-mode" "Python editing mode." t)
@@ -617,17 +638,12 @@
 (setq interpreter-mode-alist
       (cons '("python" . python-mode) interpreter-mode-alist))
 
-(defun my-python-hook ()
-  (flycheck-mode)
-  )
-
-(add-hook 'python-mode-hook 'my-python-hook)
-
 ;; =================================================================
 ;; JavaScript Support
 ;; =================================================================
 (autoload 'js2-mode "js2-mode" nil t)
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
 
 ;; =================================================================
 ;; Ruby Mode
@@ -656,15 +672,6 @@
 (add-to-list 'interpreter-mode-alist '("lua" . lua-mode))
 
 ;; =================================================================
-;; Source Depot
-;; =================================================================
-;; (load-library "sd")
-;; (setq sd-use-sdconfig-exclusively t)
-;; (sd-set-sd-executable "c:/tools/x86/sd.exe")
-;; (setq sd-global-config "sd.ini")
-;; (setenv "SDCONFIG" "sd.ini")
-
-;; =================================================================
 ;; Code Folding
 ;; =================================================================
 (global-set-key (kbd "C-+")             'hs-toggle-hiding)
@@ -681,6 +688,7 @@
 (add-hook 'sh-mode-hook         'hs-minor-mode)
 
 (defun display-code-line-counts (ov)
+  "Put the line counts in the fold overlay OV."
   (when (eq 'code (overlay-get ov 'hs))
     (overlay-put ov 'help-echo
                  (buffer-substring (overlay-start ov)
@@ -697,7 +705,7 @@
 (require 'go-autocomplete)
 
 (defun my-go-mode-hook ()
-  (flycheck-mode)
+  "My go-mode hook."
   (auto-complete-mode)
   )
 
@@ -756,13 +764,13 @@
       (find-project-directory-recursive)))
 
 (defun lock-compilation-directory ()
-  "The compilation process should NOT hunt for a makefile"
+  "The compilation process should NOT hunt for a makefile."
   (interactive)
   (setq compilation-directory-locked t)
   (message "Compilation directory is locked."))
 
 (defun unlock-compilation-directory ()
-  "The compilation process SHOULD hunt for a makefile"
+  "The compilation process SHOULD hunt for a makefile."
   (interactive)
   (setq compilation-directory-locked nil)
   (message "Compilation directory is roaming."))
@@ -785,7 +793,7 @@
 (define-key global-map "\C-c\C-m" 'make-without-asking)
 
 (defun set-vs-environment ()
-  "Load the VS environment variables into the current emacs process."
+  "Load the VS environment variables into the current Emacs process."
   (interactive)
   (dolist
       (ev (split-string
@@ -794,8 +802,8 @@
     (letrec ((spev (split-string ev "="))
              (vn (car spev))
              (vv (cadr spev)))
-      (setenv vn vv)))
-  (message "Set visual studio environment variables"))
+      (setenv vn vv))))
+
 
 ;; =================================================================
 ;; PHP stuff
@@ -814,27 +822,26 @@
       (add-hook 'php-mode-hook 'my-fb-php-hook)
       ))
 
-(if is-fb-environment
-    (progn
 
-      (flycheck-define-checker python-fb-flake8
-        "A Python syntax and style checker using FB's Flake8."
-        :command ("flake8")
-        :standard-input f
-        :error-filter (lambda (errors)
-                        (let ((errors (flycheck-sanitize-errors errors)))
-                          (seq-do #'flycheck-flake8-fix-error-level errors)
-                          errors))
-        :error-patterns
-        ((warning line-start
-                  "stdin:" line ":" (optional column ":") " "
-                  (id (one-or-more (any alpha)) (one-or-more digit)) " "
-                  (message (one-or-more not-newline))
-                  line-end))
-        :modes python-mode)
+;; =================================================================
+;; Magit stuff
+;; =================================================================
 
-      (add-hook 'python-mode-hook
-                (lambda ()
-                  (flycheck-select-checker `python-fb-flake8)
-                  ))
-      ))
+(global-set-key (kbd "C-x g") 'magit-status)
+
+;; =================================================================
+;; Shell stuff
+;; =================================================================
+
+(setenv "PAGER" "cat")
+(setenv "EDITOR" "emacsclient")
+(add-hook 'comint-output-filter-functions 'comint-truncate-buffer)
+(add-hook 'shell-mode-hook 'buffer-disable-undo)
+
+;;
+;; Comment all the time
+;;
+(global-set-key (kbd "C-/") 'comment-or-uncomment-region)
+
+(provide 'core)
+;;; core.el ends here

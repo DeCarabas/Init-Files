@@ -92,8 +92,8 @@
 (setq package-archives
       '(("gnu"         . "http://elpa.gnu.org/packages/")
         ("org"         . "http://orgmode.org/elpa/")
-        ("melpa"       . "http://melpa.org/packages/")
-        ("marmalade"   . "https://marmalade-repo.org/packages/")))
+        ("melpa"       . "http://stable.melpa.org/packages/")
+        ))
 (when (< emacs-major-version 24)
   ;; For important compatibility libraries like cl-lib
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
@@ -103,9 +103,6 @@
   (list
    'auto-complete            ; complete as you type with overlays
    'auto-complete-nxml       ; Auto-complete for nxml
-   'color-theme              ; Color themes...
-   'color-theme-monokai      ; ...Monokai
-   'color-theme-solarized    ; ...Solarized
    'csharp-mode              ; C# mode
    'exec-path-from-shell     ; Fix path on MacOS
    'flycheck                 ; Checking

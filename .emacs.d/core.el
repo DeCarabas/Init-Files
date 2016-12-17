@@ -84,6 +84,7 @@
 (require 'uniquify)
 (require 'ansi-color)
 (require 'recentf)
+(prefer-coding-system 'utf-8)
 
 ;; =================================================================
 ;; Packages

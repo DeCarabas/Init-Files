@@ -228,17 +228,18 @@
 ;; =================================================================
 ;; FUN WITH KEY BINDINGS!  YAAAAYYY!!!
 ;; =================================================================
-(global-set-key (read-kbd-macro "M-g") 'goto-line)
-(global-set-key (read-kbd-macro "C-q") 'copy-region-as-kill)
-(global-set-key (read-kbd-macro "C-w") 'kill-region)
+(global-set-key (read-kbd-macro "<end>")   'end-of-buffer)
+(global-set-key (read-kbd-macro "<home>")  'beginning-of-buffer)
 
-(global-set-key (read-kbd-macro "<home>") 'beginning-of-buffer)
-(global-set-key (read-kbd-macro "<end>")  'end-of-buffer)
+(global-set-key (read-kbd-macro "C-/")     'comment-or-uncomment-region)
+(global-set-key (read-kbd-macro "C-c TAB") 'indent-buffer)
+(global-set-key (read-kbd-macro "C-q")     'copy-region-as-kill)
+(global-set-key (read-kbd-macro "C-w")     'kill-region)
+(global-set-key (read-kbd-macro "C-x f")   'font-lock-fontify-buffer)
 
-(global-set-key (read-kbd-macro "M-1") 'new-frame)
-(global-set-key (read-kbd-macro "M-3") 'delete-frame)
-
-(global-set-key (read-kbd-macro "C-x f") 'font-lock-fontify-buffer)
+(global-set-key (read-kbd-macro "M-1")     'new-frame)
+(global-set-key (read-kbd-macro "M-3")     'delete-frame)
+(global-set-key (read-kbd-macro "M-g")     'goto-line)
 
 ;; In addition, make sure various things are working properly with xterm-keys
 ;; on under tmux. (This has been the most reliable way to get putty to send
@@ -264,7 +265,6 @@
 (require 'filladapt)
 (setq-default filladapt-mode t)
 
-;; We're going to stop doing ido and start doing helm, maybe?
 (require 'ido)
 
 ;; Cleanup all the whitespaces.
@@ -278,6 +278,7 @@
 ;; Text mode configuration.
 ;; =================================================================
 (defun my-text-mode-hook ()
+  "Doty's hook for text mode."
   (setq fill-column 70)
   (turn-on-auto-fill)
   (flyspell-mode))
@@ -447,8 +448,6 @@
   (interactive)
   (indent-region (point-min) (point-max))
   (whitespace-cleanup))
-
-(global-set-key (read-kbd-macro "C-c TAB") 'indent-buffer)
 
 ;; IDL
 (c-add-style "ms-idl"
@@ -837,10 +836,8 @@
 (add-hook 'comint-output-filter-functions 'comint-truncate-buffer)
 (add-hook 'shell-mode-hook 'buffer-disable-undo)
 
-;;
-;; Comment all the time
-;;
-(global-set-key (kbd "C-/") 'comment-or-uncomment-region)
+;; ag
+(global-set-key (kbd "M-p") 'ag-project-regexp)
 
 (provide 'core)
 ;;; core.el ends here

@@ -3,6 +3,8 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ag-arguments (quote ("--line-number" "--smart-case" "--column" "--")))
+ '(ag-executable "rg")
  '(blink-matching-paren-dont-ignore-comments t)
  '(c-basic-offset 2)
  '(c-echo-syntactic-information-p t)
@@ -37,7 +39,7 @@
  '(org-odd-levels-only t)
  '(package-selected-packages
    (quote
-    (dockerfile-mode js2-mode ## web-mode ahg zencoding-mode tss switch-window python-mode paredit monky magit lua-mode go-mode go-autocomplete flycheck exec-path-from-shell csharp-mode color-theme-solarized color-theme-monokai auto-complete-nxml)))
+    (ag use-package flycheck dockerfile-mode js2-mode ## web-mode ahg zencoding-mode tss switch-window python-mode paredit monky magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-solarized color-theme-monokai auto-complete-nxml)))
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values
    (quote

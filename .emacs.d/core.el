@@ -84,6 +84,7 @@
 (require 'uniquify)
 (require 'ansi-color)
 (require 'recentf)
+(prefer-coding-system 'utf-8)
 
 ;; =================================================================
 ;; Packages
@@ -91,8 +92,8 @@
 (setq package-archives
       '(("gnu"         . "http://elpa.gnu.org/packages/")
         ("org"         . "http://orgmode.org/elpa/")
-        ("melpa"       . "http://melpa.org/packages/")
-        ("marmalade"   . "https://marmalade-repo.org/packages/")))
+        ("melpa"       . "http://stable.melpa.org/packages/")
+        ))
 (when (< emacs-major-version 24)
   ;; For important compatibility libraries like cl-lib
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
@@ -102,9 +103,6 @@
   (list
    'auto-complete            ; complete as you type with overlays
    'auto-complete-nxml       ; Auto-complete for nxml
-   'color-theme              ; Color themes...
-   'color-theme-monokai      ; ...Monokai
-   'color-theme-solarized    ; ...Solarized
    'csharp-mode              ; C# mode
    'exec-path-from-shell     ; Fix path on MacOS
    'flycheck                 ; Checking
@@ -199,6 +197,7 @@
       (setq my-font-choice
             (font-candidate
              "Input Mono-12:weight=light"
+             "InputMono Light-12:light"
              "Consolas-10"
              "Inconsolata-11"))
 
@@ -232,17 +231,18 @@
 ;; =================================================================
 ;; FUN WITH KEY BINDINGS!  YAAAAYYY!!!
 ;; =================================================================
-(global-set-key (read-kbd-macro "M-g") 'goto-line)
-(global-set-key (read-kbd-macro "C-q") 'copy-region-as-kill)
-(global-set-key (read-kbd-macro "C-w") 'kill-region)
+(global-set-key (read-kbd-macro "<end>")   'end-of-buffer)
+(global-set-key (read-kbd-macro "<home>")  'beginning-of-buffer)
 
-(global-set-key (read-kbd-macro "<home>") 'beginning-of-buffer)
-(global-set-key (read-kbd-macro "<end>")  'end-of-buffer)
+(global-set-key (read-kbd-macro "C-/")     'comment-or-uncomment-region)
+(global-set-key (read-kbd-macro "C-c TAB") 'indent-buffer)
+(global-set-key (read-kbd-macro "C-q")     'copy-region-as-kill)
+(global-set-key (read-kbd-macro "C-w")     'kill-region)
+(global-set-key (read-kbd-macro "C-x f")   'font-lock-fontify-buffer)
 
-(global-set-key (read-kbd-macro "M-1") 'new-frame)
-(global-set-key (read-kbd-macro "M-3") 'delete-frame)
-
-(global-set-key (read-kbd-macro "C-x f") 'font-lock-fontify-buffer)
+(global-set-key (read-kbd-macro "M-1")     'new-frame)
+(global-set-key (read-kbd-macro "M-3")     'delete-frame)
+(global-set-key (read-kbd-macro "M-g")     'goto-line)
 
 ;; In addition, make sure various things are working properly with xterm-keys
 ;; on under tmux. (This has been the most reliable way to get putty to send
@@ -268,7 +268,6 @@
 (require 'filladapt)
 (setq-default filladapt-mode t)
 
-;; We're going to stop doing ido and start doing helm, maybe?
 (require 'ido)
 
 ;; Cleanup all the whitespaces.
@@ -282,6 +281,7 @@
 ;; Text mode configuration.
 ;; =================================================================
 (defun my-text-mode-hook ()
+  "Doty's hook for text mode."
   (setq fill-column 70)
   (turn-on-auto-fill)
   (flyspell-mode))
@@ -451,8 +451,6 @@
   (interactive)
   (indent-region (point-min) (point-max))
   (whitespace-cleanup))
-
-(global-set-key (read-kbd-macro "C-c TAB") 'indent-buffer)
 
 ;; IDL
 (c-add-style "ms-idl"
@@ -842,10 +840,8 @@
 (add-hook 'comint-output-filter-functions 'comint-truncate-buffer)
 (add-hook 'shell-mode-hook 'buffer-disable-undo)
 
-;;
-;; Comment all the time
-;;
-(global-set-key (kbd "C-/") 'comment-or-uncomment-region)
+;; ag
+(global-set-key (kbd "M-p") 'ag-project-regexp)
 
 ;; =================================================================
 ;; OCAML stuff

@@ -33,11 +33,17 @@
  '(js2-strict-trailing-comma-warning nil)
  '(make-backup-files nil)
  '(mouse-buffer-menu-mode-mult 0)
+ '(org-export-with-toc nil)
  '(org-hide-leading-stars t)
  '(org-odd-levels-only t)
+ '(org-todo-keywords
+   (quote
+    ((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED"))))
  '(package-selected-packages
    (quote
-    (dockerfile-mode js2-mode ## web-mode ahg zencoding-mode tss switch-window python-mode paredit monky magit lua-mode go-mode go-autocomplete flycheck exec-path-from-shell csharp-mode color-theme-solarized color-theme-monokai auto-complete-nxml)))
+    (merlin tuareg markdown-mode thrift dockerfile-mode js2-mode ## web-mode ahg zencoding-mode tss switch-window python-mode paredit monky magit lua-mode go-mode go-autocomplete flycheck exec-path-from-shell csharp-mode color-theme-solarized color-theme-monokai auto-complete-nxml)))
+ '(quip-api-key
+   "UU9RQU1Ba0pjR08=|1517609175|FmwD/EJT5K//+ntQqzVopKmzq/juUmBQsS2hsNi8MeQ=")
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values
    (quote

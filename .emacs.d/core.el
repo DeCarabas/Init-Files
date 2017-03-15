@@ -124,6 +124,9 @@
    'tss                      ; Typescript, ala https://github.com/aki2o/emacs-tss
    'web-mode                 ; Mixed mode web editing
    'zencoding-mode           ; http://www.emacswiki.org/emacs/ZenCoding
+
+   'tuareg                   ; ocaml
+   'merlin                   ; ocaml completion stuff
    )
   "Libraries that should be installed by default.")
 
@@ -606,7 +609,7 @@
 
 (flycheck-define-checker python-fb-flake8
   "A Python syntax and style checker using FB's Flake8."
-  :command ("flake8")
+  :command ("flake8" source-original)
   :standard-input nil
   :error-filter (lambda (errors)
                   (let ((errors (flycheck-sanitize-errors errors)))
@@ -614,11 +617,12 @@
                     errors))
   :error-patterns
   ((warning line-start
-            "stdin:" line ":" (optional column ":") " "
+            (file-name) ":" line ":" (optional column ":") " "
             (id (one-or-more (any alpha)) (one-or-more digit)) " "
             (message (one-or-more not-newline))
             line-end))
   :modes python-mode)
+(add-to-list 'flycheck-checkers 'python-fb-flake8)
 
 (when is-fb-environment
   (add-hook 'python-mode-hook
@@ -842,6 +846,11 @@
 ;; Comment all the time
 ;;
 (global-set-key (kbd "C-/") 'comment-or-uncomment-region)
+
+;; =================================================================
+;; OCAML stuff
+;; =================================================================
+(require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
 
 (provide 'core)
 ;;; core.el ends here

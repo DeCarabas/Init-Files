@@ -43,7 +43,7 @@
     ((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED"))))
  '(package-selected-packages
    (quote
-    (thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode ## web-mode ahg zencoding-mode tss switch-window python-mode paredit monky magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-solarized color-theme-monokai auto-complete-nxml)))
+    (sml-mode thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode ## web-mode ahg zencoding-mode tss switch-window python-mode paredit monky magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-solarized color-theme-monokai auto-complete-nxml)))
  '(quip-api-key
    "UU9RQU1Ba0pjR08=|1517609175|FmwD/EJT5K//+ntQqzVopKmzq/juUmBQsS2hsNi8MeQ=")
  '(rmail-mail-new-frame t)

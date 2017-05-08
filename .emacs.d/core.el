@@ -317,7 +317,7 @@
   (turn-on-auto-fill)
   (flyspell-prog-mode)
   (define-key c-mode-base-map "\C-m" 'c-context-line-break)
-  (set-fill-column 120)
+  (set-fill-column 79)
   (local-set-key "}" 'indent-on-closing-bracket))
 
 (add-hook 'c-mode-common-hook 'my-c-common-hook)
@@ -574,7 +574,7 @@
 
 (defun my-nxml-hook ()
   (turn-on-auto-fill)
-  (set-fill-column 120)
+  (set-fill-column 79)
 
   (local-set-key "\C-m" 'newline-and-indent)
   (local-set-key ">"    'nxml-indent-on-tag-close)

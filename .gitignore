@@ -1,6 +1,9 @@
 .config/fish/fish_history
 .config/fish/fishd*
 .config/fish/generated_completions
+.config/NuGet/nugetorgadd.trk
+.config/StardewValley/Saves
+.config/stetic
 .config/xbuild/pkgconfig-cache-2.xml
 .config/.isolated-storage
 _viminfo

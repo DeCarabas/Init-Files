@@ -99,40 +99,9 @@
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
 (package-initialize)
 
-(defvar my-packages
-  (list
-   'auto-complete            ; complete as you type with overlays
-   'auto-complete-nxml       ; Auto-complete for nxml
-   'csharp-mode              ; C# mode
-   'exec-path-from-shell     ; Fix path on MacOS
-   'flycheck                 ; Checking
-   'flymake                  ; Compiling
-   'flyspell                 ; Spell-checking
-   'go-autocomplete          ; Autocomplete for golang
-   'go-mode                  ; Go programming language mode
-   'js2-mode                 ; Improved JS mode
-   'json-mode                ; JSON mode
-   'lua-mode                 ; LUA
-   'magit                    ; Magit! SO GOOD.
-   'paredit                  ; Also good for lisps.
-   'popup                    ; Pretty completions?
-   'python-mode              ; Python
-   'ruby-mode                ; Major mode for editing Ruby files
-   'switch-window            ; takes over C-x o
-   'tss                      ; Typescript, ala https://github.com/aki2o/emacs-tss
-   'web-mode                 ; Mixed mode web editing
-   'zencoding-mode           ; http://www.emacswiki.org/emacs/ZenCoding
-
-   'tuareg                   ; ocaml
-   'merlin                   ; ocaml completion stuff
-   )
-  "Libraries that should be installed by default.")
-
 (unless package-archive-contents
   (package-refresh-contents))
-(dolist (package my-packages)
-  (unless (package-installed-p package)
-    (package-install package)))
+(package-install-selected-packages)
 
 ;; =================================================================
 ;; Load Path Customization
@@ -196,7 +165,7 @@
 
       (setq my-font-choice
             (font-candidate
-             "Input Mono-12:weight=light"
+             "Input Mono Narrow-12:weight=light"
              "InputMono Light-12:light"
              "Consolas-10"
              "Inconsolata-11"))
@@ -317,7 +286,7 @@
   (turn-on-auto-fill)
   (flyspell-prog-mode)
   (define-key c-mode-base-map "\C-m" 'c-context-line-break)
-  (set-fill-column 79)
+  (set-fill-column 120)
   (local-set-key "}" 'indent-on-closing-bracket))
 
 (add-hook 'c-mode-common-hook 'my-c-common-hook)
@@ -574,7 +543,7 @@
 
 (defun my-nxml-hook ()
   (turn-on-auto-fill)
-  (set-fill-column 79)
+  (set-fill-column 120)
 
   (local-set-key "\C-m" 'newline-and-indent)
   (local-set-key ">"    'nxml-indent-on-tag-close)
@@ -607,7 +576,7 @@
 
 (flycheck-define-checker python-fb-flake8
   "A Python syntax and style checker using FB's Flake8."
-  :command ("flake8" source-original)
+  :command ("flake8" source-original "--shebang" "--py2" "--py3")
   :standard-input nil
   :error-filter (lambda (errors)
                   (let ((errors (flycheck-sanitize-errors errors)))
@@ -834,11 +803,22 @@
 ;; =================================================================
 ;; Shell stuff
 ;; =================================================================
+(defun my-shell-mode-hook ()
+  "Doty's hook for text mode."
+  (setq show-trailing-whitespace nil)
+  (buffer-disable-undo))
 
 (setenv "PAGER" "cat")
 (setenv "EDITOR" "emacsclient")
 (add-hook 'comint-output-filter-functions 'comint-truncate-buffer)
-(add-hook 'shell-mode-hook 'buffer-disable-undo)
+(add-hook 'shell-mode-hook 'my-shell-mode-hook)
+
+;; xterm-color
+(require 'xterm-color)
+(progn (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter)
+       (setq comint-output-filter-functions
+             (remove 'ansi-color-process-output
+                     comint-output-filter-functions)))
 
 ;; ag
 (global-set-key (kbd "M-p") 'ag-project-regexp)

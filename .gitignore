@@ -1,3 +1,5 @@
+*.elc
+.config/.isolated-storage
 .config/fish/fish_history
 .config/fish/fishd*
 .config/fish/generated_completions
@@ -6,9 +8,8 @@
 .config/StardewValley/Saves
 .config/stetic
 .config/xbuild/pkgconfig-cache-2.xml
-.config/.isolated-storage
-_viminfo
-.emacs.d/url/cookies
 .emacs.d/ido.last
 .emacs.d/server
-*.elc
+.emacs.d/url/cookies
+.ipython/profile_default/history.sqlite
+_viminfo

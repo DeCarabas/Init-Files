@@ -43,7 +43,7 @@
     ((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED"))))
  '(package-selected-packages
    (quote
-    (elm-mode omnisharp multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode ahg zencoding-mode tss switch-window python-mode paredit monky magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-solarized color-theme-monokai auto-complete-nxml flyspell json-mode ruby-mode)))
+    (ag ahg auto-complete-nxml color-theme-monokai color-theme-solarized csharp-mode dockerfile-mode elm-mode exec-path-from-shell flycheck flyspell go-autocomplete go-mode js2-mode json-mode lua-mode magit markdown-mode merlin monky multi-term omnisharp paredit python-mode ruby-mode switch-window thrift tss tuareg use-package web-mode xterm-color zencoding-mode)))
  '(quip-api-key
    "UU9RQU1Ba0pjR08=|1517609175|FmwD/EJT5K//+ntQqzVopKmzq/juUmBQsS2hsNi8MeQ=")
  '(reb-re-syntax (quote string))

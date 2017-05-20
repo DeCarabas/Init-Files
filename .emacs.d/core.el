@@ -679,15 +679,15 @@
 ;; =================================================================
 
 (require 'go-mode)
-(require 'auto-complete-config)
-(require 'go-autocomplete)
+;; (require 'auto-complete-config)
+;; (require 'go-autocomplete)
 
-(defun my-go-mode-hook ()
-  "My go-mode hook."
-  (auto-complete-mode)
-  )
+;; (defun my-go-mode-hook ()
+;;   "My go-mode hook."
+;;   (auto-complete-mode)
+;;   )
 
-(add-hook 'go-mode-hook 'my-go-mode-hook)
+;; (add-hook 'go-mode-hook 'my-go-mode-hook)
 
 ;; =================================================================
 ;; Org-Mode

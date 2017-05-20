@@ -166,7 +166,7 @@
       (setq my-font-choice
             (font-candidate
              "Input Mono Narrow-12:weight=light"
-             "InputMono Light-12:light"
+             "InputMonoNarrow Light-12:light"
              "Consolas-10"
              "Inconsolata-11"))
 

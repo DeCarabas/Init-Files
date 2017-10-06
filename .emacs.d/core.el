@@ -49,6 +49,13 @@
 (load custom-file)
 
 ;; =================================================================
+;; Load Path Customization
+;; =================================================================
+
+;; add private lisp directory to load-path.
+(add-to-list 'load-path "~/site-lisp")
+
+;; =================================================================
 ;; FB STUFF
 ;; =================================================================
 (defconst master-dir (getenv "LOCAL_ADMIN_SCRIPTS"))
@@ -57,23 +64,25 @@
   (or (file-exists-p (expand-file-name "master.emacs" master-dir))
       (file-exists-p (expand-file-name "master.emacs" engshare-master))))
 
-(if is-fb-environment
-    (progn
-      ;; Load the master.emacs file which apparently has stuff in it I want?
-      (if (file-exists-p (expand-file-name "master.emacs" master-dir))
-          (load-library (expand-file-name "master.emacs" master-dir))
-        (if (file-exists-p (expand-file-name "master.emacs" engshare-master))
-            (load-library (expand-file-name "master.emacs" engshare-master))))
+(when is-fb-environment
+  ;; Load the master.emacs file which apparently has stuff in it I want?
+  (if (file-exists-p (expand-file-name "master.emacs" master-dir))
+      (load-library (expand-file-name "master.emacs" master-dir))
+    (if (file-exists-p (expand-file-name "master.emacs" engshare-master))
+        (load-library (expand-file-name "master.emacs" engshare-master))))
 
-      ;; Set up the proxy for working properly from the devserver.
-      (if (and
-           (getenv "HOSTNAME")
-           (string-match-p ".+\.prn1\.facebook\.com" (getenv "HOSTNAME")))
-          (setq url-proxy-services
-                '(("no_proxy" . "^\\(localhost\\|10.*\\)")
-                  ("http" . "fwdproxy:8080")
-                  ("https" . "fwdproxy:8080"))))
-      ))
+  ;; Set up the proxy for working properly from the devserver.
+  (if (and
+       (getenv "HOSTNAME")
+       (string-match-p ".+\.prn1\.facebook\.com" (getenv "HOSTNAME")))
+      (setq url-proxy-services
+            '(("no_proxy" . "^\\(localhost\\|10.*\\)")
+              ("http" . "fwdproxy:8080")
+              ("https" . "fwdproxy:8080"))))
+
+  ;; Load cool arcanist stuff.
+  (require '50-arc)
+  )
 
 ;; =================================================================
 ;; Common stuff that's needed once
@@ -102,13 +111,6 @@
 (unless package-archive-contents
   (package-refresh-contents))
 (package-install-selected-packages)
-
-;; =================================================================
-;; Load Path Customization
-;; =================================================================
-
-;; add private lisp directory to load-path.
-(add-to-list 'load-path "~/site-lisp")
 
 ;; =================================================================
 ;; EMACS general look and feel
@@ -145,6 +147,11 @@
 
 ;; Modeline format:
 (display-time-mode -1)
+
+(setq vc-ignore-dir-regexp
+      (format "\\(%s\\)\\|\\(%s\\)"
+              vc-ignore-dir-regexp
+              tramp-file-name-regexp))
 
 ;; ================================================================
 ;; Fonts and windows and the like, only if graphics.
@@ -697,6 +704,12 @@
 (define-key global-map "\C-ca" 'org-agenda)
 (setq org-log-done t)
 
+;; I want a sane approach to multi-line emphasis, and this is the only way to
+;; get it. Think about 10 lines.
+(setcar (nthcdr 4 org-emphasis-regexp-components) 10)
+(org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
+
+(add-hook 'org-mode-hook 'turn-off-filladapt-mode)
 
 ;; =================================================================
 ;; Typescript-Mode
@@ -804,7 +817,6 @@
 ;; =================================================================
 ;; Magit stuff
 ;; =================================================================
-
 (global-set-key (kbd "C-x g") 'magit-status)
 
 ;; =================================================================
@@ -817,6 +829,8 @@
 
 (setenv "PAGER" "cat")
 (setenv "EDITOR" "emacsclient")
+(setenv "TERM" "xterm-256color")
+(setenv "INEMACS" "true")
 (add-hook 'comint-output-filter-functions 'comint-truncate-buffer)
 (add-hook 'shell-mode-hook 'my-shell-mode-hook)
 
@@ -834,6 +848,26 @@
 ;; OCAML stuff
 ;; =================================================================
 (require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
+
+;; =================================================================
+;; Insert timestamp
+;; =================================================================
+(defun insert-date ()
+  "Insert the current date."
+  (interactive)
+  (insert (format-time-string "%Y-%m-%d")))
+
+(global-set-key (kbd "C-c t") 'insert-date)
+
+;; =================================================================
+;; Markdown mode
+;; =================================================================
+(defun my-markdown-mode-hook ()
+  "My hook for markdown mode."
+  (when is-fb-environment
+    (require 'fb-note-publish)))
+
+(add-hook 'markdown-mode-hook 'my-markdown-mode-hook)
 
 (provide 'core)
 ;;; core.el ends here

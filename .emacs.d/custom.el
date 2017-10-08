@@ -34,6 +34,7 @@
  '(js2-bounce-indent-p t)
  '(js2-strict-trailing-comma-warning nil)
  '(make-backup-files nil)
+ '(markdown-command "pandoc -f markdown+yaml_metadata_block -t html -s")
  '(mouse-buffer-menu-mode-mult 0)
  '(org-export-with-toc nil)
  '(org-hide-leading-stars t)

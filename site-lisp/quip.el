@@ -15,12 +15,17 @@
   :group 'external
   :tag "Quip")
 
-(defcustom quip-api-key ""
-  "Your API key for Quip.
+(defun quip-api-key ()
+  "Retrieve the stored API key.
 
-Get it from https://fb.quip.com/api/personal-token."
-  :type 'string
-  :group 'quip-api)
+The API key comes from auth-source, however you have that set up.  If you don't
+have a key, get one from https://fb.quip.com/api/personal-token.  Put it in the
+password field of an entry for host 'quip'."
+  (let ((api-key (cadr (auth-source-user-and-password "quip"))))
+    (when (not api-key)
+      (error "No API key set for quip in ~/.authinfo"))
+    api-key))
+
 
 (defun quip--handle-error (result)
   "Report an error if RESULT contains one."
@@ -34,13 +39,10 @@ Get it from https://fb.quip.com/api/personal-token."
 A Quip API call involves issuing an HTTP request to path PATH,
 with method METHOD, and parameters PARAMS.  This routine knows the
 base URL and adds the necessary headers."
-  (if (not quip-api-key)
-      (error "%s"
-             "The custom variable quip-api-key is undefined. Use custom-set-variable to set it before using quip."))
   (let
       ((url (concat "https://platform.quip.com/1/" path))
        (url-request-method method)
-       (url-request-extra-headers `(("Authorization" . ,(concat "Bearer " quip-api-key))
+       (url-request-extra-headers `(("Authorization" . ,(concat "Bearer " (quip-api-key)))
                                     ("Content-Type" . "application/x-www-form-urlencoded")))
        (url-request-data
         (mapconcat (lambda (pair) (format "%s=%s" (car pair) (url-hexify-string (cdr pair))))

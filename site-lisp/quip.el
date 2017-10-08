@@ -22,6 +22,12 @@ Get it from https://fb.quip.com/api/personal-token."
   :type 'string
   :group 'quip-api)
 
+(defun quip--handle-error (result)
+  "Report an error if RESULT contains one."
+  (when (alist-get 'error result)
+    (error "Quip error: %s" (alist-get 'error_description result)))
+  result)
+
 (defun quip-invoke-json (path method params)
   "Make a request to the Quip API, and return the parsed JSON from the response.
 
@@ -43,7 +49,7 @@ base URL and adds the necessary headers."
     (with-current-buffer (url-retrieve-synchronously url)
       (goto-char (point-min))
       (re-search-forward "^$")
-      (json-read))))
+      (quip--handle-error (json-read)))))
 
 (defun quip-new-document (content &optional format)
   "Create a new Quip document with the provided CONTENT.

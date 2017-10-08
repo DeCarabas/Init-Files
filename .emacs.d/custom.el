@@ -44,9 +44,7 @@
     ((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED"))))
  '(package-selected-packages
    (quote
-    (ag ahg auto-complete-nxml color-theme-monokai color-theme-solarized csharp-mode dockerfile-mode elm-mode exec-path-from-shell flycheck flyspell go-autocomplete go-mode js2-mode json-mode lua-mode magit markdown-mode merlin monky multi-term omnisharp paredit python-mode ruby-mode switch-window thrift tss tuareg use-package web-mode xterm-color zencoding-mode)))
- '(quip-api-key
-   "UU9RQU1BaGk1Tjg=|1539005956|+njCV055GUSjqkZtDJ8ylhkAp0X/rcviTxYVrjYpmuI=")
+    (multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode ahg zencoding-mode tss switch-window python-mode paredit monky magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-solarized color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode)))
  '(reb-re-syntax (quote string))
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values

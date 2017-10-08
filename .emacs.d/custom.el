@@ -46,7 +46,7 @@
    (quote
     (ag ahg auto-complete-nxml color-theme-monokai color-theme-solarized csharp-mode dockerfile-mode elm-mode exec-path-from-shell flycheck flyspell go-autocomplete go-mode js2-mode json-mode lua-mode magit markdown-mode merlin monky multi-term omnisharp paredit python-mode ruby-mode switch-window thrift tss tuareg use-package web-mode xterm-color zencoding-mode)))
  '(quip-api-key
-   "UU9RQU1Ba0pjR08=|1517609175|FmwD/EJT5K//+ntQqzVopKmzq/juUmBQsS2hsNi8MeQ=")
+   "UU9RQU1BaGk1Tjg=|1539005956|+njCV055GUSjqkZtDJ8ylhkAp0X/rcviTxYVrjYpmuI=")
  '(reb-re-syntax (quote string))
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values

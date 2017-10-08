@@ -709,7 +709,12 @@
 (setcar (nthcdr 4 org-emphasis-regexp-components) 10)
 (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
 
-(add-hook 'org-mode-hook 'turn-off-filladapt-mode)
+(defun my-org-mode-hook ()
+  "My org mode hook."
+  (turn-off-filladapt-mode)
+  (require 'ox-quip))
+
+(add-hook 'org-mode-hook 'my-org-mode-hook)
 
 ;; =================================================================
 ;; Typescript-Mode

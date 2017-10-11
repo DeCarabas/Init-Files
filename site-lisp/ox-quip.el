@@ -7,6 +7,7 @@
 ;;; Code:
 (require 'cl-extra)
 (require 'ox-md)
+(require 'url-parse)
 (require 'whitespace)
 (require 'quip)
 
@@ -104,13 +105,16 @@
         ))
     ))
 
-(defun org-quip--get-org-buffer-from-quip (thread-id buffer)
-  "Fetch the quip thread with THREAD-ID and convert it to org markup in BUFFER.
+(defun org-quip--get-org-buffer-from-quip-thread (thread buffer)
+  "Take the Quip thread THREAD and convert it to org markup in BUFFER.
 
-We do this by (a) downloading the thread from quip, (b) cleaning
-up the HTML in the buffer (a little bit), (c) running the HTML
-through pandoc to convert it into acceptable org, and (d) running
-a cleanup pass over the generated org markup.
+THREAD should be an alist form of the JSON returned by the
+'quip-get-thread' function.
+
+We do this by (a) cleaning up the HTML in the buffer (a little
+bit), (b) running the HTML through pandoc to convert it into
+acceptable org, and (c) running a cleanup pass over the generated
+org markup.
 
 The end result is fairly clean 'org-mode' markup."
   (let ((quip-html (alist-get 'html (quip-get-thread thread-id))))
@@ -138,8 +142,15 @@ The end result is fairly clean 'org-mode' markup."
       (goto-char (point-min))
       (insert "#+options: num:nil\n\n")
 
-
+      (font-lock-fontify-buffer)
       )))
+
+(defun org-quip--get-org-buffer-from-quip-id (thread-id buffer)
+  "Fetch the quip thread with THREAD-ID and convert it to org markup in BUFFER.
+
+This is just like 'org-quip--get-org-buffer-from-quip-thread'
+except you only have a thread ID, not a full downloaded thread."
+  (org-quip--get-org-buffer-from-quip-thread (quip-get-thread thread-id) buffer))
 
 (defun org-quip--get-thread-identifier ()
   "Get the Quip thread identifier from the doc in the current buffer, if any."
@@ -155,6 +166,16 @@ The end result is fairly clean 'org-mode' markup."
   "Publish CONTENT as a new Quip document.  Return the ID of the new document."
   (let ((response (quip-new-document content)))
     (cdr (assoc 'id (cdr (assoc 'thread response))))))
+
+(defun org-quip--extract-thread-id (url)
+  "Extract a quip thread identifier from URL."
+  (let ((parsed-url (url-generic-parse-url url)))
+
+    (if (and (equal (url-type parsed-url) "https")
+             (string-suffix-p "quip.com" (url-host parsed-url)))
+        (substring (car (split-string (url-filename parsed-url) "?")) 1)
+
+      (error "%s does not appear to be a valid Quip url" url))))
 
 (defun org-quip-publish-to-quip ()
   "Publish the current buffer to Quip."
@@ -174,7 +195,18 @@ This replaces what's in the buffer so I hope you're OK with that."
   (interactive)
   (let ((thread-id (org-quip--get-thread-identifier)))
     (unless thread-id (error "This org doc hasn't been published to quip"))
-    (org-quip--get-org-buffer-from-quip thread-id (current-buffer))))
+    (org-quip--get-org-buffer-from-quip-id thread-id (current-buffer))))
+
+(defun org-quip-fetch (url)
+  "Fetch the given Quip URL into a new buffer named after the thread."
+  (interactive "sQuip URL: ")
+  (letrec ((thread-id (org-quip--extract-thread-id url))
+           (thread (quip-get-thread thread-id))
+           (thread-title (alist-get 'title (alist-get 'thread thread)))
+           (thread-buffer (get-buffer-create (concat thread-title ".org"))))
+
+    (org-quip--get-org-buffer-from-quip-thread thread thread-buffer)
+    (display-buffer thread-buffer)))
 
 (provide 'ox-quip)
 ;;; ox-quip.el ends here

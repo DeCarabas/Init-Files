@@ -4,7 +4,6 @@
 ;; Publisher from org-mode to Quip.  (Export as markdown, push as a new
 ;; thread or amend to existing quip thread.)
 ;;
-;; BUG: Underscores get converted wrong.
 ;; BUG: Can't update documents on publish.
 
 ;;; Code:

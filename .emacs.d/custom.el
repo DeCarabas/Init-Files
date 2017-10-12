@@ -15,6 +15,7 @@
  '(comint-prompt-read-only t)
  '(comint-scroll-to-bottom-on-input t)
  '(css-indent-offset 2)
+ '(debug-on-error nil)
  '(fast-lock-cache-directories (quote ("~/flc-cache")))
  '(fast-lock-minimum-size nil)
  '(fill-column 77)

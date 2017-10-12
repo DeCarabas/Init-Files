@@ -5,12 +5,11 @@
 ;; thread or amend to existing quip thread.)
 ;;
 ;; BUG: Underscores get converted wrong.
-;; BUG: Lists seem fucked.
 ;; BUG: Can't update documents on publish.
 
 ;;; Code:
 (require 'cl-extra)
-(require 'ox-md)
+(require 'ox-html)
 (require 'url-parse)
 (require 'whitespace)
 (require 'quip)
@@ -168,7 +167,7 @@ except you only have a thread ID, not a full downloaded thread."
 
 (defun org-quip--publish-quip (content)
   "Publish CONTENT as a new Quip document.  Return the ID of the new document."
-  (let ((response (quip-new-document content)))
+  (let ((response (quip-new-document content "html")))
     (cdr (assoc 'id (cdr (assoc 'thread response))))))
 
 (defun org-quip--extract-thread-id (url)
@@ -181,12 +180,18 @@ except you only have a thread ID, not a full downloaded thread."
 
       (error "%s does not appear to be a valid Quip url" url))))
 
+(defun org-quip--export-html (buffer)
+  "Export BUFFER as HTML with options suitable for quip."
+  (with-current-buffer buffer
+    (let ((org-html-toplevel-hlevel 1))
+      (org-export-as 'html nil nil t))))
+
 (defun org-quip-publish-to-quip ()
   "Publish the current buffer to Quip."
   (interactive)
   (let
       ((quip-id (org-quip--get-thread-identifier))
-       (content (org-export-as 'md)))
+       (content (org-quip--export-html (current-buffer))))
     (if quip-id
         (org-quip-update-quip quip-id content)
       (let ((new-quip-id (org-quip--publish-quip content)))

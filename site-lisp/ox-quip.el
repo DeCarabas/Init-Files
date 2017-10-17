@@ -37,51 +37,81 @@ compare properly."
     (setq string (replace-regexp-in-string (char-to-string 160) " " string))
     (setq string (replace-regexp-in-string (char-to-string #x200B) "" string))
     (unless (eq 'pre tag)
-      (setq string (replace-regexp-in-string "[[:space:]]+" " " string)))
+      (setq string (replace-regexp-in-string "[[:space:]]+" " " string))
+      (setq string (string-trim string)))
+    (setq string (replace-regexp-in-string "\n" "\\\\n" string))
     string))
 
+(defun org-quip--clean-element-strings (contents tag)
+  "Clean up the string CONTENTS of DOM element with tag TAG.
+
+This is structured as a separate pass from
+org-quip--clean-element-contents because we want to make sure we
+get all the strings, nested or not, and that includes inside
+<spans> and the newlines from <br />."
+  (cond
+   ((null contents) nil)
+
+                                        ; Process strings.
+   ((stringp (car contents))
+    (let ((this (car contents))
+          (rest (cdr contents)))
+
+      (while (stringp (car rest))
+        (setq this (concat this (car rest)))
+        (setq rest (cdr rest)))
+
+      (setq this (org-quip--clean-string this tag))
+      (setq rest (org-quip--clean-element-strings rest tag))
+      (if (> (length this) 0)
+          (cons this rest)
+        rest)))
+
+                                        ; Recurse into elements.
+   (t
+    (letrec ((this (car contents))
+             (new-tag (car this))
+             (new-attrs (cadr this))
+             (new-contents (org-quip--clean-element-strings (cddr this)
+                                                            new-tag))
+             (new-elem (append (list new-tag new-attrs) new-contents)))
+      (cons new-elem
+            (org-quip--clean-element-strings (cdr contents) tag))))
+   ))
+
 (defun org-quip--clean-element-contents (contents tag)
-  "Do some shit with CONTENTS of TAG.
+  "Clean up the CONTENTS of DOM element with tag TAG.
 
 We extract and flatten children from wrapper elements like
 <html>, <body>, some <divs>, &c.  The goal is to be able to run
 this function on both the DOM returned from quip and the DOM
 produced by org HTML export and get something that's roughly
-comparable.
-
-\(The specific org export we're dealing with is
-'org-quip--export-html'.)"
+comparable.  We also clear all the attributes except for ID, and
+we only keep ID in certain cases where we know we can support the
+correspondence."
   (cond
-                                        ; (base case)
    ((null contents) nil)
 
-                                        ; Join strings together until we're
-                                        ; done. But we're not perfect.
-   ((and (stringp (car contents)) (stringp (cadr contents)))
-    (org-quip--clean-element-contents (cons (concat (car contents)
-                                                    (cadr contents))
-                                            (cddr contents))
-                                      tag))
-
-                                        ; We're done joining strings, clean
-                                        ; this one up, and move on with the
-                                        ; rest of the work.
+                                        ; Ignore strings for now, we'll get
+                                        ; them in another pass.
    ((stringp (car contents))
-    (cons (org-quip--clean-string (car contents) tag)
+    (cons (car contents)
           (org-quip--clean-element-contents (cdr contents) tag)))
 
-                                        ; We're looking at an element; is
-                                        ; this an element we're unfolding?
-   ((or (member (caar contents) '(div html body span br))
+                                        ; <br> is "\n".
+   ((eq (caar contents) 'br)
+    (cons "\n"
+          (org-quip--clean-element-contents (cdr contents) tag)))
+
+                                        ; Is this an element we're unfolding?
+   ((or (member (caar contents) '(div html body span))
         (and (eq (caar contents) 'a)
              (cdar contents)
              (not (alist-get 'href (cdar contents)))))
     (org-quip--clean-element-contents (append (cddar contents) (cdr contents))
                                       tag))
 
-                                        ; OK, we're keeping this element.
-                                        ; Clean it up and stick it in the
-                                        ; list.
+                                        ; This is an element we're keeping.
    (t
     (letrec ((new-tag (caar contents))
              (attribs (when (member new-tag '(h1 h2 h3 h4 h5 h6))
@@ -105,8 +135,11 @@ results of the quip exporter and the HTML we get back from quip
 to produce comparable results."
   (with-temp-buffer
     (insert html)
-    (let ((parsed-html (libxml-parse-html-region (point-min) (point-max))))
-      (org-quip--clean-element-contents (list parsed-html) nil))))
+    (letrec ((parsed-html (libxml-parse-html-region (point-min) (point-max)))
+             (phase-one (org-quip--clean-element-contents (list parsed-html)
+                                                          nil))
+             (phase-two (org-quip--clean-element-strings phase-one nil)))
+      (cl-remove-if #'stringp phase-two))))
 
 ;; ==============================================
 ;; Functions to do with mapping HTML and ORG IDs.

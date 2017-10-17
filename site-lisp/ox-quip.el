@@ -5,14 +5,169 @@
 ;; thread or amend to existing quip thread.)
 ;;
 ;; BUG: Can't update documents on publish.
+;; BUG: QUOTE is not rendered correctly.
 
 ;;; Code:
 (require 'cl-extra)
+(require 'org-id)
 (require 'ox-html)
 (require 'url-parse)
 (require 'whitespace)
 (require 'quip)
 
+;; ===================================
+;; Functions to do with cleaning DOMs.
+;; ===================================
+(defun org-quip--remove-element-p (elem)
+  "Return t if ELEM should be removed from a dom.
+
+This basically strips out all-whitespace text, so that we can
+compare properly."
+  (and (stringp elem)
+       (equal 0 (length (string-trim elem)))))
+
+(defun org-quip--clean-element-contents (contents)
+  "Clean up element contents CONTENTS."
+  (mapcar #'org-quip--clean-element-tree
+          (cl-remove-if 'org-quip--remove-element-p (cddr elem))))
+
+(defun org-quip--clean-element-tree (elem)
+  "Clean up an HTML element ELEM, removing contents that are empty strings."
+  (cond
+   ((listp elem)
+    (append (list (first elem) (second elem))
+            (org-quip--clean-element-contents (cddr elem))))
+
+   ((stringp elem)
+    (let ((elem elem))
+      (setq elem (replace-regexp-in-string (char-to-string 160) " " elem))
+      (setq elem (replace-regexp-in-string (char-to-string #x200B) " " elem))
+      (setq elem (replace-regexp-in-string "[[:space:]]+" " " elem))
+      elem))
+
+   (t elem)))
+
+(defun org-quip--flatten-tree (dom)
+  "Clean up the DOM by flattening child elements.
+
+We extract and flatten children from wrapper elements like
+<html>, <body>, some <divs>, &c.  The goal is to be able to run
+this function on both the DOM returned from quip and the DOM
+produced by org HTML export and get something that's roughly
+comparable.
+
+\(The specific org export we're dealing with is
+'org-quip--export-html'.)"
+  (cond
+   ;; If the thing we're looking at is an atom of some sort (string,
+   ;; whatever) then we just wrap it in a list.
+   ((not (listp dom))
+    (list dom))
+
+   ;; If the thing we're looking at it one of the kinds of elements that we
+   ;; want to unwrap, then join the lists containing the result of recursing
+   ;; on this element's children.
+   ;;
+   ;; These are verboten automatically.
+   ((or (member (first dom) '(div html body span br))
+        ;; No anchors without hrefs.
+        (and (eq (first dom) 'a)
+             (second dom)
+             (not (alist-get 'href (second dom))))
+        )
+    (apply #'append (mapcar #'org-quip--flatten-tree (cddr dom))))
+
+   ;; Otherwise: the thing we're looking at is an element we'd like to
+   ;; keep. Keep the tag and attributes and have the children be the
+   ;; flattened result of recursing on the original element's children.
+   ;;
+   ;; (It's super confusing because we have to return this element in a list,
+   ;; which is itself a list...)
+   (t
+    (letrec ((children (cddr dom))
+             (flat-children (apply #'append
+                                   (mapcar #'org-quip--flatten-tree children))))
+      (list (append (list (first dom) (second dom) flat-children)))))))
+
+(defun org-quip--get-cleaned-dom (html)
+  "Clean HTML as a list of cleaned DOM elements.
+
+The return value is a list of elements, each one having been
+scrubbed appropriately.  This function can be called on both the
+results of the quip exporter and the HTML we get back from quip
+to produce comparable results."
+  (with-temp-buffer
+    (insert html)
+    (letrec ((parsed-html (libxml-parse-html-region (point-min) (point-max)))
+             (cleaned-html (org-quip--clean-element-tree parsed-html)))
+      (org-quip--flatten-tree cleaned-html))))
+
+;; ==============================================
+;; Functions to do with mapping HTML and ORG IDs.
+;; ==============================================
+(defun org-quip--ensure-ids ()
+  "Ensure that each headline has a valid ID."
+  (org-map-entries
+   (lambda ()
+     (unless (org-entry-get nil "CUSTOM_ID")
+       (let ((id (org-id-new)))
+         (org-entry-put nil "CUSTOM_ID" id)
+         (org-id-add-location id (buffer-file-name (buffer-base-buffer))))))))
+
+(defun org-quip--get-element-id (element)
+  "Return the ID attribute of the specified ELEMENT."
+  (let ((elt-attrs (second element)))
+    (if elt-attrs
+        (alist-get 'id elt-attrs))))
+
+(defun org-quip--make-id-alist (org-html quip-html)
+  "Create a alist mapping IDs in ORG-HTML to IDs in QUIP-HTML.
+
+This works by getting a clean DOM from both and mapping them
+together.  We assume that the HTML is compatible, i.e., that you
+just published this.  Otherwise the correspondance will be
+wrong."
+  (letrec ((org-dom (org-quip--get-cleaned-dom org-html))
+           (quip-dom (org-quip--get-cleaned-dom quip-html)))
+
+    (unless (equal (length org-dom) (length quip-dom))
+      (error "Org DOM and Quip DOM did not clean the same way"))
+
+    (letrec ((make-id-cons
+              (lambda (org-elt quip-elt)
+                (let ((org-id (org-quip--get-element-id org-elt))
+                      (quip-id (org-quip--get-element-id quip-elt)))
+                  (if (and quip-id org-id)
+                      (cons (intern org-id) quip-id)))))
+
+             (pairs (mapcar* make-id-cons org-dom quip-dom)))
+
+      (cl-remove-if #'null pairs))))
+
+(defun org-quip--remap-entry-id (pom id-map)
+  "Remap the CUSTOM_ID for the entry at POM to the corresponding entry in ID-MAP."
+  (letrec ((org-id-str (org-entry-get pom "CUSTOM_ID"))
+           (org-id (and org-id-str (intern org-id-str)))
+           (quip-id (and org-id (alist-get org-id id-map))))
+    (when quip-id
+      (org-entry-put pom "CUSTOM_ID" quip-id)
+      (org-id-add-location quip-id (buffer-file-name (buffer-base-buffer))))))
+
+(defun org-quip--sync-ids-with-quip (org-buffer org-html quip-html)
+  "Sync IDs in ORG-BUFFER by mapping ORG-HTML with those in QUIP-HTML.
+
+ORG-HTML should previously have been produced with
+org-quip--export-html and QUIP-HTML should be the result we get
+back from Quip.  They should be as in-sync as possible-- ideally
+you will have just published ORG-HTML to Quip and retrieved
+QUIP-HTML with no intervening changes."
+
+  (letrec ((id-map (org-quip--make-id-alist org-html quip-html)))
+    (with-current-buffer org-buffer
+      (org-map-entries
+       (lambda () (org-quip--remap-entry-id (point) id-map))))))
+
+;; ==========================================
 
 (defun org-quip--cleanup-quip-html ()
   "Remove things that convert badly."
@@ -30,7 +185,6 @@
     (goto-char (point-min))
     (while (re-search-forward "<li id='[A-Za-z0-9]+'" nil t)
       (replace-match "<li"))
-
     ))
 
 (defun org-quip--cleanup-org-buffer ()
@@ -165,9 +319,11 @@ except you only have a thread ID, not a full downloaded thread."
     (org-entry-put nil "QUIP_ID" identifier)))
 
 (defun org-quip--publish-quip (content)
-  "Publish CONTENT as a new Quip document.  Return the ID of the new document."
+  "Publish CONTENT as a new Quip document.
+
+Returns the published thread structure."
   (let ((response (quip-new-document content "html")))
-    (cdr (assoc 'id (cdr (assoc 'thread response))))))
+    response))
 
 (defun org-quip--extract-thread-id (url)
   "Extract a quip thread identifier from URL."
@@ -180,7 +336,7 @@ except you only have a thread ID, not a full downloaded thread."
       (error "%s does not appear to be a valid Quip url" url))))
 
 (defun org-quip--export-html (buffer)
-  "Export BUFFER as HTML with options suitable for quip."
+  "Export 'org-mode' BUFFER as HTML with options suitable for quip."
   (with-current-buffer buffer
     (let ((org-html-toplevel-hlevel 1))
       (org-export-as 'html nil nil t))))
@@ -188,13 +344,17 @@ except you only have a thread ID, not a full downloaded thread."
 (defun org-quip-publish-to-quip ()
   "Publish the current buffer to Quip."
   (interactive)
+  (org-quip--ensure-ids)
   (let
       ((quip-id (org-quip--get-thread-identifier))
        (content (org-quip--export-html (current-buffer))))
     (if quip-id
         (org-quip-update-quip quip-id content)
-      (let ((new-quip-id (org-quip--publish-quip content)))
-        (org-quip--put-thread-identifier new-quip-id)))))
+      (letrec ((quip-thread (org-quip--publish-quip content))
+               (new-quip-id (alist-get 'id (alist-get 'thread quip-thread)))
+               (quip-html (alist-get 'html quip-thread)))
+        (org-quip--put-thread-identifier new-quip-id)
+        (org-quip--sync-ids-with-quip (current-buffer) content quip-html)))))
 
 (defun org-quip-refresh ()
   "Refresh the current document from quip.
@@ -215,6 +375,102 @@ This replaces what's in the buffer so I hope you're OK with that."
 
     (org-quip--get-org-buffer-from-quip-thread thread thread-buffer)
     (display-buffer thread-buffer)))
+
+;;; Update:
+(defun org-quip--get-buffer-thread-id (buffer)
+  "Get the Quip thread ID from BUFFER."
+  (with-current-buffer buffer
+    (save-excursion
+
+      (goto-char (point-min))
+      (search-forward ":PROPERTIES:")
+      (next-line)
+      (org-quip--get-thread-identifier)
+
+      )))
+
+(defun org-quip--merge-contents (list)
+  "Concatenate adjacent strings in LIST."
+  (let ((current (car list))
+        (next (car (cdr list)))
+        (rest (cdr (cdr list))))
+    (cond
+     ((null current) nil)
+     ((and (stringp current) (stringp next))
+      (jd/merge-it (cons (concat current " " next) rest)))
+     (t
+      (cons current (org-quip--merge-contents (cdr list)))))))
+
+(defun org-quip--get-squeaky-dom (dom)
+  "Clean up DOM even further, for the purposes of diffing."
+  (cond
+   ((stringp dom) (string-trim dom))
+
+   ((member (first dom) '(h1 h2 h3 h4 h5 h6))
+    (list (first dom)
+          (list (cons 'id (org-quip--get-element-id dom)))
+          (mapcar #'org-quip--get-squeaky-dom (cddr dom))))
+
+   ((symbolp (first dom))
+    (list (first dom)
+          nil
+          (org-quip--merge-contents
+           (mapcar #'org-quip--get-squeaky-dom (cddr dom)))))
+
+   (t (org-quip--merge-contents (mapcar #'org-quip--get-squeaky-dom dom)))))
+
+(defun org-quip--get-cleaned-html-string (html)
+  "Clean HTML as a nice string for diffing."
+  (with-temp-buffer
+    (mapcar
+     (lambda (elem)
+       (prin1 elem (current-buffer))
+       (insert "\n"))
+     (org-quip--get-squeaky-dom (org-quip--get-cleaned-dom html)))
+
+    (buffer-string)))
+
+(defun org-quip--test-blarg ()
+  "This is a test blarg."
+
+
+
+  (letrec ((buffer (get-buffer "leavingconfigerator.org"))
+           (thread-id (org-quip--get-buffer-thread-id buffer))
+           (old-html (alist-get 'html (quip-get-thread thread-id)))
+           (old-diff-text (org-quip--get-cleaned-html-string old-html))
+           (new-html (org-quip--export-html buffer))
+           (new-diff-text (org-quip--get-cleaned-html-string new-html))
+
+           (old-diff-file (make-temp-file "qod"))
+           (new-diff-file (make-temp-file "qnd"))
+
+           )
+
+    (with-temp-file old-diff-file
+      (insert old-diff-text))
+    (with-temp-file new-diff-file
+      (insert new-diff-text))
+
+    (with-current-buffer (get-buffer-create "*What*")
+      (erase-buffer)
+      (call-process "diff"
+                    nil (current-buffer) nil
+                    old-diff-file new-diff-file
+                    "-d" "-U" "9999")
+
+      (delete-file old-diff-file)
+      (delete-file new-diff-file)
+
+      (diff-mode)
+      (display-buffer (current-buffer))))
+
+
+  (org-quip--merge-contents '("a" "b" 1 "c"))
+
+  (third '(1))
+)
+
 
 (provide 'ox-quip)
 ;;; ox-quip.el ends here

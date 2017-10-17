@@ -1,4 +1,4 @@
-;;; ox-quip.el -- Publish from org-mode to Quip.
+;;; ox-quip.el -- Publish from org-mode to Quip. -*- lexical-binding: t -*-
 
 ;;; Commentary:
 ;; Publisher from org-mode to Quip.  (Export as markdown, push as a new
@@ -31,24 +31,17 @@ compare properly."
   (mapcar #'org-quip--clean-element-tree
           (cl-remove-if 'org-quip--remove-element-p (cddr elem))))
 
-(defun org-quip--clean-element-tree (elem)
-  "Clean up an HTML element ELEM, removing contents that are empty strings."
-  (cond
-   ((listp elem)
-    (append (list (first elem) (second elem))
-            (org-quip--clean-element-contents (cddr elem))))
+(defun org-quip--clean-string (string tag)
+  "Clean up the text in the STRING contained in TAG, to match good text."
+  (let ((string string))
+    (setq string (replace-regexp-in-string (char-to-string 160) " " string))
+    (setq string (replace-regexp-in-string (char-to-string #x200B) "" string))
+    (unless (eq 'pre tag)
+      (setq string (replace-regexp-in-string "[[:space:]]+" " " string)))
+    string))
 
-   ((stringp elem)
-    (let ((elem elem))
-      (setq elem (replace-regexp-in-string (char-to-string 160) " " elem))
-      (setq elem (replace-regexp-in-string (char-to-string #x200B) " " elem))
-      (setq elem (replace-regexp-in-string "[[:space:]]+" " " elem))
-      elem))
-
-   (t elem)))
-
-(defun org-quip--flatten-tree (dom)
-  "Clean up the DOM by flattening child elements.
+(defun org-quip--clean-element-contents (contents tag)
+  "Do some shit with CONTENTS of TAG.
 
 We extract and flatten children from wrapper elements like
 <html>, <body>, some <divs>, &c.  The goal is to be able to run
@@ -59,35 +52,49 @@ comparable.
 \(The specific org export we're dealing with is
 'org-quip--export-html'.)"
   (cond
-   ;; If the thing we're looking at is an atom of some sort (string,
-   ;; whatever) then we just wrap it in a list.
-   ((not (listp dom))
-    (list dom))
+                                        ; (base case)
+   ((null contents) nil)
 
-   ;; If the thing we're looking at it one of the kinds of elements that we
-   ;; want to unwrap, then join the lists containing the result of recursing
-   ;; on this element's children.
-   ;;
-   ;; These are verboten automatically.
-   ((or (member (first dom) '(div html body span br))
-        ;; No anchors without hrefs.
-        (and (eq (first dom) 'a)
-             (second dom)
-             (not (alist-get 'href (second dom))))
-        )
-    (apply #'append (mapcar #'org-quip--flatten-tree (cddr dom))))
+                                        ; Join strings together until we're
+                                        ; done. But we're not perfect.
+   ((and (stringp (car contents)) (stringp (cadr contents)))
+    (org-quip--clean-element-contents (cons (concat (car contents)
+                                                    (cadr contents))
+                                            (cddr contents))
+                                      tag))
 
-   ;; Otherwise: the thing we're looking at is an element we'd like to
-   ;; keep. Keep the tag and attributes and have the children be the
-   ;; flattened result of recursing on the original element's children.
-   ;;
-   ;; (It's super confusing because we have to return this element in a list,
-   ;; which is itself a list...)
+                                        ; We're done joining strings, clean
+                                        ; this one up, and move on with the
+                                        ; rest of the work.
+   ((stringp (car contents))
+    (cons (org-quip--clean-string (car contents) tag)
+          (org-quip--clean-element-contents (cdr contents) tag)))
+
+                                        ; We're looking at an element; is
+                                        ; this an element we're unfolding?
+   ((or (member (caar contents) '(div html body span br))
+        (and (eq (caar contents) 'a)
+             (cdar contents)
+             (not (alist-get 'href (cdar contents)))))
+    (org-quip--clean-element-contents (append (cddar contents) (cdr contents))
+                                      tag))
+
+                                        ; OK, we're keeping this element.
+                                        ; Clean it up and stick it in the
+                                        ; list.
    (t
-    (letrec ((children (cddr dom))
-             (flat-children (apply #'append
-                                   (mapcar #'org-quip--flatten-tree children))))
-      (list (append (list (first dom) (second dom) flat-children)))))))
+    (letrec ((new-tag (caar contents))
+             (attribs (when (member new-tag '(h1 h2 h3 h4 h5 h6))
+                        (list
+                         (cons 'id
+                               (org-quip--get-element-id (car contents))))))
+             (body (org-quip--clean-element-contents (cddar contents) new-tag))
+             (new-elem (append (list new-tag attribs) body)))
+
+      (cons new-elem
+            (org-quip--clean-element-contents (cdr contents) tag))))
+
+   ))
 
 (defun org-quip--get-cleaned-dom (html)
   "Clean HTML as a list of cleaned DOM elements.
@@ -98,9 +105,8 @@ results of the quip exporter and the HTML we get back from quip
 to produce comparable results."
   (with-temp-buffer
     (insert html)
-    (letrec ((parsed-html (libxml-parse-html-region (point-min) (point-max)))
-             (cleaned-html (org-quip--clean-element-tree parsed-html)))
-      (org-quip--flatten-tree cleaned-html))))
+    (let ((parsed-html (libxml-parse-html-region (point-min) (point-max))))
+      (org-quip--clean-element-contents (list parsed-html) nil))))
 
 ;; ==============================================
 ;; Functions to do with mapping HTML and ORG IDs.
@@ -389,36 +395,6 @@ This replaces what's in the buffer so I hope you're OK with that."
 
       )))
 
-(defun org-quip--merge-contents (list)
-  "Concatenate adjacent strings in LIST."
-  (let ((current (car list))
-        (next (car (cdr list)))
-        (rest (cdr (cdr list))))
-    (cond
-     ((null current) nil)
-     ((and (stringp current) (stringp next))
-      (jd/merge-it (cons (concat current " " next) rest)))
-     (t
-      (cons current (org-quip--merge-contents (cdr list)))))))
-
-(defun org-quip--get-squeaky-dom (dom)
-  "Clean up DOM even further, for the purposes of diffing."
-  (cond
-   ((stringp dom) (string-trim dom))
-
-   ((member (first dom) '(h1 h2 h3 h4 h5 h6))
-    (list (first dom)
-          (list (cons 'id (org-quip--get-element-id dom)))
-          (mapcar #'org-quip--get-squeaky-dom (cddr dom))))
-
-   ((symbolp (first dom))
-    (list (first dom)
-          nil
-          (org-quip--merge-contents
-           (mapcar #'org-quip--get-squeaky-dom (cddr dom)))))
-
-   (t (org-quip--merge-contents (mapcar #'org-quip--get-squeaky-dom dom)))))
-
 (defun org-quip--get-cleaned-html-string (html)
   "Clean HTML as a nice string for diffing."
   (with-temp-buffer
@@ -426,8 +402,7 @@ This replaces what's in the buffer so I hope you're OK with that."
      (lambda (elem)
        (prin1 elem (current-buffer))
        (insert "\n"))
-     (org-quip--get-squeaky-dom (org-quip--get-cleaned-dom html)))
-
+     (org-quip--get-cleaned-dom html))
     (buffer-string)))
 
 (defun org-quip--test-blarg ()
@@ -465,8 +440,6 @@ This replaces what's in the buffer so I hope you're OK with that."
       (diff-mode)
       (display-buffer (current-buffer))))
 
-
-  (org-quip--merge-contents '("a" "b" 1 "c"))
 
   (third '(1))
 )

@@ -26,11 +26,6 @@ compare properly."
   (and (stringp elem)
        (equal 0 (length (string-trim elem)))))
 
-(defun org-quip--clean-element-contents (contents)
-  "Clean up element contents CONTENTS."
-  (mapcar #'org-quip--clean-element-tree
-          (cl-remove-if 'org-quip--remove-element-p (cddr elem))))
-
 (defun org-quip--clean-string (string tag)
   "Clean up the text in the STRING contained in TAG, to match good text."
   (let ((string string))
@@ -79,8 +74,8 @@ get all the strings, nested or not, and that includes inside
             (org-quip--clean-element-strings (cdr contents) tag))))
    ))
 
-(defun org-quip--clean-element-contents (contents tag)
-  "Clean up the CONTENTS of DOM element with tag TAG.
+(defun org-quip--clean-element-contents (contents tag strip)
+  "Clean up the CONTENTS of element with tag TAG, optionally STRIP IDs.
 
 We extract and flatten children from wrapper elements like
 <html>, <body>, some <divs>, &c.  The goal is to be able to run
@@ -96,12 +91,12 @@ correspondence."
                                         ; them in another pass.
    ((stringp (car contents))
     (cons (car contents)
-          (org-quip--clean-element-contents (cdr contents) tag)))
+          (org-quip--clean-element-contents (cdr contents) tag strip)))
 
                                         ; <br> is "\n".
    ((eq (caar contents) 'br)
     (cons "\n"
-          (org-quip--clean-element-contents (cdr contents) tag)))
+          (org-quip--clean-element-contents (cdr contents) tag strip)))
 
                                         ; Is this an element we're unfolding?
    ((or (member (caar contents) '(div html body span))
@@ -109,24 +104,28 @@ correspondence."
              (cdar contents)
              (not (alist-get 'href (cdar contents)))))
     (org-quip--clean-element-contents (append (cddar contents) (cdr contents))
-                                      tag))
+                                      tag
+                                      strip))
 
                                         ; This is an element we're keeping.
    (t
     (letrec ((new-tag (caar contents))
-             (attribs (when (member new-tag '(h1 h2 h3 h4 h5 h6))
+             (attribs (when (or (not strip)
+                                (member new-tag '(h1 h2 h3 h4 h5 h6)))
                         (list
                          (cons 'id
                                (org-quip--get-element-id (car contents))))))
-             (body (org-quip--clean-element-contents (cddar contents) new-tag))
+             (body (org-quip--clean-element-contents (cddar contents)
+                                                     new-tag
+                                                     strip))
              (new-elem (append (list new-tag attribs) body)))
 
       (cons new-elem
-            (org-quip--clean-element-contents (cdr contents) tag))))
+            (org-quip--clean-element-contents (cdr contents) tag strip))))
 
    ))
 
-(defun org-quip--get-cleaned-dom (html)
+(defun org-quip--get-cleaned-dom (html &optional strip)
   "Clean HTML as a list of cleaned DOM elements.
 
 The return value is a list of elements, each one having been
@@ -137,7 +136,8 @@ to produce comparable results."
     (insert html)
     (letrec ((parsed-html (libxml-parse-html-region (point-min) (point-max)))
              (phase-one (org-quip--clean-element-contents (list parsed-html)
-                                                          nil))
+                                                          nil
+                                                          strip))
              (phase-two (org-quip--clean-element-strings phase-one nil)))
       (cl-remove-if #'stringp phase-two))))
 
@@ -380,6 +380,14 @@ Returns the published thread structure."
     (let ((org-html-toplevel-hlevel 1))
       (org-export-as 'html nil nil t))))
 
+(defun org-quip--export-html-fragment (buffer start end)
+  (save-excursion
+   (with-current-buffer buffer
+     (save-restriction
+       (narrow-to-region start end)
+       (let ((org-html-toplevel-hlevel 1))
+         (org-export-as 'html nil nil t))))))
+
 (defun org-quip-publish-to-quip ()
   "Publish the current buffer to Quip."
   (interactive)
@@ -433,46 +441,243 @@ This replaces what's in the buffer so I hope you're OK with that."
   (with-temp-buffer
     (mapcar
      (lambda (elem)
+       (insert (or (org-quip--get-element-id elem) "nil"))
+       (insert " ")
        (prin1 elem (current-buffer))
        (insert "\n"))
-     (org-quip--get-cleaned-dom html))
+     (org-quip--get-cleaned-dom html t))
     (buffer-string)))
+
+(defun org-quip--find-with-custom-id (custom-id)
+  "Find the entry with the specified CUSTOM-ID and return the point."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward (concat "^[ \t]*:CUSTOM_ID:[ \t]+"
+                                     (regexp-quote custom-id)
+                                     "[ \t]*$")
+                             nil t)
+      (org-back-to-heading t)
+      (point))))
+
+(defun org-quip--get-element-end (element)
+  (let ((type (org-element-type element))
+        (next-element))
+    (cond ((eq type 'headline)
+           (save-excursion
+             (goto-char (1+ (org-element-property :contents-begin element)))
+             (setq next-element (org-element-at-point))
+             (if (eq (org-element-type next-element) 'property-drawer)
+                 (org-element-property :end next-element)
+               (org-element-property :contents-begin element))))
+
+          (t
+           (org-element-property :end element))
+          )))
+
+(defun org-quip--get-positions-from-ids (buffer org-id-list)
+  "With the specified BUFFER and ORG-ID-LIST, compute a list of (start, end) pairs."
+  (save-excursion
+    (with-current-buffer buffer
+      (let ((id-list org-id-list)
+            (pos-list nil))
+        (while id-list
+          ;; Go to either the start of the element in the ID list, if we have
+          ;; an ID, or to the end of the previous element if we
+          ;; don't. (Assuming that this is how it goes.)
+          (goto-char (if (car id-list)
+                         (org-quip--find-with-custom-id (car id-list))
+                       (cdar pos-list)))
+
+          ;; Examine the element at point and push the start and end position
+          ;; of the element.
+          (letrec ((element (org-element-at-point))
+                   (begin (org-element-property :begin element))
+                   (end (org-quip--get-element-end element)))
+
+            ;; (message "SCANNING: %s %s %s %s %s"
+            ;;          (car id-list)
+            ;;          (point)
+            ;;          begin
+            ;;          end
+            ;;          (org-element-type element))
+            (setq pos-list (cons (cons begin end) pos-list)))
+
+          (setq id-list (cdr id-list)))
+
+        ;; We were pushing onto pos-list so we gotta reverse it.
+        (nreverse pos-list)))))
+
+(defun org-quip--diff-org-and-quip (quip-html org-html)
+  "Generate a diff between the QUIP-HTML string and ORG-HTML string.
+
+The strings are 'cleaned' and formatted a little before they are diffed.
+Further processing will parse this diff text and turn it into a series of
+commands."
+    (let ((old-diff-text (org-quip--get-cleaned-html-string quip-html))
+          (new-diff-text (org-quip--get-cleaned-html-string org-html))
+          (old-diff-file (make-temp-file "qod"))
+          (new-diff-file (make-temp-file "qnd")))
+
+      (unwind-protect
+          (progn
+            (with-temp-file old-diff-file (insert old-diff-text))
+            (with-temp-file new-diff-file (insert new-diff-text))
+
+            (with-temp-buffer
+              (call-process "diff"
+                            nil (current-buffer) nil
+                            old-diff-file new-diff-file
+                            "-d" "-U" "1")
+
+              (buffer-string)))
+
+        (ignore-errors (delete-file old-diff-file))
+        (ignore-errors (delete-file new-diff-file)))))
+
+(defun org-quip--make-publish-diff (org-buffer quip-html)
+  "Generate a diff between the specified ORG-BUFFER and QUIP-HTML.
+
+The return value is a list of commands to execute against Quip."
+  ;;
+  ;; In order to make this work we need to generate a correspondence between
+  ;; the quip document and the org buffer. Quip gives us back a wodge of
+  ;; HTML, so what we do is we generate a correspondence between org's HTML
+  ;; and quip's HTML.
+  ;;
+  ;; That works more or less as follows:
+  ;;
+  ;; 1. Clean up the quip HTML into a list of "top-level" elements. Each
+  ;;    element is on its own "line".
+  ;;
+  ;; 2. Extract a list of element IDs from the quip HTML, one per line.
+  ;;
+  ;; 3. Generate HTML from org and do the same thing.
+  ;;
+  ;; 4. Extract a list of element IDs from the org HTML, again one per line.
+  ;;
+  ;; 5. Extract a list of element "positions" from the org buffer, one per
+  ;;    line. We do this by walking the org tree in a manner that's produces
+  ;;    equivalent results to the HTML walk. This is the sketchiest part of
+  ;;    the whole deal, and we do it because we can't reliably round-trip
+  ;;    HTML through Emacs' DOM. (That is, we can't just use the DOM we
+  ;;    extracted IDs from in step 4 to generate HTML to push to Quip because
+  ;;    the parser escapes things in ways I can't re-escape.)
+  ;;
+  ;;  6. Diff the quip HTML and org HTML.
+  ;;
+  ;;  7. Parse the diff, tracking "lines" and using the ID and position lists
+  ;;     we built up to generate commands.
+  ;;
+  (letrec ((old-dom  (org-quip--get-cleaned-dom quip-html))
+           (old-id-list (mapcar #'org-quip--get-element-id old-dom))
+
+           (new-html (org-quip--export-html buffer))
+           (new-dom  (org-quip--get-cleaned-dom new-html))
+           (new-id-list (mapcar #'org-quip--get-element-id new-dom))
+           (new-pos-list (org-quip--get-positions-from-ids buffer
+                                                           new-id-list))
+
+           (diff-text (org-quip--diff-org-and-quip quip-html new-html))
+
+           (last-id nil)
+           (remove-ids nil)
+           (insert-commands nil)
+           (old-line 0)
+           (new-line 0))
+
+    (with-temp-buffer
+      (insert diff-text)
+      (goto-char (point-min))
+      (forward-line 2)
+      (while (< (point) (point-max))
+        (cond
+         ;; Processing a resync line, e.g. `@@ -4,4 +4,4 @@'
+         ;;
+         ;; Just reset both line counters. Remember that diff line numbers
+         ;; are 1-based but since we use the counters as list indices they
+         ;; need to be 0-based.
+         ((looking-at "@@ -\\([0-9]+\\),[0-9]+ \\+\\([0-9]+\\),[0-9]+ @@")
+          (setq old-line (1- (string-to-int (match-string 1))))
+          (setq new-line (1- (string-to-int (match-string 2))))
+          ;; (message "Resync: %s %s" old-line new-line)
+          )
+
+         ;; Processing a remove.
+         ;;
+         ;; Remember all the removes come, then all the adds. We don't know
+         ;; if a remove is actually a remove or a replace yet so just batch
+         ;; up the removes.
+         ;;
+         ;; Also move the "old" line counter forward.
+         ((looking-at "-")
+          (let ((old-id (nth old-line old-id-list)))
+            (setq remove-ids (cons old-id remove-ids))
+            (setq last-id old-id)
+            (setq old-line (1+ old-line))
+            ;; (message "Old   : %s" old-id)
+            ))
+
+         ;; Processing an add.
+         ;;
+         ;; Adds might actually be "replace", so check to see if the ID we're
+         ;; adding is in the set of ID's we're removing. If it is, remove it,
+         ;; and the command is a "replace". If it isn't, then it's just an
+         ;; "insert-after".
+         ;;
+         ;; Also move the "new" line counter forward.
+         ((looking-at "\\+")
+          (letrec ((new-id (nth new-line new-id-list))
+                   (new-pos (nth new-line new-pos-list))
+                   (new-html (org-quip--export-html-fragment buffer
+                                                             (car new-pos)
+                                                             (cdr new-pos))))
+            (setq insert-commands
+                  (cons (cond ((member new-id remove-ids)
+                               (setq remove-ids (remove new-id remove-ids))
+                               (list 'replace new-id new-html))
+
+                              (t
+                               (list 'insert-after last-id new-html)))
+                        insert-commands))
+
+            (setq new-line (1+ new-line))
+            ;; (message "New   : %s" new-id)
+            ))
+
+         ;; Processing a shared line.
+         ;;
+         ;; Just tick both line counters forward. Also remember, we know the
+         ;; old ID for this line.
+         ((looking-at " ")
+          (setq last-id (nth old-line old-id-list))
+          (setq new-line (1+ new-line))
+          (setq old-line (1+ old-line))
+
+          ;; (message "Common: %s" last-id)
+          )
+         )
+
+        ;; (message "Tick  : %s %s %s %s" (point) last-id old-line new-line)
+        (forward-line))
+
+      ;; Convert all of our accumulated adds and removes into actual commands
+      ;; to run.
+      (append insert-commands
+              (mapcar (lambda (id) (list 'remove id)) remove-ids))
+      )))
 
 (defun org-quip--test-blarg ()
   "This is a test blarg."
 
 
-
   (letrec ((buffer (get-buffer "leavingconfigerator.org"))
            (thread-id (org-quip--get-buffer-thread-id buffer))
-           (old-html (alist-get 'html (quip-get-thread thread-id)))
-           (old-diff-text (org-quip--get-cleaned-html-string old-html))
-           (new-html (org-quip--export-html buffer))
-           (new-diff-text (org-quip--get-cleaned-html-string new-html))
 
-           (old-diff-file (make-temp-file "qod"))
-           (new-diff-file (make-temp-file "qnd"))
+           (old-html (alist-get 'html (quip-get-thread thread-id))))
 
-           )
-
-    (with-temp-file old-diff-file
-      (insert old-diff-text))
-    (with-temp-file new-diff-file
-      (insert new-diff-text))
-
-    (with-current-buffer (get-buffer-create "*What*")
-      (erase-buffer)
-      (call-process "diff"
-                    nil (current-buffer) nil
-                    old-diff-file new-diff-file
-                    "-d" "-U" "9999")
-
-      (delete-file old-diff-file)
-      (delete-file new-diff-file)
-
-      (diff-mode)
-      (display-buffer (current-buffer))))
-
+    ;(org-quip--diff-org-and-quip old-html (org-quip--export-html buffer))
+    (org-quip--make-publish-diff buffer old-html)
+    )
 
   (third '(1))
 )

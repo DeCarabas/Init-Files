@@ -68,12 +68,12 @@ that the content should be interpreted as such."
   "Get the Quip thread with the specified ID.  Return the parsed JSON response."
   (quip-invoke-json (concat "threads/" id) "GET" nil))
 
-(defconst quip-location-append 0)
-(defconst quip-location-prepend 1)
-(defconst quip-location-after-section 2)
-(defconst quip-location-before-section 3)
-(defconst quip-location-replace-section 4)
-(defconst quip-location-delete-section 5)
+(defconst quip-location-append "0")
+(defconst quip-location-prepend "1")
+(defconst quip-location-after-section "2")
+(defconst quip-location-before-section "3")
+(defconst quip-location-replace-section "4")
+(defconst quip-location-delete-section "5")
 
 (defun quip-thread-append (thread content &optional format)
                                         ; checkdoc-order: nil

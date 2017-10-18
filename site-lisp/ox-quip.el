@@ -1,10 +1,9 @@
 ;;; ox-quip.el -- Publish from org-mode to Quip. -*- lexical-binding: t -*-
 
 ;;; Commentary:
-;; Publisher from org-mode to Quip.  (Export as markdown, push as a new
+;; Publisher from org-mode to Quip.  (Export as HTML, push as a new
 ;; thread or amend to existing quip thread.)
 ;;
-;; BUG: Can't update documents on publish.
 ;; BUG: QUOTE is not rendered correctly.
 
 ;;; Code:
@@ -126,7 +125,7 @@ correspondence."
    ))
 
 (defun org-quip--get-cleaned-dom (html &optional strip)
-  "Clean HTML as a list of cleaned DOM elements.
+  "Clean HTML as a list of cleaned DOM elements, and maybe STRIP attributes.
 
 The return value is a list of elements, each one having been
 scrubbed appropriately.  This function can be called on both the
@@ -144,14 +143,16 @@ to produce comparable results."
 ;; ==============================================
 ;; Functions to do with mapping HTML and ORG IDs.
 ;; ==============================================
-(defun org-quip--ensure-ids ()
-  "Ensure that each headline has a valid ID."
-  (org-map-entries
-   (lambda ()
-     (unless (org-entry-get nil "CUSTOM_ID")
-       (let ((id (org-id-new)))
-         (org-entry-put nil "CUSTOM_ID" id)
-         (org-id-add-location id (buffer-file-name (buffer-base-buffer))))))))
+(defun org-quip--ensure-ids (buffer)
+  "Ensure that each headline in BUFFER has a valid ID."
+  (with-current-buffer buffer
+    (org-map-entries
+     (lambda ()
+       (unless (org-entry-get nil "CUSTOM_ID")
+         (let ((id (org-id-new)))
+           (org-entry-put nil "CUSTOM_ID" id)
+           (org-id-add-location id (buffer-file-name (buffer-base-buffer)))))))
+    ))
 
 (defun org-quip--get-element-id (element)
   "Return the ID attribute of the specified ELEMENT."
@@ -381,6 +382,7 @@ Returns the published thread structure."
       (org-export-as 'html nil nil t))))
 
 (defun org-quip--export-html-fragment (buffer start end)
+  "Export org BUFFER as HTML from START to END."
   (save-excursion
    (with-current-buffer buffer
      (save-restriction
@@ -391,12 +393,12 @@ Returns the published thread structure."
 (defun org-quip-publish-to-quip ()
   "Publish the current buffer to Quip."
   (interactive)
-  (org-quip--ensure-ids)
+  (org-quip--ensure-ids (current-buffer))
   (let
       ((quip-id (org-quip--get-thread-identifier))
        (content (org-quip--export-html (current-buffer))))
     (if quip-id
-        (org-quip-update-quip quip-id content)
+        (org-quip--update-quip (current-buffer) content quip-id)
       (letrec ((quip-thread (org-quip--publish-quip content))
                (new-quip-id (alist-get 'id (alist-get 'thread quip-thread)))
                (quip-html (alist-get 'html quip-thread)))
@@ -460,6 +462,16 @@ This replaces what's in the buffer so I hope you're OK with that."
       (point))))
 
 (defun org-quip--get-element-end (element)
+  "Get the end point of 'org-mode' ELEMENT.
+
+This is the end as we care about it: basically the end of the
+main part of the element, not the end of the entire element and
+its children.  We also don't care about things like a headline's
+property-drawer, so we skip that too.
+
+\(Basically if you export from from the start of the element to
+the value returned from this you get just the HTML for that
+element.)"
   (let ((type (org-element-type element))
         (next-element))
     (cond ((eq type 'headline)
@@ -534,8 +546,8 @@ commands."
         (ignore-errors (delete-file old-diff-file))
         (ignore-errors (delete-file new-diff-file)))))
 
-(defun org-quip--make-publish-diff (org-buffer quip-html)
-  "Generate a diff between the specified ORG-BUFFER and QUIP-HTML.
+(defun org-quip--make-publish-diff (org-buffer new-html quip-html)
+  "Generate a diff between the ORG-BUFFER with NEW-HTML and QUIP-HTML.
 
 The return value is a list of commands to execute against Quip."
   ;;
@@ -571,7 +583,6 @@ The return value is a list of commands to execute against Quip."
   (letrec ((old-dom  (org-quip--get-cleaned-dom quip-html))
            (old-id-list (mapcar #'org-quip--get-element-id old-dom))
 
-           (new-html (org-quip--export-html buffer))
            (new-dom  (org-quip--get-cleaned-dom new-html))
            (new-id-list (mapcar #'org-quip--get-element-id new-dom))
            (new-pos-list (org-quip--get-positions-from-ids buffer
@@ -636,6 +647,9 @@ The return value is a list of commands to execute against Quip."
                                (setq remove-ids (remove new-id remove-ids))
                                (list 'replace new-id new-html))
 
+                              ((null last-id)
+                               (list 'prepend new-html))
+
                               (t
                                (list 'insert-after last-id new-html)))
                         insert-commands))
@@ -666,22 +680,40 @@ The return value is a list of commands to execute against Quip."
               (mapcar (lambda (id) (list 'remove id)) remove-ids))
       )))
 
-(defun org-quip--test-blarg ()
-  "This is a test blarg."
+(defun org-quip--update-quip (buffer new-html thread-id)
+  "Update quip from 'org-mode' BUFFER with NEW-HTML and existing THREAD-ID."
+  (save-excursion
+    (org-quip--ensure-ids buffer)
+    (letrec ((old-html (alist-get 'html (quip-get-thread thread-id)))
+             (diff-commands (org-quip--make-publish-diff buffer
+                                                         new-html
+                                                         old-html)))
 
+      ;; Invoke all of the diff commands on quip.
+      (mapc (lambda (command)
+              (cond ((eq 'remove (car command))
+                     (quip-thread-delete-section thread-id (second command)))
 
-  (letrec ((buffer (get-buffer "leavingconfigerator.org"))
-           (thread-id (org-quip--get-buffer-thread-id buffer))
+                    ((eq 'replace (car command))
+                     (quip-thread-replace-section thread-id
+                                                  (second command)
+                                                  (third command)
+                                                  "html"))
 
-           (old-html (alist-get 'html (quip-get-thread thread-id))))
+                    ((eq 'insert-after (car command))
+                     (quip-thread-append-after thread-id
+                                               (second command)
+                                               (third command)
+                                               "html"))
 
-    ;(org-quip--diff-org-and-quip old-html (org-quip--export-html buffer))
-    (org-quip--make-publish-diff buffer old-html)
-    )
+                    ((eq 'prepend (car command))
+                     (quip-thread-prepend thread-id (second command) "html"))
+                    ))
+            diff-commands)
 
-  (third '(1))
-)
-
+      ;; Re-fetch the HTML from quip and sync IDs.
+      (setq old-html (alist-get 'html (quip-get-thread thread-id)))
+      (org-quip--sync-ids-with-quip buffer new-html old-html))))
 
 (provide 'ox-quip)
 ;;; ox-quip.el ends here

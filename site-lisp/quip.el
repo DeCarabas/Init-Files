@@ -19,7 +19,7 @@
   "Retrieve the stored API key.
 
 The API key comes from auth-source, however you have that set up.  If you don't
-have a key, get one from https://fb.quip.com/api/personal-token.  Put it in the
+have a key, get one from https://quip.com/api/personal-token.  Put it in the
 password field of an entry for host 'quip'."
   (let ((api-key (cadr (auth-source-user-and-password "quip"))))
     (when (not api-key)

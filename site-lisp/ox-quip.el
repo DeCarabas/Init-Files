@@ -43,35 +43,28 @@ This is structured as a separate pass from
 org-quip--clean-element-contents because we want to make sure we
 get all the strings, nested or not, and that includes inside
 <spans> and the newlines from <br />."
-  (cond
-   ((null contents) nil)
+  (let ((new-contents nil))
+    (while contents
+      (cond
+       ((stringp (car contents))
 
-                                        ; Process strings.
-   ((stringp (car contents))
-    (let ((this (car contents))
-          (rest (cdr contents)))
+        (if (stringp (cadr contents))
+            (setq contents (cons (concat (car contents) (cadr contents))
+                                 (cddr contents)))
+          (setq new-contents (cons (car contents) new-contents))
+          (setq contents (cdr contents))))
 
-      (while (stringp (car rest))
-        (setq this (concat this (car rest)))
-        (setq rest (cdr rest)))
+       (t
+        (letrec ((this (car contents))
+                 (new-tag (car this))
+                 (new-attrs (cadr this))
+                 (new-contents (org-quip--clean-element-strings (cddr this)
+                                                                new-tag))
+                 (new-elem (append (list new-tag new-attrs) new-contents)))
+          (setq new-contents (cons new-elem new-contents))
+          (setq contents (cdr contents))))))
 
-      (setq this (org-quip--clean-string this tag))
-      (setq rest (org-quip--clean-element-strings rest tag))
-      (if (> (length this) 0)
-          (cons this rest)
-        rest)))
-
-                                        ; Recurse into elements.
-   (t
-    (letrec ((this (car contents))
-             (new-tag (car this))
-             (new-attrs (cadr this))
-             (new-contents (org-quip--clean-element-strings (cddr this)
-                                                            new-tag))
-             (new-elem (append (list new-tag new-attrs) new-contents)))
-      (cons new-elem
-            (org-quip--clean-element-strings (cdr contents) tag))))
-   ))
+    (nreverse new-contents)))
 
 (defun org-quip--clean-element-contents (contents tag strip)
   "Clean up the CONTENTS of element with tag TAG, optionally STRIP IDs.
@@ -83,46 +76,43 @@ produced by org HTML export and get something that's roughly
 comparable.  We also clear all the attributes except for ID, and
 we only keep ID in certain cases where we know we can support the
 correspondence."
-  (cond
-   ((null contents) nil)
+  (let ((new-contents nil))
+    (while contents
+      (cond
+       ;; Strings are strings.
+       ((stringp (car contents))
+        (setq new-contents (cons (car contents) new-contents))
+        (setq contents (cdr contents)))
 
-                                        ; Ignore strings for now, we'll get
-                                        ; them in another pass.
-   ((stringp (car contents))
-    (cons (car contents)
-          (org-quip--clean-element-contents (cdr contents) tag strip)))
+       ;; <br /> is "\n".
+       ((eq (caar contents) 'br)
+        (setq new-contents (cons "\n" new-contents))
+        (setq contents (cdr contents)))
 
-                                        ; <br> is "\n".
-   ((eq (caar contents) 'br)
-    (cons "\n"
-          (org-quip--clean-element-contents (cdr contents) tag strip)))
+       ;; This might be an element we're unfolding...
+       ((or (member (caar contents) '(div html body span))
+            (and (eq (caar contents) 'a)
+                 (cdar contents)
+                 (not (alist-get 'href (cdar contents)))))
+        (setq contents (append (cddar contents) (cdr contents))))
 
-                                        ; Is this an element we're unfolding?
-   ((or (member (caar contents) '(div html body span))
-        (and (eq (caar contents) 'a)
-             (cdar contents)
-             (not (alist-get 'href (cdar contents)))))
-    (org-quip--clean-element-contents (append (cddar contents) (cdr contents))
-                                      tag
-                                      strip))
+       ;; This is an element we're keeping.
+       (t
+        (letrec ((el-keep (car contents))
+                 (new-tag (car el-keep))
+                 (new-id (org-quip--get-element-id el-keep))
+                 (attribs (when (or (not strip)
+                                    (member new-tag '(h1 h2 h3 h4 h5 h6)))
+                            `((id . ,new-id))))
+                 (body (org-quip--clean-element-contents (cddr el-keep)
+                                                         new-tag
+                                                         strip))
+                 (new-elem (append (list new-tag attribs) body)))
 
-                                        ; This is an element we're keeping.
-   (t
-    (letrec ((new-tag (caar contents))
-             (attribs (when (or (not strip)
-                                (member new-tag '(h1 h2 h3 h4 h5 h6)))
-                        (list
-                         (cons 'id
-                               (org-quip--get-element-id (car contents))))))
-             (body (org-quip--clean-element-contents (cddar contents)
-                                                     new-tag
-                                                     strip))
-             (new-elem (append (list new-tag attribs) body)))
+          (setq new-contents (cons new-elem new-contents))
+          (setq contents (cdr contents))))))
 
-      (cons new-elem
-            (org-quip--clean-element-contents (cdr contents) tag strip))))
-
-   ))
+    (nreverse new-contents)))
 
 (defun org-quip--get-cleaned-dom (html &optional strip)
   "Clean HTML as a list of cleaned DOM elements, and maybe STRIP attributes.
@@ -313,7 +303,7 @@ acceptable org, and (c) running a cleanup pass over the generated
 org markup.
 
 The end result is fairly clean 'org-mode' markup."
-  (let ((quip-html (alist-get 'html (quip-get-thread thread-id))))
+  (let ((quip-html (alist-get 'html thread)))
     (with-current-buffer buffer
       (erase-buffer)
       (with-temp-buffer
@@ -333,7 +323,7 @@ The end result is fairly clean 'org-mode' markup."
 
       ;; HAX
       (goto-char (point-min))
-      (org-entry-put nil "QUIP_ID" thread-id)
+      (org-entry-put nil "QUIP_ID" (alist-get 'id (alist-get 'thread thread)))
 
       (goto-char (point-min))
       (insert "#+options: num:nil\n\n")
@@ -585,7 +575,7 @@ The return value is a list of commands to execute against Quip."
 
            (new-dom  (org-quip--get-cleaned-dom new-html))
            (new-id-list (mapcar #'org-quip--get-element-id new-dom))
-           (new-pos-list (org-quip--get-positions-from-ids buffer
+           (new-pos-list (org-quip--get-positions-from-ids org-buffer
                                                            new-id-list))
 
            (diff-text (org-quip--diff-org-and-quip quip-html new-html))
@@ -639,7 +629,7 @@ The return value is a list of commands to execute against Quip."
          ((looking-at "\\+")
           (letrec ((new-id (nth new-line new-id-list))
                    (new-pos (nth new-line new-pos-list))
-                   (new-html (org-quip--export-html-fragment buffer
+                   (new-html (org-quip--export-html-fragment org-buffer
                                                              (car new-pos)
                                                              (cdr new-pos))))
             (setq insert-commands
@@ -689,31 +679,34 @@ The return value is a list of commands to execute against Quip."
                                                          new-html
                                                          old-html)))
 
-      ;; Invoke all of the diff commands on quip.
-      (mapc (lambda (command)
-              (cond ((eq 'remove (car command))
-                     (quip-thread-delete-section thread-id (second command)))
+      (message "COMMANDS: %s" diff-commands)
 
-                    ((eq 'replace (car command))
-                     (quip-thread-replace-section thread-id
-                                                  (second command)
-                                                  (third command)
-                                                  "html"))
+      ;; ;; Invoke all of the diff commands on quip.
+      ;; (mapc (lambda (command)
+      ;;         (cond ((eq 'remove (car command))
+      ;;                (quip-thread-delete-section thread-id (second command)))
 
-                    ((eq 'insert-after (car command))
-                     (quip-thread-append-after thread-id
-                                               (second command)
-                                               (third command)
-                                               "html"))
+      ;;               ((eq 'replace (car command))
+      ;;                (quip-thread-replace-section thread-id
+      ;;                                             (second command)
+      ;;                                             (third command)
+      ;;                                             "html"))
 
-                    ((eq 'prepend (car command))
-                     (quip-thread-prepend thread-id (second command) "html"))
-                    ))
-            diff-commands)
+      ;;               ((eq 'insert-after (car command))
+      ;;                (quip-thread-append-after thread-id
+      ;;                                          (second command)
+      ;;                                          (third command)
+      ;;                                          "html"))
+
+      ;;               ((eq 'prepend (car command))
+      ;;                (quip-thread-prepend thread-id (second command) "html"))
+      ;;               ))
+      ;;       diff-commands)
 
       ;; Re-fetch the HTML from quip and sync IDs.
-      (setq old-html (alist-get 'html (quip-get-thread thread-id)))
-      (org-quip--sync-ids-with-quip buffer new-html old-html))))
+      ;; (setq old-html (alist-get 'html (quip-get-thread thread-id)))
+      ;; (org-quip--sync-ids-with-quip buffer new-html old-html)
+      )))
 
 (provide 'ox-quip)
 ;;; ox-quip.el ends here

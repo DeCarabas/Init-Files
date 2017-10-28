@@ -18,9 +18,10 @@
 (defun quip-api-key ()
   "Retrieve the stored API key.
 
-The API key comes from auth-source, however you have that set up.  If you don't
-have a key, get one from https://quip.com/api/personal-token.  Put it in the
-password field of an entry for host 'quip'."
+The API key comes from auth-source, however you have that set up.
+If you don't have a key, get one from
+https://quip.com/api/personal-token.  Put it in the password
+field of an entry for host 'quip'."
   (let ((api-key (cadr (auth-source-user-and-password "quip"))))
     (when (not api-key)
       (error "No API key set for quip in ~/.authinfo"))
@@ -37,8 +38,8 @@ password field of an entry for host 'quip'."
   "Make a request to the Quip API, and return the parsed JSON from the response.
 
 A Quip API call involves issuing an HTTP request to path PATH,
-with method METHOD, and parameters PARAMS.  This routine knows the
-base URL and adds the necessary headers."
+with method METHOD, and parameters PARAMS.  This routine knows
+the base URL and adds the necessary headers."
   (let
       ((url (concat "https://platform.quip.com/1/" path))
        (url-request-method method)

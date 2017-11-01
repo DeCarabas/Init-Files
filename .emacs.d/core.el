@@ -79,21 +79,8 @@
             '(("no_proxy" . "^\\(localhost\\|10.*\\)")
               ("http" . "fwdproxy:8080")
               ("https" . "fwdproxy:8080"))))
-
-  ;; Load cool arcanist stuff.
-  (require '50-arc)
   )
 
-;; =================================================================
-;; Common stuff that's needed once
-;; =================================================================
-(require 'cl)
-(require 'saveplace)
-(require 'ffap)
-(require 'uniquify)
-(require 'ansi-color)
-(require 'recentf)
-(prefer-coding-system 'utf-8)
 
 ;; =================================================================
 ;; Packages
@@ -111,6 +98,21 @@
 (unless package-archive-contents
   (package-refresh-contents))
 (package-install-selected-packages)
+
+
+;; =================================================================
+;; Common stuff that's needed once
+;; =================================================================
+(require 'cl)
+(require 'saveplace)
+(require 'ffap)
+(require 'uniquify)
+(require 'ansi-color)
+(require 'recentf)
+(when is-fb-environment
+  (require '50-arc))
+
+(prefer-coding-system 'utf-8)
 
 ;; =================================================================
 ;; EMACS general look and feel

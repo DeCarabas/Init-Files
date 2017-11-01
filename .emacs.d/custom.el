@@ -43,9 +43,14 @@
  '(org-todo-keywords
    (quote
     ((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED"))))
+ '(package-archives
+   (quote
+    (("org" . "http://orgmode.org/elpa/")
+     ("gnu" . "http://elpa.gnu.org/packages/")
+     ("melpa" . "http://stable.melpa.org/packages/"))))
  '(package-selected-packages
    (quote
-    (cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode ahg zencoding-mode tss switch-window python-mode paredit monky magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-solarized color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode)))
+    (projectile dash cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode ahg zencoding-mode tss switch-window python-mode paredit monky magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-solarized color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode)))
  '(reb-re-syntax (quote string))
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values

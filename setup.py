@@ -1,7 +1,7 @@
 #!/usr/local/bin/python3
 import os
 
-ignore = {'setup.cmd', 'setup.py', 'setup.ps1', 'readme.md'}
+ignore = {'setup.cmd', 'setup.py', 'setup.ps1', 'readme.md', '.git'}
 
 home = os.path.expanduser('~')
 source_files = [file for file in os.listdir(os.getcwd()) if file not in ignore]

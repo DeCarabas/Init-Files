@@ -5,6 +5,7 @@
 ;; thread or amend to existing quip thread.)
 ;;
 ;; BUG: QUOTE is not rendered correctly.
+;; TODO: Convert the quip ID to a full-on URL
 
 ;;; Code:
 (require 'cl-extra)
@@ -51,16 +52,16 @@ get all the strings, nested or not, and that includes inside
         (if (stringp (cadr contents))
             (setq contents (cons (concat (car contents) (cadr contents))
                                  (cddr contents)))
-          (setq new-contents (cons (car contents) new-contents))
+          (setq new-contents (cons (org-quip--clean-string (car contents) tag)
+                                   new-contents))
           (setq contents (cdr contents))))
 
        (t
         (letrec ((this (car contents))
                  (new-tag (car this))
                  (new-attrs (cadr this))
-                 (new-contents (org-quip--clean-element-strings (cddr this)
-                                                                new-tag))
-                 (new-elem (append (list new-tag new-attrs) new-contents)))
+                 (new-body (org-quip--clean-element-strings (cddr this) new-tag))
+                 (new-elem (append (list new-tag new-attrs) new-body)))
           (setq new-contents (cons new-elem new-contents))
           (setq contents (cdr contents))))))
 
@@ -114,6 +115,15 @@ correspondence."
 
     (nreverse new-contents)))
 
+(defun org-quip--parse-html (html)
+  "Just parse some HTML.
+
+Emacs HTML parsing only works on a buffer which is bizarre, so this little
+wrapper makes it work on a string."
+  (with-temp-buffer
+    (insert html)
+    (libxml-parse-html-region (point-min) (point-max))))
+
 (defun org-quip--get-cleaned-dom (html &optional strip)
   "Clean HTML as a list of cleaned DOM elements, and maybe STRIP attributes.
 
@@ -121,14 +131,12 @@ The return value is a list of elements, each one having been
 scrubbed appropriately.  This function can be called on both the
 results of the quip exporter and the HTML we get back from quip
 to produce comparable results."
-  (with-temp-buffer
-    (insert html)
-    (letrec ((parsed-html (libxml-parse-html-region (point-min) (point-max)))
-             (phase-one (org-quip--clean-element-contents (list parsed-html)
-                                                          nil
-                                                          strip))
-             (phase-two (org-quip--clean-element-strings phase-one nil)))
-      (cl-remove-if #'stringp phase-two))))
+  (letrec ((parsed-html (org-quip--parse-html html))
+           (phase-one (org-quip--clean-element-contents (list parsed-html)
+                                                        nil
+                                                        strip))
+           (phase-two (org-quip--clean-element-strings phase-one nil)))
+    (cl-remove-if #'stringp phase-two)))
 
 ;; ==============================================
 ;; Functions to do with mapping HTML and ORG IDs.
@@ -196,6 +204,11 @@ QUIP-HTML with no intervening changes."
     (with-current-buffer org-buffer
       (org-map-entries
        (lambda () (org-quip--remap-entry-id (point) id-map))))))
+
+(ert-deftest org-quip-test-stuff ()
+
+
+  )
 
 ;; ==========================================
 
@@ -586,6 +599,11 @@ The return value is a list of commands to execute against Quip."
            (old-line 0)
            (new-line 0))
 
+    (with-current-buffer (get-buffer-create "*Debug Diff*")
+      (erase-buffer)
+      (insert diff-text)
+      (diff-mode))
+
     (with-temp-buffer
       (insert diff-text)
       (goto-char (point-min))
@@ -600,7 +618,7 @@ The return value is a list of commands to execute against Quip."
          ((looking-at "@@ -\\([0-9]+\\),[0-9]+ \\+\\([0-9]+\\),[0-9]+ @@")
           (setq old-line (1- (string-to-int (match-string 1))))
           (setq new-line (1- (string-to-int (match-string 2))))
-          ;; (message "Resync: %s %s" old-line new-line)
+          (message "Resync: %s %s" old-line new-line)
           )
 
          ;; Processing a remove.
@@ -615,7 +633,7 @@ The return value is a list of commands to execute against Quip."
             (setq remove-ids (cons old-id remove-ids))
             (setq last-id old-id)
             (setq old-line (1+ old-line))
-            ;; (message "Old   : %s" old-id)
+            (message "Old   : %s" old-id)
             ))
 
          ;; Processing an add.
@@ -645,7 +663,7 @@ The return value is a list of commands to execute against Quip."
                         insert-commands))
 
             (setq new-line (1+ new-line))
-            ;; (message "New   : %s" new-id)
+            (message "New   : %s" new-id)
             ))
 
          ;; Processing a shared line.
@@ -657,11 +675,11 @@ The return value is a list of commands to execute against Quip."
           (setq new-line (1+ new-line))
           (setq old-line (1+ old-line))
 
-          ;; (message "Common: %s" last-id)
+          (message "Common: %s" last-id)
           )
          )
 
-        ;; (message "Tick  : %s %s %s %s" (point) last-id old-line new-line)
+        (message "Tick  : %s %s %s %s" (point) last-id old-line new-line)
         (forward-line))
 
       ;; Convert all of our accumulated adds and removes into actual commands
@@ -707,6 +725,19 @@ The return value is a list of commands to execute against Quip."
       ;; (setq old-html (alist-get 'html (quip-get-thread thread-id)))
       ;; (org-quip--sync-ids-with-quip buffer new-html old-html)
       )))
+
+(defun test-what ()
+  "A test, what."
+  (letrec ((thread-id "GPPAAAud6tF")
+           (thread (quip-get-thread thread-id))
+           (quip-html (alist-get 'html thread))
+           )
+
+    (org-quip--get-cleaned-dom quip-html)
+
+    )
+
+  )
 
 (provide 'ox-quip)
 ;;; ox-quip.el ends here

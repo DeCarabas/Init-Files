@@ -15,6 +15,14 @@
 (require 'whitespace)
 (require 'quip)
 
+(defconst org-quip--super-debug nil
+  "Set this to non-nil and re-eval to get debugging output.")
+
+(defun org-quip--debug (format-string &rest args)
+  "When debugging is enabled, use 'message' to emit FORMAT-STRING with ARGS."
+  (when org-quip--super-debug
+    (apply #'message (cons format-string args))))
+
 ;; ===================================
 ;; Functions to do with cleaning DOMs.
 ;; ===================================
@@ -509,12 +517,12 @@ element.)"
                    (begin (org-element-property :begin element))
                    (end (org-quip--get-element-end element)))
 
-            ;; (message "SCANNING: %s %s %s %s %s"
-            ;;          (car id-list)
-            ;;          (point)
-            ;;          begin
-            ;;          end
-            ;;          (org-element-type element))
+            (org-quip--debug "SCANNING: %s %s %s %s %s"
+                             (car id-list)
+                             (point)
+                             begin
+                             end
+                             (org-element-type element))
             (setq pos-list (cons (cons begin end) pos-list)))
 
           (setq id-list (cdr id-list)))
@@ -599,10 +607,11 @@ The return value is a list of commands to execute against Quip."
            (old-line 0)
            (new-line 0))
 
-    (with-current-buffer (get-buffer-create "*Debug Diff*")
-      (erase-buffer)
-      (insert diff-text)
-      (diff-mode))
+    (when org-quip--super-debug
+      (with-current-buffer (get-buffer-create "*Debug Diff*")
+        (erase-buffer)
+        (insert diff-text)
+        (diff-mode)))
 
     (with-temp-buffer
       (insert diff-text)
@@ -618,7 +627,7 @@ The return value is a list of commands to execute against Quip."
          ((looking-at "@@ -\\([0-9]+\\),[0-9]+ \\+\\([0-9]+\\),[0-9]+ @@")
           (setq old-line (1- (string-to-int (match-string 1))))
           (setq new-line (1- (string-to-int (match-string 2))))
-          (message "Resync: %s %s" old-line new-line)
+          (org-quip--debug "Resync: %s %s" old-line new-line)
           )
 
          ;; Processing a remove.
@@ -633,7 +642,7 @@ The return value is a list of commands to execute against Quip."
             (setq remove-ids (cons old-id remove-ids))
             (setq last-id old-id)
             (setq old-line (1+ old-line))
-            (message "Old   : %s" old-id)
+            (org-quip--debug "Old   : %s" old-id)
             ))
 
          ;; Processing an add.
@@ -663,7 +672,7 @@ The return value is a list of commands to execute against Quip."
                         insert-commands))
 
             (setq new-line (1+ new-line))
-            (message "New   : %s" new-id)
+            (org-quip--debug "New   : %s" new-id)
             ))
 
          ;; Processing a shared line.
@@ -675,11 +684,12 @@ The return value is a list of commands to execute against Quip."
           (setq new-line (1+ new-line))
           (setq old-line (1+ old-line))
 
-          (message "Common: %s" last-id)
+          (org-quip--debug "Common: %s" last-id)
           )
          )
 
-        (message "Tick  : %s %s %s %s" (point) last-id old-line new-line)
+        (org-quip--debug "Tick  : %s %s %s %s"
+                         (point) last-id old-line new-line)
         (forward-line))
 
       ;; Convert all of our accumulated adds and removes into actual commands
@@ -697,47 +707,32 @@ The return value is a list of commands to execute against Quip."
                                                          new-html
                                                          old-html)))
 
-      (message "COMMANDS: %s" diff-commands)
+      ;; Invoke all of the diff commands on quip.
+      (mapc (lambda (command)
+              (cond ((eq 'remove (car command))
+                     (quip-thread-delete-section thread-id (second command)))
 
-      ;; ;; Invoke all of the diff commands on quip.
-      ;; (mapc (lambda (command)
-      ;;         (cond ((eq 'remove (car command))
-      ;;                (quip-thread-delete-section thread-id (second command)))
+                    ((eq 'replace (car command))
+                     (quip-thread-replace-section thread-id
+                                                  (second command)
+                                                  (third command)
+                                                  "html"))
 
-      ;;               ((eq 'replace (car command))
-      ;;                (quip-thread-replace-section thread-id
-      ;;                                             (second command)
-      ;;                                             (third command)
-      ;;                                             "html"))
+                    ((eq 'insert-after (car command))
+                     (quip-thread-append-after thread-id
+                                               (second command)
+                                               (third command)
+                                               "html"))
 
-      ;;               ((eq 'insert-after (car command))
-      ;;                (quip-thread-append-after thread-id
-      ;;                                          (second command)
-      ;;                                          (third command)
-      ;;                                          "html"))
-
-      ;;               ((eq 'prepend (car command))
-      ;;                (quip-thread-prepend thread-id (second command) "html"))
-      ;;               ))
-      ;;       diff-commands)
+                    ((eq 'prepend (car command))
+                     (quip-thread-prepend thread-id (second command) "html"))
+                    ))
+            diff-commands)
 
       ;; Re-fetch the HTML from quip and sync IDs.
-      ;; (setq old-html (alist-get 'html (quip-get-thread thread-id)))
-      ;; (org-quip--sync-ids-with-quip buffer new-html old-html)
+      (setq old-html (alist-get 'html (quip-get-thread thread-id)))
+      (org-quip--sync-ids-with-quip buffer new-html old-html)
       )))
-
-(defun test-what ()
-  "A test, what."
-  (letrec ((thread-id "GPPAAAud6tF")
-           (thread (quip-get-thread thread-id))
-           (quip-html (alist-get 'html thread))
-           )
-
-    (org-quip--get-cleaned-dom quip-html)
-
-    )
-
-  )
 
 (provide 'ox-quip)
 ;;; ox-quip.el ends here

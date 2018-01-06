@@ -871,6 +871,9 @@
 ;; =================================================================
 (defun my-markdown-mode-hook ()
   "My hook for markdown mode."
+  (turn-off-auto-fill)
+  (setq truncate-lines nil)
+  (setq word-wrap 't)
   (when is-fb-environment
     (require 'fb-note-publish)))
 

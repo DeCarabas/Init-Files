@@ -165,7 +165,7 @@
 ;;
 (require 'cl)
 (if (display-graphic-p)
-    (progn
+    (let ((my-font-choice) (jd-frame-height))
       ;; Consolas. (And, to a lesser extent, Inconsolata.)
       ;;
       (defun font-candidate (&rest fonts)

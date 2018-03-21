@@ -255,6 +255,9 @@
 (when (memq window-system '(mac ns))
   (exec-path-from-shell-initialize))
 
+;; Company mode everywhere. What could go wrong?
+(global-company-mode)
+
 ;; =================================================================
 ;; Text mode configuration.
 ;; =================================================================
@@ -514,9 +517,6 @@
 (add-to-list 'auto-mode-alist '("\\.cool$" . csharp-mode))
 (add-to-list 'auto-mode-alist '("\\.cs$"   . csharp-mode))
 
-(eval-after-load
- 'company
- '(add-to-list 'company-backends 'company-omnisharp))
 
 ;; =================================================================
 ;; "XML" Support
@@ -579,13 +579,6 @@
 ;; Flycheck
 ;; =================================================================
 (require 'flycheck)
-;; disable jshint since we prefer eslint checking
-(setq-default flycheck-disabled-checkers
-              (append flycheck-disabled-checkers
-                      '(javascript-jshint)))
-
-;; use eslint with web-mode for jsx files
-(flycheck-add-mode 'javascript-eslint 'web-mode)
 
 ;; customize flycheck temp file prefix
 (setq-default flycheck-temp-prefix ".flycheck")
@@ -625,17 +618,34 @@
 ;; =================================================================
 (autoload 'python-mode "python-mode" "Python editing mode." t)
 
-(setq auto-mode-alist
-      (cons '("\\.py$" . python-mode) auto-mode-alist))
-(setq interpreter-mode-alist
-      (cons '("python" . python-mode) interpreter-mode-alist))
+(add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
+(add-to-list 'interpreter-mode-alist '("python" . python-mode))
 
 ;; =================================================================
 ;; JavaScript Support
 ;; =================================================================
-(autoload 'js2-mode "js2-mode" nil t)
-(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-(add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
+(require 'rjsx-mode)
+(require 'prettier-js)
+(require 'flycheck-flow)
+(require 'flow-minor-mode)
+
+;; disable jshint since we prefer eslint checking
+(setq-default flycheck-disabled-checkers
+              (append flycheck-disabled-checkers
+                      '(javascript-jshint)))
+(flycheck-add-next-checker 'javascript-eslint 'javascript-flow)
+
+(add-to-list 'auto-mode-alist '("\\.js$" . rjsx-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx$" . rjsx-mode))
+
+(defun my-js-mode-hook ()
+  "My custom javascript mode hook."
+  (add-node-modules-path)
+  (flow-minor-enable-automatically)
+  (prettier-js-mode))
+
+(add-hook 'rjsx-mode-hook #'my-js-mode-hook)
+
 
 ;; =================================================================
 ;; Ruby Mode

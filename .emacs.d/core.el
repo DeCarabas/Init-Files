@@ -163,7 +163,6 @@
 ;; segfaulting on my devserver when it called find-font, and I'll be damned
 ;; if I'm going to debug it.)
 ;;
-(require 'cl)
 (if (display-graphic-p)
     (let ((my-font-choice) (jd-frame-height))
       ;; Consolas. (And, to a lesser extent, Inconsolata.)

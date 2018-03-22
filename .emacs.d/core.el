@@ -330,12 +330,6 @@
 (add-to-list 'auto-mode-alist '("\\.h\\'"   . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.w\\'"   . c++-mode))
 
-(defun my-makefile-hook ()
-  (setq-local indent-tabs-mode nil) ;; Makefiles haven't needed tabs for a long time.
-  )
-
-(add-hook 'makefile-mode-hook 'my-makefile-hook)
-
 (add-to-list 'auto-mode-alist '("makefile"  . makefile-mode))
 (add-to-list 'auto-mode-alist '("sources"   . makefile-mode))
 (add-to-list 'auto-mode-alist '("dirs"      . makefile-mode))
@@ -575,6 +569,15 @@
 (require 'flycheck-elm)
 (add-to-list 'flycheck-checkers 'elm)
 
+(defun my-elm-hook ()
+  "My ELM-MODE hook."
+  (company-mode +1)
+  (setq company-backends '(company-elm))
+  (elm-oracle-setup-completion)
+  (flycheck-elm-setup))
+
+(add-hook 'elm-mode-hook 'my-elm-hook)
+
 ;; =================================================================
 ;; Flycheck
 ;; =================================================================
@@ -736,13 +739,24 @@
 ;; =================================================================
 ;; Typescript-Mode
 ;; =================================================================
-(autoload 'typescript-mode "typescript" nil t)
-(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
+(defun setup-tide-mode ()
+  "Common hooks for tide.
 
-(require 'tss)
-(setq tss-popup-help-key "C-:")
-(setq tss-jump-to-definition-key "C->")
-(tss-config-default)
+(See more at https://github.com/ananthakumaran/tide.)"
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  (company-mode +1))
+
+;; ;; aligns annotation to the right hand side
+;; (setq company-tooltip-align-annotations t)
+
+;; formats the buffer before saving
+(add-hook 'before-save-hook 'tide-format-before-save)
+(add-hook 'typescript-mode-hook #'setup-tide-mode)
 
 ;; =================================================================
 ;; Archive mode for appx

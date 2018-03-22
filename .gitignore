@@ -14,3 +14,4 @@
 .emacs.d/url/cookies
 .ipython/profile_default/history.sqlite
 _viminfo
+.emacs.d/.python-environments/

@@ -505,12 +505,15 @@
 (defun my-csharp-mode-hook ()
   "My C# mode hook."
   (turn-on-font-lock)
+  (omnisharp-mode)
   (c-set-style "ms-csharp"))
 
 (add-hook 'csharp-mode-hook 'my-csharp-mode-hook)
 
 (add-to-list 'auto-mode-alist '("\\.cool$" . csharp-mode))
 (add-to-list 'auto-mode-alist '("\\.cs$"   . csharp-mode))
+
+(eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp))
 
 
 ;; =================================================================

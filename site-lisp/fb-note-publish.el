@@ -180,7 +180,7 @@ This replaces the existing ID, if present, otherwise it adds it."
   (let ((in-buffer (or buffer (current-buffer))))
     (with-current-buffer in-buffer
       (let ((existing-id))
-        (setq existing-id (fbn--note-id buffer))
+        (setq existing-id (fbn--note-id in-buffer))
         (unless (equal id existing-id)
           (if existing-id
               (delete-region (line-beginning-position)

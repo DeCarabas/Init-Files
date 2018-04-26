@@ -62,7 +62,8 @@
 (defconst engshare-master (getenv "ADMIN_SCRIPTS"))
 (defconst is-fb-environment
   (or (file-exists-p (expand-file-name "master.emacs" master-dir))
-      (file-exists-p (expand-file-name "master.emacs" engshare-master))))
+      (file-exists-p (expand-file-name "master.emacs" engshare-master)))
+  "Are we running on an FB machine or not?")
 
 (when is-fb-environment
   ;; Load the master.emacs file which apparently has stuff in it I want?
@@ -74,7 +75,7 @@
   ;; Set up the proxy for working properly from the devserver.
   (if (and
        (getenv "HOSTNAME")
-       (string-match-p ".+\.prn1\.facebook\.com" (getenv "HOSTNAME")))
+       (string-match-p ".+\.facebook\.com" (getenv "HOSTNAME")))
       (setq url-proxy-services
             '(("no_proxy" . "^\\(localhost\\|10.*\\)")
               ("http" . "fwdproxy:8080")
@@ -296,10 +297,12 @@
     (indent-region m1 m2 nil)))
 
 (defun my-c-common-hook ()
+  "My common hook for C/C++/&c."
   (turn-on-auto-fill)
   (flyspell-prog-mode)
   (define-key c-mode-base-map "\C-m" 'c-context-line-break)
-  (set-fill-column 120)
+  (unless is-fb-environment
+    (set-fill-column 120))
   (local-set-key "}" 'indent-on-closing-bracket))
 
 (add-hook 'c-mode-common-hook 'my-c-common-hook)
@@ -355,27 +358,16 @@
                                    (statement-case-open   . +)
                                    ))))
 
-(c-add-style "fb-c"
-             '("gnu"
-               (c-basic-offset . 2)
-               (c-offsets-alist . ((c                     . c-lineup-C-comments)
-                                   (inclass               . +)
-                                   (access-label          . -)
-                                   (defun-block-intro     . +)
-                                   (substatement-open     . 0)
-                                   (statement-block-intro . +)
-                                   (innamespace           . +)
-                                   (statement-case-intro  . +)
-                                   (statement-case-open   . 0)
-                                   (brace-list-intro      . +)
-                                   (substatement          . +)
-                                   (arglist-intro         . +)
-                                   (arglist-close         . 0)
-                                   (statement-case-open   . +)
-                                   ))))
+(defun clang-format-cpp-buffer ()
+  "Format a buffer with clang-format but only if it's C or C++."
+  (when (or (eq major-mode 'c++-mode)
+            (eq major-mode 'c-mode))
+    (clang-format-buffer)))
 
 (defun my-c-mode-hook ()
-  (c-set-style (if is-fb-environment "fb-c" "ms-c")))
+  "Doty's `c-mode' hook."
+  (c-set-style (if is-fb-environment "fb-c-style" "ms-c"))
+  (add-hook 'before-save-hook 'clang-format-cpp-buffer))
 
 (add-hook 'c-mode-hook    'my-c-mode-hook)
 (add-hook 'c++-mode-hook  'my-c-mode-hook)

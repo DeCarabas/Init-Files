@@ -373,49 +373,28 @@
 (add-hook 'c++-mode-hook  'my-c-mode-hook)
 (add-hook 'java-mode-hook 'my-c-mode-hook)
 
-(font-lock-add-keywords 'c-mode   '(("\\<\\(__try\\)" 1 font-lock-keyword-face t)))
-(font-lock-add-keywords 'c++-mode '(("\\<\\(__try\\)" 1 font-lock-keyword-face t)))
-(font-lock-add-keywords 'c-mode   '(("\\<\\(__finally\\)" 1 font-lock-keyword-face t)))
-(font-lock-add-keywords 'c++-mode '(("\\<\\(__finally\\)" 1 font-lock-keyword-face t)))
-(font-lock-add-keywords 'c-mode   '(("\\<\\(__except\\)" 1 font-lock-keyword-face t)))
-(font-lock-add-keywords 'c++-mode '(("\\<\\(__except\\)" 1 font-lock-keyword-face t)))
+(defconst jd-more-keywords
+  '(;; These are keywords in Microsoft C/C++
+    ("\\<\\(__try\\)" 1 font-lock-keyword-face t)
+    ("\\<\\(__finally\\)" 1 font-lock-keyword-face t)
+    ("\\<\\(__except\\)" 1 font-lock-keyword-face t)
+    ;; Warnings
+    ("\\<\\(REVIEW\\)" 1 font-lock-warning-face t)
+    ("\\<\\(FIXME\\)" 1 font-lock-warning-face t)
+    ("\\<\\(TODO\\)" 1 font-lock-warning-face t)
+    ("\\<\\(BUG\\)" 1 font-lock-warning-face t)
+    ("\\<\\(BUGBUG\\)" 1 font-lock-warning-face t)
+    ("\\<\\(BUGBUGBUG\\)" 1 font-lock-warning-face t)
+    ("\\<\\(HACK\\)" 1 font-lock-warning-face t)
+    ("\\<\\(TRICK\\)" 1 font-lock-warning-face t)
+    ("\\<\\(NOTE\\)" 1 font-lock-warning-face t))
+  "Keywords to add to C/C++.")
 
-;; Warnings and such.
-(set-face-background 'font-lock-warning-face "Yellow")
-(set-face-bold-p 'font-lock-warning-face t)
-
-(defun add-todo-keyword (word)
-  (font-lock-add-keywords 'c++-mode
-                          (list (list (concat "\\<\\(" word "\\):")
-                                      1 font-lock-warning-face t)))
-  (font-lock-add-keywords 'c-mode
-                          (list (list (concat "\\<\\(" word "\\):")
-                                      1 font-lock-warning-face t)))
-  (font-lock-add-keywords 'java-mode
-                          (list (list (concat "\\<\\(" word "\\):")
-                                      1 font-lock-warning-face t)))
-
-  (font-lock-add-keywords 'csharp-mode
-                          (list (list (concat "\\<\\(" word "\\):")
-                                      1 font-lock-warning-face t)))
-  )
-(add-todo-keyword "REVIEW")
-(add-todo-keyword "FIXME")
-(add-todo-keyword "TODO")
-(add-todo-keyword "BUG")
-(add-todo-keyword "BUG BUG")
-(add-todo-keyword "BUG BUG BUG")
-(add-todo-keyword "BUGBUG")
-(add-todo-keyword "BUGBUGBUG")
-(add-todo-keyword "HACK")
-(add-todo-keyword "TRICK")
-(add-todo-keyword "NOTE")
-
-;; Also, comments get a different font:
-;;(set-face-font 'font-lock-comment-face "-outline-Bitstream Vera Sans Mono-bold-r-normal-normal-12-90-96-96-c-*-iso10646-1")
+(font-lock-add-keywords 'c-mode jd-more-keywords)
+(font-lock-add-keywords 'c++-mode jd-more-keywords)
 
 (defun indent-buffer ()
-  "Indent the entire current buffer based on the current mode"
+  "Indent the entire current buffer based on the current mode."
   (interactive)
   (indent-region (point-min) (point-max))
   (whitespace-cleanup))
@@ -441,6 +420,7 @@
                                    ))))
 
 (defun my-idl-mode-hook ()
+  "Doty's `idl-mode' hook."
   (c-set-style "ms-idl"))
 
 (add-hook 'idl-mode-hook    'my-idl-mode-hook)
@@ -459,6 +439,35 @@
                      (looking-at ".*[(,][ \t]*\\[[^]]*\\][ \t]*[({][^}]*$"))))
             0                           ; no additional indent
           ad-do-it)))                   ; default behavior
+
+(use-package cquery
+  :ensure
+  :if
+  (file-exists-p "/bin/cquery")
+  :bind
+  ("M-." . xref-find-definitions)
+  :preface
+  (defun cquery//enable ()
+    (condition-case nil
+        (lsp-cquery-enable)
+      (user-error nil)))
+  :init
+  (use-package lsp-mode :ensure)
+  (use-package company-lsp
+    :ensure
+    :config (add-to-list 'company-backends 'company-lsp))
+  (use-package lsp-ui
+    :ensure
+    :init (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+  (add-hook 'c-mode-common-hook #'cquery//enable)
+  :config
+  (setq
+   cquery-executable "/bin/cquery"
+   cquery-extra-args '("--log-file=/tmp/cq.log")
+   cquery-sem-highlight-method 'font-lock
+   company-transformers nil
+   company-lsp-async t
+   company-lsp-cache-candidates nil))
 
 ;; =================================================================
 ;; C#-Mode configuration.
@@ -623,7 +632,7 @@
 ;; =================================================================
 ;; JavaScript Support
 ;; =================================================================
-(require 'rjsx-mode)
+;; (require 'rjsx-mode)
 (require 'prettier-js)
 (require 'flycheck-flow)
 (require 'flow-minor-mode)
@@ -634,8 +643,8 @@
                       '(javascript-jshint)))
 (flycheck-add-next-checker 'javascript-eslint 'javascript-flow)
 
-(add-to-list 'auto-mode-alist '("\\.js$" . rjsx-mode))
-(add-to-list 'auto-mode-alist '("\\.jsx$" . rjsx-mode))
+;; (add-to-list 'auto-mode-alist '("\\.js$" . rjsx-mode))
+;; (add-to-list 'auto-mode-alist '("\\.jsx$" . rjsx-mode))
 
 (defun my-js-mode-hook ()
   "My custom javascript mode hook."
@@ -643,7 +652,7 @@
   (flow-minor-enable-automatically)
   (prettier-js-mode))
 
-(add-hook 'rjsx-mode-hook #'my-js-mode-hook)
+;; (add-hook 'rjsx-mode-hook #'my-js-mode-hook)
 
 
 ;; =================================================================

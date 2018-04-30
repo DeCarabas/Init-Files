@@ -272,6 +272,20 @@
 (add-hook 'text-mode-hook 'my-text-mode-hook)
 
 ;; =================================================================
+;; LSP-mode. Common configuration for LSP-based systems.
+;; =================================================================
+(use-package lsp-mode
+  :ensure
+  :init
+  (use-package company-lsp
+    :ensure
+    :init (add-to-list 'company-backends 'company-lsp))
+  (use-package lsp-ui
+    :ensure
+    :init (add-hook 'lsp-mode-hook 'lsp-ui-mode)))
+
+
+;; =================================================================
 ;; CC-Mode configuration.  Stuff that makes working in IDL, C, and
 ;; C++ a whole lot more tolerable.
 ;; =================================================================
@@ -444,22 +458,19 @@
   :ensure
   :if
   (file-exists-p "/bin/cquery")
+
   :bind
   ("M-." . xref-find-definitions)
+
   :preface
   (defun cquery//enable ()
     (condition-case nil
         (lsp-cquery-enable)
       (user-error nil)))
+
   :init
-  (use-package lsp-mode :ensure)
-  (use-package company-lsp
-    :ensure
-    :config (add-to-list 'company-backends 'company-lsp))
-  (use-package lsp-ui
-    :ensure
-    :init (add-hook 'lsp-mode-hook 'lsp-ui-mode))
   (add-hook 'c-mode-common-hook #'cquery//enable)
+
   :config
   (setq
    cquery-executable "/bin/cquery"
@@ -472,49 +483,44 @@
 ;; =================================================================
 ;; C#-Mode configuration.
 ;; =================================================================
+(use-package csharp-mode
 
-;; zbrad's csharp mode is integrated with cc-mode.
-;; (autoload 'csharp-mode "cc-mode")
+  :preface
+  (defun my-csharp-mode-hook ()
+    "My C# mode hook."
+    (turn-on-font-lock)
+    (omnisharp-mode)
+    (c-set-style "ms-csharp"))
 
-;; Here is another one that is not.
-;;(autoload 'csharp-mode "csharp-mode-0.8.6" "Major mode for editing C# code." t)
+  :mode "\\.cs\\'"
 
-;; We're using the one loaded by the package manager, though.
+  :init
+  (add-hook 'csharp-mode-hook 'my-csharp-mode-hook)
+  (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp))
 
-(c-add-style "ms-csharp"
-             '((c-basic-offset . 4)
-               (c-comment-only-line-offset . (0 . 0))
-               (c-offsets-alist . ((c                     . c-lineup-C-comments)
-                                   (inclass               . +)
-                                   (namespace-open        . 0)
-                                   (namespace-close       . 0)
-                                   (innamespace           . +)
-                                   (class-open            . 0)
-                                   (class-close           . 0)
-                                   (defun-open            . 0)
-                                   (defun-close           . 0)
-                                   (defun-block-intro     . +)
-                                   (inline-open           . 0)
-                                   (statement-block-intro . +)
-                                   (brace-list-intro      . +)
-                                   (block-open            . -)
-                                   (substatement-open     . 0)
-                                   (arglist-intro         . +)
-                                   (arglist-close         . 0)
-                                   ))))
+  :config
+  (c-add-style "ms-csharp"
+               '((c-basic-offset . 4)
+                 (c-comment-only-line-offset . (0 . 0))
+                 (c-offsets-alist . ((c                     . c-lineup-C-comments)
+                                     (inclass               . +)
+                                     (namespace-open        . 0)
+                                     (namespace-close       . 0)
+                                     (innamespace           . +)
+                                     (class-open            . 0)
+                                     (class-close           . 0)
+                                     (defun-open            . 0)
+                                     (defun-close           . 0)
+                                     (defun-block-intro     . +)
+                                     (inline-open           . 0)
+                                     (statement-block-intro . +)
+                                     (brace-list-intro      . +)
+                                     (block-open            . -)
+                                     (substatement-open     . 0)
+                                     (arglist-intro         . +)
+                                     (arglist-close         . 0)
+                                     )))))
 
-(defun my-csharp-mode-hook ()
-  "My C# mode hook."
-  (turn-on-font-lock)
-  (omnisharp-mode)
-  (c-set-style "ms-csharp"))
-
-(add-hook 'csharp-mode-hook 'my-csharp-mode-hook)
-
-(add-to-list 'auto-mode-alist '("\\.cool$" . csharp-mode))
-(add-to-list 'auto-mode-alist '("\\.cs$"   . csharp-mode))
-
-(eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp))
 
 
 ;; =================================================================

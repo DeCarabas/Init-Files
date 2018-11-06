@@ -233,8 +233,9 @@
   "Apply xterm keymap, allowing use of keys passed through tmux."
   (if (getenv "TMUX")
     (let ((map (copy-keymap xterm-function-map)))
-    (set-keymap-parent map (keymap-parent input-decode-map))
-    (set-keymap-parent input-decode-map map))))
+      (message "Activating tmux keys...")
+      (set-keymap-parent map (keymap-parent input-decode-map))
+      (set-keymap-parent input-decode-map map))))
 
 ;; =================================================================
 ;; Random Goo.

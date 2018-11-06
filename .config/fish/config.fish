@@ -3,6 +3,9 @@ if status --is-login
     if test -d ~/devtools/buck/bin
        set PATH $PATH ~/devtools/buck/bin
     end
+    if test -d /snap/bin
+       set PATH $PATH /snap/bin
+    end
 end
 
 # export EDITOR=ec

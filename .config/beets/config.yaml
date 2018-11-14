@@ -1,0 +1,5 @@
+directory: /var/media/music
+library: /var/media/music/musiclibrary.db
+plugins: ftintitle fetchart embedart
+import:
+    move: yes

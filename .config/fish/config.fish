@@ -6,6 +6,9 @@ if status --is-login
     if test -d /snap/bin
        set PATH $PATH /snap/bin
     end
+    if test -d ~/.cargo/bin
+       set PATH $PATH ~/.cargo/bin
+    end
 end
 
 # export EDITOR=ec

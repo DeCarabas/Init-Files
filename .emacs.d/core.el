@@ -318,7 +318,8 @@
   (define-key c-mode-base-map "\C-m" 'c-context-line-break)
   (unless is-fb-environment
     (set-fill-column 120))
-  (local-set-key "}" 'indent-on-closing-bracket))
+  ;; (local-set-key "}" 'indent-on-closing-bracket)
+  )
 
 (add-hook 'c-mode-common-hook 'my-c-common-hook)
 
@@ -620,21 +621,27 @@
   :modes python-mode)
 (add-to-list 'flycheck-checkers 'python-fb-flake8)
 
-(when is-fb-environment
-  (add-hook 'python-mode-hook
-            (lambda ()
-              (flycheck-select-checker `python-fb-flake8)))
-  )
-
 (global-flycheck-mode)
 
 ;; =================================================================
 ;; Python Support
 ;; =================================================================
 (autoload 'python-mode "python-mode" "Python editing mode." t)
+(autoload 'blacken-mode "blacken" "Automatically run black before saving." t)
 
 (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
 (add-to-list 'interpreter-mode-alist '("python" . python-mode))
+
+(defun my-python-mode-hook ()
+  "My hook for `python-mode`."
+  (when is-fb-environment
+    (flycheck-select-checker `python-fb-flake8))
+  (unless (and (buffer-file-name)
+               (string-match-p "TARGETS" (buffer-file-name)))
+    (blacken-mode)))
+
+(add-hook 'python-mode-hook 'my-python-mode-hook)
+
 
 ;; =================================================================
 ;; JavaScript Support

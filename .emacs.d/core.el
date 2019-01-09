@@ -485,6 +485,7 @@
 ;; C#-Mode configuration.
 ;; =================================================================
 (use-package csharp-mode
+  :ensure t
 
   :preface
   (defun my-csharp-mode-hook ()
@@ -495,11 +496,9 @@
 
   :mode "\\.cs\\'"
 
-  :init
+  :config
   (add-hook 'csharp-mode-hook 'my-csharp-mode-hook)
   (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp))
-
-  :config
   (c-add-style "ms-csharp"
                '((c-basic-offset . 4)
                  (c-comment-only-line-offset . (0 . 0))

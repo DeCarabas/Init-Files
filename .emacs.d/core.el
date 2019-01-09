@@ -233,8 +233,9 @@
   "Apply xterm keymap, allowing use of keys passed through tmux."
   (if (getenv "TMUX")
     (let ((map (copy-keymap xterm-function-map)))
-    (set-keymap-parent map (keymap-parent input-decode-map))
-    (set-keymap-parent input-decode-map map))))
+      (message "Activating tmux keys...")
+      (set-keymap-parent map (keymap-parent input-decode-map))
+      (set-keymap-parent input-decode-map map))))
 
 ;; =================================================================
 ;; Random Goo.
@@ -317,7 +318,8 @@
   (define-key c-mode-base-map "\C-m" 'c-context-line-break)
   (unless is-fb-environment
     (set-fill-column 120))
-  (local-set-key "}" 'indent-on-closing-bracket))
+  ;; (local-set-key "}" 'indent-on-closing-bracket)
+  )
 
 (add-hook 'c-mode-common-hook 'my-c-common-hook)
 
@@ -619,21 +621,27 @@
   :modes python-mode)
 (add-to-list 'flycheck-checkers 'python-fb-flake8)
 
-(when is-fb-environment
-  (add-hook 'python-mode-hook
-            (lambda ()
-              (flycheck-select-checker `python-fb-flake8)))
-  )
-
 (global-flycheck-mode)
 
 ;; =================================================================
 ;; Python Support
 ;; =================================================================
 (autoload 'python-mode "python-mode" "Python editing mode." t)
+(autoload 'blacken-mode "blacken" "Automatically run black before saving." t)
 
 (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
 (add-to-list 'interpreter-mode-alist '("python" . python-mode))
+
+(defun my-python-mode-hook ()
+  "My hook for `python-mode`."
+  (when is-fb-environment
+    (flycheck-select-checker `python-fb-flake8))
+  (unless (and (buffer-file-name)
+               (string-match-p "TARGETS" (buffer-file-name)))
+    (blacken-mode)))
+
+(add-hook 'python-mode-hook 'my-python-mode-hook)
+
 
 ;; =================================================================
 ;; JavaScript Support
@@ -779,68 +787,68 @@
 ;; Some build stuff; I swiped this from handmade-hero. Good for
 ;; unibuild setups.
 ;; =================================================================
-(when (featurep 'w32)
-  (setq doty-makescript "build.bat"))
+;; (when (featurep 'w32)
+;;   (setq doty-makescript "build.bat"))
 
-(when (featurep 'cocoa)
-  (setq doty-makescript "./build.macosx"))
+;; (when (featurep 'cocoa)
+;;   (setq doty-makescript "./build.macosx"))
 
-(when (featurep 'x)
-  (setq doty-makescript "./build.linux"))
+;; (when (featurep 'x)
+;;   (setq doty-makescript "./build.linux"))
 
-(setq compilation-directory-locked nil)
-(setq compilation-context-lines 0)
-(setq compilation-error-regexp-alist
-    (cons '("^\\([0-9]+>\\)?\\(\\(?:[a-zA-Z]:\\)?[^:(\t\n]+\\)(\\([0-9]+\\)) : \\(?:fatal error\\|warnin\\(g\\)\\) C[0-9]+:" 2 3 nil (4))
-     compilation-error-regexp-alist))
+;; (setq compilation-directory-locked nil)
+;; (setq compilation-context-lines 0)
+;; (setq compilation-error-regexp-alist
+;;     (cons '("^\\([0-9]+>\\)?\\(\\(?:[a-zA-Z]:\\)?[^:(\t\n]+\\)(\\([0-9]+\\)) : \\(?:fatal error\\|warnin\\(g\\)\\) C[0-9]+:" 2 3 nil (4))
+;;      compilation-error-regexp-alist))
 
-(defun find-project-directory-recursive ()
-  "Recursively search for a makefile."
-  (interactive)
-  (if (file-exists-p doty-makescript) t
-      (cd "../")
-      (find-project-directory-recursive)))
+;; (defun find-project-directory-recursive ()
+;;   "Recursively search for a makefile."
+;;   (interactive)
+;;   (if (file-exists-p doty-makescript) t
+;;       (cd "../")
+;;       (find-project-directory-recursive)))
 
-(defun lock-compilation-directory ()
-  "The compilation process should NOT hunt for a makefile."
-  (interactive)
-  (setq compilation-directory-locked t)
-  (message "Compilation directory is locked."))
+;; (defun lock-compilation-directory ()
+;;   "The compilation process should NOT hunt for a makefile."
+;;   (interactive)
+;;   (setq compilation-directory-locked t)
+;;   (message "Compilation directory is locked."))
 
-(defun unlock-compilation-directory ()
-  "The compilation process SHOULD hunt for a makefile."
-  (interactive)
-  (setq compilation-directory-locked nil)
-  (message "Compilation directory is roaming."))
+;; (defun unlock-compilation-directory ()
+;;   "The compilation process SHOULD hunt for a makefile."
+;;   (interactive)
+;;   (setq compilation-directory-locked nil)
+;;   (message "Compilation directory is roaming."))
 
-(defun find-project-directory ()
-  "Find the project directory."
-  (interactive)
-  (setq find-project-from-directory default-directory)
-  (switch-to-buffer-other-window "*compilation*")
-  (if compilation-directory-locked (cd last-compilation-directory)
-  (cd find-project-from-directory)
-  (find-project-directory-recursive)
-  (setq last-compilation-directory default-directory)))
+;; (defun find-project-directory ()
+;;   "Find the project directory."
+;;   (interactive)
+;;   (setq find-project-from-directory default-directory)
+;;   (switch-to-buffer-other-window "*compilation*")
+;;   (if compilation-directory-locked (cd last-compilation-directory)
+;;   (cd find-project-from-directory)
+;;   (find-project-directory-recursive)
+;;   (setq last-compilation-directory default-directory)))
 
-(defun make-without-asking ()
-  "Make the current build."
-  (interactive)
-  (if (find-project-directory) (compile doty-makescript))
-  (other-window 1))
-(define-key global-map "\C-c\C-m" 'make-without-asking)
+;; (defun make-without-asking ()
+;;   "Make the current build."
+;;   (interactive)
+;;   (if (find-project-directory) (compile doty-makescript))
+;;   (other-window 1))
+;; (define-key global-map "\C-c\C-m" 'make-without-asking)
 
-(defun set-vs-environment ()
-  "Load the VS environment variables into the current Emacs process."
-  (interactive)
-  (dolist
-      (ev (split-string
-           (shell-command-to-string "cmd /c \" \"%ProgramFiles(x86)%\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat\" x64 && set \"")
-           "[\n]+"))
-    (letrec ((spev (split-string ev "="))
-             (vn (car spev))
-             (vv (cadr spev)))
-      (setenv vn vv))))
+;; (defun set-vs-environment ()
+;;   "Load the VS environment variables into the current Emacs process."
+;;   (interactive)
+;;   (dolist
+;;       (ev (split-string
+;;            (shell-command-to-string "cmd /c \" \"%ProgramFiles(x86)%\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat\" x64 && set \"")
+;;            "[\n]+"))
+;;     (letrec ((spev (split-string ev "="))
+;;              (vn (car spev))
+;;              (vv (cadr spev)))
+;;       (setenv vn vv))))
 
 
 ;; =================================================================

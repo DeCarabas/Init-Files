@@ -23,3 +23,5 @@ fi
 
 # added by Anaconda3 2.4.1 installer
 export PATH="/Users/doty/anaconda/bin:$PATH"
+
+export PATH="$HOME/.cargo/bin:$PATH"

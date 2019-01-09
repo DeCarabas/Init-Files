@@ -1,5 +1,14 @@
 if status --is-login
-    set PATH $PATH ~/bin ~/devtools/buck/bin
+    set PATH $PATH ~/bin
+    if test -d ~/devtools/buck/bin
+       set PATH $PATH ~/devtools/buck/bin
+    end
+    if test -d /snap/bin
+       set PATH $PATH /snap/bin
+    end
+    if test -d ~/.cargo/bin
+       set PATH $PATH ~/.cargo/bin
+    end
 end
 
 # export EDITOR=ec

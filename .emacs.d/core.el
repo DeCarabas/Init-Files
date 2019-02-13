@@ -179,10 +179,11 @@
              "Input Mono Narrow-12:weight=light"
              "InputMonoNarrow Light-12:light"
              "Consolas-10"
-             "Inconsolata-11"))
+             "Inconsolata-11"
+             "Monaco-12"))
 
       ;; This is just here for playing with things.
-      ;; (set-frame-font my-font-choice)
+      (set-frame-font my-font-choice)
 
       ;;
       ;; To obtain new font string, execute eval-expression, and eval this:

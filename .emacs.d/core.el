@@ -456,32 +456,6 @@
             0                           ; no additional indent
           ad-do-it)))                   ; default behavior
 
-(use-package cquery
-  :ensure
-  :if
-  (file-exists-p "/bin/cquery")
-
-  :bind
-  ("M-." . xref-find-definitions)
-
-  :preface
-  (defun cquery//enable ()
-    (condition-case nil
-        (lsp-cquery-enable)
-      (user-error nil)))
-
-  :init
-  (add-hook 'c-mode-common-hook #'cquery//enable)
-
-  :config
-  (setq
-   cquery-executable "/bin/cquery"
-   cquery-extra-args '("--log-file=/tmp/cq.log")
-   cquery-sem-highlight-method 'font-lock
-   company-transformers nil
-   company-lsp-async t
-   company-lsp-cache-candidates nil))
-
 ;; =================================================================
 ;; C#-Mode configuration.
 ;; =================================================================

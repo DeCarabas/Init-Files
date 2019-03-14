@@ -180,7 +180,7 @@
              "InputMonoNarrow Light-12:light"
              "Consolas-10"
              "Inconsolata-11"
-             "Monaco-12"))
+             "Monaco-14"))
 
       ;; This is just here for playing with things.
       (set-frame-font my-font-choice)

@@ -42,6 +42,7 @@
  '(make-backup-files nil)
  '(mouse-buffer-menu-mode-mult 0)
  '(omnisharp-server-executable-path nil)
+ '(org-export-backends (quote (ascii html icalendar latex md odt)))
  '(org-export-with-toc nil)
  '(org-hide-leading-stars t)
  '(org-odd-levels-only t)

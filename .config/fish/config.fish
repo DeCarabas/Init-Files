@@ -11,6 +11,12 @@ if status --is-login
     end
 end
 
+# This is here to make emacs and ansi-term work properly; I'm not *quite*
+# sure what it does but it's probably cool.
+function fish_title
+  true
+end
+
 # export EDITOR=ec
 # export VISUAL=ec
 

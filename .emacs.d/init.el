@@ -118,8 +118,7 @@
 (require 'uniquify)
 (require 'ansi-color)
 (require 'recentf)
-(when is-fb-environment
-  (require '50-arc))
+(require '50-arc)
 
 (prefer-coding-system 'utf-8)
 
@@ -787,6 +786,7 @@
 ;; Magit stuff
 ;; =================================================================
 (global-set-key (kbd "C-x g") 'magit-status)
+
 
 ;; =================================================================
 ;; Shell stuff

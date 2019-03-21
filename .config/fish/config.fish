@@ -9,6 +9,13 @@ if status --is-login
     if test -d ~/.cargo/bin
        set PATH $PATH ~/.cargo/bin
     end
+    if test -d ~/.local/bin
+       set PATH $PATH ~/.local/bin
+    end
+end
+
+function fish_title
+  true
 end
 
 # This is here to make emacs and ansi-term work properly; I'm not *quite*

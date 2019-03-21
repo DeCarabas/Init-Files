@@ -466,6 +466,8 @@
   :preface
   (defun my-csharp-mode-hook ()
     "My C# mode hook."
+    (require 'prettysharp)
+    (prettysharp-mode)
     (turn-on-font-lock)
     (omnisharp-mode)
     (c-set-style "ms-csharp"))

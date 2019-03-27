@@ -50,13 +50,14 @@
  '(org-export-backends (quote (ascii html icalendar latex md odt)))
  '(org-export-with-toc nil)
  '(org-hide-leading-stars t)
+ '(org-log-done t)
  '(org-odd-levels-only t)
  '(org-todo-keywords
    (quote
     ((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED"))))
  '(package-selected-packages
    (quote
-    (lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode zencoding-mode tss switch-window python-mode paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-solarized color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi tide ahg elm-mode monky)))
+    (## esup lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode zencoding-mode tss switch-window python-mode paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-solarized color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi tide ahg elm-mode monky)))
  '(reb-re-syntax (quote string))
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values

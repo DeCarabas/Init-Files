@@ -789,6 +789,19 @@
 
 
 ;; =================================================================
+;; Mercurial stuff
+;; =================================================================
+;; I remove Hg from VC-mode because it is SO SLOW.
+(setq vc-handled-backends (remove 'Hg vc-handled-backends))
+;; But I have monky enabled so I can use it instead.
+(use-package monky
+  :ensure
+  :config
+  (setq monky-process-type 'cmdserver)
+  :bind
+  ("C-x h" . monky-status))
+
+;; =================================================================
 ;; Shell stuff
 ;; =================================================================
 (defun my-shell-mode-hook ()

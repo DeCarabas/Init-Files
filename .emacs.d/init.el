@@ -252,8 +252,8 @@
 (setq w32-use-w32-font-dialog t)
 
 ;; Adaptive fill for everybody!
-(require 'filladapt)
-(setq-default filladapt-mode t)
+(use-package filladapt :ensure
+  :init (setq-default filladapt-mode t))
 
 (require 'ido)
 

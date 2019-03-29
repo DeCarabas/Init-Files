@@ -445,8 +445,7 @@
 ;; =================================================================
 ;; C#-Mode configuration.
 ;; =================================================================
-(use-package csharp-mode
-  :ensure t
+(use-package csharp-mode :ensure t
 
   :preface
   (defun my-csharp-mode-hook ()
@@ -460,8 +459,17 @@
   :mode "\\.cs\\'"
 
   :config
+  (use-package omnisharp :ensure t
+    :commands omnisharp-mode
+    :bind (:map omnisharp-mode-map
+                ([remap xref-find-definitions] . omnisharp-go-to-definition)
+                ([remap xref-find-references] . omnisharp-find-usages)
+                ;; `xref-pop-marker-stack' works as expected.
+                )
+    :config
+    (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp)))
+
   (add-hook 'csharp-mode-hook 'my-csharp-mode-hook)
-  (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp))
   (c-add-style "ms-csharp"
                '((c-basic-offset . 4)
                  (c-comment-only-line-offset . (0 . 0))

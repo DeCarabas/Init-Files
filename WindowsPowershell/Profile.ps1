@@ -24,7 +24,6 @@ if ($interactive)
 
     # Add the right things to the path
     #
-    $env:Path = "$env:windir\Microsoft.NET\Framework64;" + $env:Path
     $env:Path = "c:\debuggers;c:\tools\x86;c:\tools\x86\bin;c:\emacs\bin" + $env:Path
 
     # Fun times with diffs and the like.

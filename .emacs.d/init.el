@@ -867,4 +867,15 @@
     (require 'fb-note-publish)))
 
 (add-hook 'markdown-mode-hook 'my-markdown-mode-hook)
+
+
+;; =================================================================
+;; Rust
+;; =================================================================
+(use-package rust-mode :ensure t
+  :mode "\\.rs\\'"
+  :config
+  (setq rust-format-on-save t))
+
+
 ;;; init.el ends here

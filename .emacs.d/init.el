@@ -469,6 +469,12 @@
     :config
     (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp)))
 
+  (use-package prettysharp
+    :commands prettysharp-mode
+    :config
+    (if (file-executable-p "c:/src/prettysharp/prettysharp.exe")
+        (setq prettysharp-command "c:/src/prettysharp/prettysharp.exe")))
+
   (add-hook 'csharp-mode-hook 'my-csharp-mode-hook)
   (c-add-style "ms-csharp"
                '((c-basic-offset . 4)

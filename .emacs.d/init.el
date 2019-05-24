@@ -67,16 +67,12 @@
 (defconst master-dir (getenv "LOCAL_ADMIN_SCRIPTS"))
 (defconst engshare-master (getenv "ADMIN_SCRIPTS"))
 (defconst is-fb-environment
-  (or (file-exists-p (expand-file-name "master.emacs" master-dir))
-      (file-exists-p (expand-file-name "master.emacs" engshare-master)))
+  (file-exists-p "/usr/share/emacs/site-lisp/fb-master.el")
   "Are we running on an FB machine or not?")
 
 (when is-fb-environment
   ;; Load the master.emacs file which apparently has stuff in it I want?
-  (if (file-exists-p (expand-file-name "master.emacs" master-dir))
-      (load-library (expand-file-name "master.emacs" master-dir))
-    (if (file-exists-p (expand-file-name "master.emacs" engshare-master))
-        (load-library (expand-file-name "master.emacs" engshare-master))))
+  (load-library "/usr/share/emacs/site-lisp/fb-master.el")
 
   ;; Set up the proxy for working properly from the devserver.
   (if (and
@@ -787,22 +783,22 @@
 
 
 
-;; =================================================================
-;; PHP stuff
-;; =================================================================
-(if is-fb-environment
-    (progn
-      ;; Hack support for stuff in www
-      (setq hack-for-hiphop-root (expand-file-name "www" "~"))
-      (load "/home/engshare/tools/hack-for-hiphop")
+;; ;; =================================================================
+;; ;; PHP stuff
+;; ;; =================================================================
+;; (if is-fb-environment
+;;     (progn
+;;       ;; Hack support for stuff in www
+;;       (setq hack-for-hiphop-root (expand-file-name "www" "~"))
+;;       ;;(load "/home/engshare/tools/hack-for-hiphop")
 
-      (load-library (expand-file-name "emacs-packages/hh-client.el" master-dir))
-      (require 'hh-client)
+;;       (load-library "/usr/share/emacs/site-lisp/emacs-packages/hh-client.el")
+;;       (require 'hh-client)
 
-      (defun my-fb-php-hook ()
-        (global-set-key (kbd "M-.") 'hh-client-find-definition))
-      (add-hook 'php-mode-hook 'my-fb-php-hook)
-      ))
+;;       (defun my-fb-php-hook ()
+;;         (global-set-key (kbd "M-.") 'hh-client-find-definition))
+;;       (add-hook 'php-mode-hook 'my-fb-php-hook)
+;;       ))
 
 
 ;; =================================================================

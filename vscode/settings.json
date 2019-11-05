@@ -19,4 +19,5 @@
     "editor.fontSize": 14,
     "editor.fontLigatures": true,
     "editor.formatOnSaveTimeout": 1500,
+    "workbench.colorTheme": "Monokai",
 }

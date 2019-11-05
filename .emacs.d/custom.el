@@ -11,6 +11,9 @@
  '(c-indent-level 4)
  '(c-label-minimum-indentation 0)
  '(c-label-offset -4)
+ '(clojure-build-tool-files
+   (quote
+    ("project.clj" "build.boot" "build.gradle" "build.gradle.kts" "deps.edn" "shadow-cljs.edn" "TARGETS")))
  '(comint-input-ignoredups t)
  '(comint-prompt-read-only t)
  '(comint-scroll-to-bottom-on-input t)
@@ -58,7 +61,7 @@
     ((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED"))))
  '(package-selected-packages
    (quote
-    (lsp-hack hack-mode rust-mode filladapt vc-hgcmd lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode zencoding-mode tss switch-window python-mode paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi tide ahg elm-mode monky)))
+    (xah-lookup lsp-hack hack-mode rust-mode filladapt vc-hgcmd lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode zencoding-mode tss switch-window python-mode paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi tide ahg elm-mode monky)))
  '(reb-re-syntax (quote string))
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values

@@ -882,5 +882,17 @@
   :config
   (setq rust-format-on-save t))
 
+;; =================================================================
+;; Clojure
+;; =================================================================
+(use-package cider :ensure
+  :config
+  ;; I guess this is a bit wacky, but it's hard to imagine cider without
+  ;; clojure-mode right now.
+  ;;
+  ;; Put TARGETS in clojure-build-tool-files so that directories with TARGETS
+  ;; get identified as projects.
+  (unless (member "TARGETS" clojure-build-tool-files)
+    (setq clojure-build-tool-files (append clojure-build-tool-files '("TARGETS")))))
 
 ;;; init.el ends here

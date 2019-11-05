@@ -18,5 +18,8 @@
 .config/deluge/ssl/
 .config/deluge/deluged.log
 .config/deluge/deluged.pid
+.DS_Store
 .ipython/profile_default/history.sqlite
 _viminfo
+vscode/workspaceStorage
+vscode/globalStorage

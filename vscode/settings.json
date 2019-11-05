@@ -1,0 +1,22 @@
+{
+    "breadcrumbs.enabled": true,
+    "editor.rulers": [
+        80
+    ],
+    "editor.formatOnSave": true,
+    "editor.minimap.enabled": false,
+    "git.enableSmartCommit": true,
+    "clang-format.fallbackStyle": "llvm",
+    "fb.remote-connections.hosts": [
+        {
+            "hostname": "our.doty.sb.facebook.com",
+            "folders": [
+                "/data/users/doty/fbsource/fbcode/"
+            ]
+        }
+    ],
+    "editor.fontFamily": "Fira Code, Menlo, Monaco, 'Courier New', monospace",
+    "editor.fontSize": 14,
+    "editor.fontLigatures": true,
+    "editor.formatOnSaveTimeout": 1500,
+}

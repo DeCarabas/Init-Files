@@ -14,6 +14,7 @@
 .emacs.d/ido.last
 .emacs.d/server
 .emacs.d/url/cookies
+.config/buck/
 .config/deluge/state/
 .config/deluge/ssl/
 .config/deluge/deluged.log

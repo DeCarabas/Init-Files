@@ -4,7 +4,9 @@
         80
     ],
     "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
     "editor.minimap.enabled": false,
+    "editor.minimap.maxColumn": 80,
     "git.enableSmartCommit": true,
     "clang-format.fallbackStyle": "llvm",
     "fb.remote-connections.hosts": [
@@ -15,9 +17,14 @@
             ]
         }
     ],
-    "editor.fontFamily": "Fira Code, Menlo, Monaco, 'Courier New', monospace",
+    "editor.fontFamily": "Fira Code, Input Mono Narrow, Consolas, Menlo, Monaco, 'Courier New', monospace",
     "editor.fontSize": 14,
     "editor.fontLigatures": true,
     "editor.formatOnSaveTimeout": 1500,
     "workbench.colorTheme": "Monokai",
+    "window.zoomLevel": 1,
+    "terminal.integrated.shell.windows": "C:\\WINDOWS\\Sysnative\\wsl.exe",
+    "C_Cpp.clang_format_fallbackStyle": "llvm",
+    "latex-workshop.view.pdf.viewer": "tab",
+    "glitch.token": "687fb628-3a2e-4405-9bfb-49fc51068fbb"
 }

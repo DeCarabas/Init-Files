@@ -25,30 +25,36 @@
 
 ;;; Code:
 
-(defun cider-buck--nrepl-target ()
-  "Get the nrepl buck target of the specified file name."
-  (let ((src-file (file-local-name (buffer-file-name (current-buffer)))))
-    (prin1 src-file)
-    (with-temp-buffer
-      (let ((status (process-file "buck" nil (current-buffer) nil
-                                  "query" "owner('%s')" src-file)))
-        (unless (eq status 0)
-          (error (buffer-string)))
+(defun cider-buck--nrepl-target (src-file)
+  "Get the nrepl buck target of SRC-FILE."
+  (with-temp-buffer
+    (let ((stdout-buffer (current-buffer)))
+      (with-temp-buffer
+        (let* ((stderr-buffer (current-buffer))
+               (proc (make-process :name "buck-query"
+                                   :command (list "buck" "query" "owner('%s')" src-file)
+                                   :buffer stdout-buffer
+                                   :noquery 't
+                                   :stderr stderr-buffer)))
+          (while (accept-process-output proc))
+          (unless (eq (process-exit-status proc) 0)
+            (error (buffer-string))))))
 
-        (goto-char (point-min))
-        (while (re-search-forward "__source-java[0-9]+$" nil t)
-          (replace-match "_nrepl"))
+    (goto-char (point-min))
+    (while (re-search-forward "__source-java[0-9]+$" nil t)
+      (replace-match "_nrepl"))
 
-        (goto-char (point-min))
-        (buffer-substring (point-min) (line-end-position))))))
+    (goto-char (point-min))
+    (buffer-substring (point-min) (line-end-position))))
 
 (defun cider-buck--jack-in-cmd ()
   "Get it."
-  (concat "buck run " (cider-buck--nrepl-target) " -- --middleware '["
-          (mapconcat (apply-partially #'format "\"%s\"")
-                     (cider-jack-in-normalized-nrepl-middlewares)
-                     ", ")
-          "]'"))
+  (let ((src-file (buffer-file-name (current-buffer))))
+    (concat "buck run " (cider-buck--nrepl-target src-file) " -- --middleware '["
+            (mapconcat (apply-partially #'format "\"%s\"")
+                       (cider-jack-in-normalized-nrepl-middlewares)
+                       ", ")
+            "]'")))
 
 (defun cider-buck--project-dir ()
   "Get the project dir by looking for a targets file."

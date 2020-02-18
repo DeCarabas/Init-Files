@@ -8,6 +8,7 @@ ignore = {
     "readme.md",
     ".git",
     "vscode",
+    "terminal",
     ".DS_Store",
 }
 
@@ -21,7 +22,7 @@ def link_helper(source, dst):
             other_src = os.readlink(dst)
             other_src = os.path.join(os.path.dirname(dst), other_src)
             other_src = os.path.abspath(other_src)
-            if other_src != source:
+            if not os.path.samefile(other_src, source):
                 print(source)
                 print(
                     "WARNING: {} is symlink but not into "
@@ -33,7 +34,8 @@ def link_helper(source, dst):
         print("Linking: {} -> {}".format(source, dst))
         os.symlink(source, dst)
 
-
+# Set up the vast majority of the files here: most things in *this* directory
+# go into the home directory directly. (Directly directory?)
 home = os.path.expanduser("~")
 source_files = [file for file in os.listdir(os.getcwd()) if file not in ignore]
 for source in source_files:
@@ -64,5 +66,21 @@ else:
     print(
         "WARNING: No viable root for VS Code config (tried {})".format(
             possible_vscode_roots
+        )
+    )
+
+# Also these dumb terminal settings go somewhere else yikes.
+terminal_source = os.path.abspath("terminal")
+terminal_root = os.path.join(os.getenv("LOCALAPPDATA"), "packages", "Microsoft.WindowsTerminal_8wekyb3d8bbwe", "LocalState")
+if os.path.exists(terminal_root):
+    source_files = [file for file in os.listdir(terminal_source) if file not in ignore]
+    for source in source_files:
+        source = os.path.join(terminal_source, source)
+        dst = os.path.join(terminal_root, os.path.split(source)[1])
+        link_helper(source, dst)
+else:
+    print(
+        "WARNING: No viable root for windows terminal config (tried {})".format(
+            terminal_root
         )
     )

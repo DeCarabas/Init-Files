@@ -102,20 +102,20 @@
 (package-initialize)
 
 (unless package-archive-contents
-  (package-refresh-contents))
-(package-install-selected-packages)
+  (package-refresh-contents)
+  (package-install-selected-packages))
 
 
 ;; =================================================================
 ;; Common stuff that's needed once
 ;; =================================================================
 (require 'cl)
-(require 'saveplace)
-(require 'ffap)
-(require 'uniquify)
+(require 'saveplace) ;; Am I using this?
+(require 'ffap)      ;; Am I using this?
+(require 'uniquify)  ;; Unique buffers based on file name.
 (require 'ansi-color)
-(require 'recentf)
-(require '50-arc)
+(when is-fb-environment
+  (require '50-arc))
 
 (prefer-coding-system 'utf-8)
 

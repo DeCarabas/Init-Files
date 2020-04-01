@@ -23,8 +23,14 @@
     "editor.formatOnSaveTimeout": 1500,
     "workbench.colorTheme": "Monokai",
     "window.zoomLevel": 1,
-    "terminal.integrated.shell.windows": "C:\\WINDOWS\\Sysnative\\wsl.exe",
+    "terminal.integrated.shell.windows": "C:\\WINDOWS\\System32\\cmd.exe",
     "C_Cpp.clang_format_fallbackStyle": "llvm",
     "latex-workshop.view.pdf.viewer": "tab",
-    "glitch.token": "687fb628-3a2e-4405-9bfb-49fc51068fbb"
+    "glitch.token": "687fb628-3a2e-4405-9bfb-49fc51068fbb",
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
 }

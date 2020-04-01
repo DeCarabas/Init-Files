@@ -126,6 +126,8 @@
 ;; uncomment the following line. Note that this must
 ;; be done before font settings! (Emacs 20)
 (setq w32-enable-italics t)
+(when (eq window-system 'w32)
+  (setq tramp-default-method "plink"))
 
 ;; Shut off annoying sound
 (if (fboundp 'set-message-beep) (set-message-beep 'silent))

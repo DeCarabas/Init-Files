@@ -88,12 +88,13 @@
 ;; =================================================================
 ;; Packages
 ;; =================================================================
+;; See http://dotyl.ink/l/qbmhz43kju
 (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
                     (not (gnutls-available-p))))
        (proto (if no-ssl "http" "https")))
   (setq package-archives
-        '(("gnu"         . "http://elpa.gnu.org/packages/")
-          ("org"         . "http://orgmode.org/elpa/")
+        '(("gnu"         . "https://elpa.gnu.org/packages/")
+          ("org"         . "https://orgmode.org/elpa/")
           ))
 
   (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
@@ -101,20 +102,20 @@
 (package-initialize)
 
 (unless package-archive-contents
-  (package-refresh-contents))
-(package-install-selected-packages)
+  (package-refresh-contents)
+  (package-install-selected-packages))
 
 
 ;; =================================================================
 ;; Common stuff that's needed once
 ;; =================================================================
 (require 'cl)
-(require 'saveplace)
-(require 'ffap)
-(require 'uniquify)
+(require 'saveplace) ;; Am I using this?
+(require 'ffap)      ;; Am I using this?
+(require 'uniquify)  ;; Unique buffers based on file name.
 (require 'ansi-color)
-(require 'recentf)
-(require '50-arc)
+(when is-fb-environment
+  (require '50-arc))
 
 (prefer-coding-system 'utf-8)
 

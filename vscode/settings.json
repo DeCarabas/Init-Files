@@ -13,7 +13,18 @@
         {
             "hostname": "our.doty.sb.facebook.com",
             "folders": [
-                "/data/users/doty/fbsource/fbcode/"
+                "/data/users/doty/configerator/",
+                "/data/users/doty/configerator-dsi/",
+                "/data/users/doty/configerator-hg/",
+                "/data/users/doty/configerator-puma/",
+                "/data/users/doty/databee/",
+                "/data/users/doty/dataswarm-git/",
+                "/data/users/doty/dataswarm-hg/",
+                "/data/users/doty/fbsource/",
+                "/data/users/doty/jepsen/",
+                "/data/users/doty/mysql-schemas/",
+                "/data/users/doty/opsfiles-hg/",
+                "/data/users/doty/www-hg/"
             ]
         }
     ],
@@ -27,6 +38,9 @@
     "C_Cpp.clang_format_fallbackStyle": "llvm",
     "latex-workshop.view.pdf.viewer": "tab",
     "glitch.token": "687fb628-3a2e-4405-9bfb-49fc51068fbb",
+    "calva.paredit.defaultKeyMap": "original",
+    "interactive-smartlog.pull": "hg pull",
+    "interactive-smartlog.fetch": "jf get",
     "[json]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },

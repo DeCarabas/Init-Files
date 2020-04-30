@@ -27,9 +27,10 @@
 
 (defun cider-buck--nrepl-target ()
   "Get the nrepl buck target of the specified file name."
-  (let ((src-file (buffer-file-name (current-buffer))))
+  (let ((src-file (file-local-name (buffer-file-name (current-buffer)))))
+    (prin1 src-file)
     (with-temp-buffer
-      (let ((status (call-process "buck" nil (current-buffer) nil
+      (let ((status (process-file "buck" nil (current-buffer) nil
                                   "query" "owner('%s')" src-file)))
         (unless (eq status 0)
           (error (buffer-string)))

@@ -898,4 +898,17 @@
   (unless (member "TARGETS" clojure-build-tool-files)
     (setq clojure-build-tool-files (append clojure-build-tool-files '("TARGETS")))))
 
+;; ================================================================
+;; TRAMP
+;; ================================================================
+(require 'tramp)
+;; Since we're going to be doing this a lot, the minibar message
+;; tramp spits out for every file access is both spammy, distracting,
+;; and often hides more relevant messages.
+(setq tramp-message-show-message nil)
+;; Let tramp search $PATH as given to the $USER on the remote machine
+;; (necessary to find 'hphpd' for instance)
+(add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+
+
 ;;; init.el ends here

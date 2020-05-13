@@ -77,16 +77,34 @@
 ;;; arc paste commands.
 (defun arc-paste (start end)
   "Pastes the specified region from START to END (or whole file) with arcanist.
-The resulting URL is stored in the kill
-ring and messaged in the minibuffer."
+
+The resulting URL is stored in the kill ring and messaged in the minibuffer."
   (interactive (if (use-region-p) `(,(region-beginning) ,(region-end))
                  `(,(point-min) ,(point-max))))
-  (let* ((extract-uri (lambda (output) (->> output (assoc 'uri) cdr))))
-    (->> (arc--call-conduit "paste.create"
-          `(:title ,(when (buffer-file-name) (file-name-nondirectory (buffer-file-name)))
-            :content ,(buffer-substring start end)))
-      (funcall extract-uri) message kill-new)))
 
+  (let ((title   (when (buffer-file-name)
+                   (list "--title" (file-name-nondirectory (buffer-file-name)))))
+        (content (buffer-substring start end)))
+    (with-temp-buffer
+      (let ((tmp-file (make-temp-file "arc-paste")))
+        (with-temp-file tmp-file (insert content))
+        (apply 'call-process "pastry" tmp-file  `(,(current-buffer) nil) nil
+               "--json" title)
+        (goto-char (point-min))
+        (let ((json-object-type 'alist)
+              (last-json))
+          (while (not (eobp))        ;; Pastry dumps *many* JSON objects.
+            (setq last-json (json-read))
+            (json-skip-whitespace))
+          (->> last-json             ;; Starting with the last JSON object we got...
+               (assoc 'data)         ;; ...grab the "data" element...
+               cdr                   ;; ...well, its value...
+               (assoc 'createdPaste) ;; ...then "createdPaste"...
+               cdr                   ;; ...(ugh)...
+               (assoc 'url)          ;; ...then "url"...
+               cdr                   ;; ...(gosh darn it!)...
+               message               ;; ...then show it to the user...
+               kill-new))))))        ;; ...and drop it into the kill ring. Easy!
 
 ;;; ----------------------------------------------------------------------------
 ;;; arc inlines commands

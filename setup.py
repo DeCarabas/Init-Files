@@ -57,7 +57,7 @@ existing_vscode_roots = [
 ]
 if existing_vscode_roots:
     vscode_root = existing_vscode_roots[0]
-    for variant in ["Code", "VS Code @ FB"]:
+    for variant in ["Code", "VS Code @ FB", "VS Code @ FB - Insiders"]:
         dst_root = os.path.join(vscode_root, variant)
         if not os.path.exists(dst_root):
             os.mkdir(dst_root)
@@ -71,16 +71,17 @@ else:
 
 # Also these dumb terminal settings go somewhere else yikes.
 terminal_source = os.path.abspath("terminal")
-terminal_root = os.path.join(os.getenv("LOCALAPPDATA"), "packages", "Microsoft.WindowsTerminal_8wekyb3d8bbwe", "LocalState")
-if os.path.exists(terminal_root):
-    source_files = [file for file in os.listdir(terminal_source) if file not in ignore]
-    for source in source_files:
-        source = os.path.join(terminal_source, source)
-        dst = os.path.join(terminal_root, os.path.split(source)[1])
-        link_helper(source, dst)
-else:
-    print(
-        "WARNING: No viable root for windows terminal config (tried {})".format(
-            terminal_root
+if os.getenv("LOCALAPPDATA") is not None:
+    terminal_root = os.path.join(os.getenv("LOCALAPPDATA"), "packages", "Microsoft.WindowsTerminal_8wekyb3d8bbwe", "LocalState")
+    if os.path.exists(terminal_root):
+        source_files = [file for file in os.listdir(terminal_source) if file not in ignore]
+        for source in source_files:
+            source = os.path.join(terminal_source, source)
+            dst = os.path.join(terminal_root, os.path.split(source)[1])
+            link_helper(source, dst)
+    else:
+        print(
+            "WARNING: No viable root for windows terminal config (tried {})".format(
+                terminal_root
+            )
         )
-    )

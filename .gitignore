@@ -26,3 +26,8 @@ vscode/workspaceStorage
 vscode/globalStorage
 .config/Code
 .config/VS Code @ FB
+.config/configstore/nodemon.json
+.config/configstore/update-notifier-npm.json
+.config/configstore/update-notifier-yo.json
+.config/wireshark/recent
+.config/wireshark/recent_common

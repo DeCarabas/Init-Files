@@ -84,7 +84,6 @@
               ("https" . "fwdproxy:8080"))))
   )
 
-
 ;; =================================================================
 ;; Packages
 ;; =================================================================
@@ -104,7 +103,6 @@
 (unless package-archive-contents
   (package-refresh-contents)
   (package-install-selected-packages))
-
 
 ;; =================================================================
 ;; Common stuff that's needed once
@@ -335,27 +333,6 @@
 ;; Don't know why I need this all of a sudden...
 (require 'flymake)
 
-;; To make working w/ idl files easier:
-(defun idl-insert-guid ()
-  "Insert a GUID into the current buffer"
-  (interactive)
-  (call-process "uuidgen" nil t)
-  (backward-delete-char 1))
-
-(defun idl-insert-interface ()
-  "Insert a well-formed interface definition (complete with new GUID) into the current buffer"
-  (interactive)
-  (insert "[\n")
-  (insert " object,\n")
-  (insert " pointer_default(unique),\n")
-  (insert " uuid(")
-  (idl-insert-guid)
-  (insert ")\n")
-  (insert "]\n")
-  (insert "interface : IUnknown\n")
-  (insert "{\n")
-  (insert "}\n"))
-
 (add-to-list 'auto-mode-alist '("\\.h\\'"   . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.w\\'"   . c++-mode))
 
@@ -425,6 +402,27 @@
   (whitespace-cleanup))
 
 ;; IDL
+;; To make working w/ idl files easier:
+(defun idl-insert-guid ()
+  "Insert a GUID into the current buffer"
+  (interactive)
+  (call-process "uuidgen" nil t)
+  (backward-delete-char 1))
+
+(defun idl-insert-interface ()
+  "Insert a well-formed interface definition (complete with new GUID) into the current buffer"
+  (interactive)
+  (insert "[\n")
+  (insert " object,\n")
+  (insert " pointer_default(unique),\n")
+  (insert " uuid(")
+  (idl-insert-guid)
+  (insert ")\n")
+  (insert "]\n")
+  (insert "interface : IUnknown\n")
+  (insert "{\n")
+  (insert "}\n"))
+
 (c-add-style "ms-idl"
              '("gnu"
                (c-basic-offset . 4)
@@ -848,6 +846,12 @@
 ;; ag
 (global-set-key (kbd "M-p") 'ag-project-regexp)
 
+(defun doty-term ()
+  "Start a shell, the way doty wants it right now."
+  (interactive)
+  (ansi-term "screen"))
+
+
 ;; =================================================================
 ;; OCAML stuff
 ;; =================================================================
@@ -888,15 +892,18 @@
 ;; =================================================================
 ;; Clojure
 ;; =================================================================
-(use-package cider :ensure
-  :config
-  ;; I guess this is a bit wacky, but it's hard to imagine cider without
-  ;; clojure-mode right now.
-  ;;
-  ;; Put TARGETS in clojure-build-tool-files so that directories with TARGETS
-  ;; get identified as projects.
-  (unless (member "TARGETS" clojure-build-tool-files)
-    (setq clojure-build-tool-files (append clojure-build-tool-files '("TARGETS")))))
+(use-package clojure-mode :ensure
+    :mode (("\\.clj\\'" . clojure-mode)
+           ("\\.edn\\'" . clojure-mode))
+    :config
+    (use-package cider :ensure
+      :config
+      ;; Put TARGETS in clojure-build-tool-files so that directories with TARGETS
+      ;; get identified as projects.
+      (unless (member "TARGETS" clojure-build-tool-files)
+        (setq clojure-build-tool-files (append clojure-build-tool-files '("TARGETS")))))
+
+    (require 'cider-buck))
 
 ;; ================================================================
 ;; TRAMP

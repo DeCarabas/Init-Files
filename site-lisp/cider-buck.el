@@ -20,13 +20,16 @@
 
 ;;; Commentary:
 
-;; This is just a bunch of funcitons to make cider work well with a buck
+;; This is just a bunch of functions to make cider work well with a buck
 ;; project.
 
 ;;; Code:
 
+(require 'cider)
+
 (defun cider-buck--nrepl-target (src-file)
   "Get the nrepl buck target of SRC-FILE."
+  (message "Searching for the nrepl target for %s" src-file)
   (with-temp-buffer
     (let ((stdout-buffer (current-buffer)))
       (with-temp-buffer
@@ -68,6 +71,22 @@
    (cider-buck--jack-in-cmd)
    (lambda (server-buffer)
      (cider-connect-sibling-clj () server-buffer))))
+
+(defun cider-fix-docs ()
+  "Run commands in the cider session that will allow us to fix the documentation."
+  (interactive)
+  (let ((form "
+(let [props    {\"http.proxyHost\" \"fwdproxy\"
+                \"http.proxyPort\" \"8080\"
+                \"https.proxyHost\" \"fwdproxy\"
+                \"https.proxyPort\" \"8080\"}
+      old-vals (zipmap (keys props) (map (fn [p] (System/getProperty p)) (keys props)))]
+  (require 'cider.nrepl.inlined_deps.orchard.v0v5v1.orchard.clojuredocs)
+  (map (fn [p] (System/setProperty (first p) (second p))) props)
+  (cider.nrepl.inlined_deps.orchard.v0v5v1.orchard.clojuredocs/load-cache!)
+  (map (fn [p] (System/setProperty (first p) (second p))) old-vals))
+"))
+    (cider-interactive-eval form)))
 
 
 (provide 'cider-buck)

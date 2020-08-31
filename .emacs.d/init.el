@@ -114,6 +114,7 @@
 (require 'ansi-color)
 (when is-fb-environment
   (require '50-arc))
+(require 'ert) ;; I don't know, I started getting probs.
 
 (prefer-coding-system 'utf-8)
 
@@ -209,7 +210,9 @@
       (setq initial-frame-alist
             `((font             . ,my-font-choice)
               (width            . 91)
-              (height           . ,jd-frame-height)))))
+              (height           . ,jd-frame-height)))
+
+      (use-package modus-operandi-theme :ensure)))
 
 ;; =================================================================
 ;; FUN WITH KEY BINDINGS!  YAAAAYYY!!!
@@ -729,9 +732,9 @@
   :mode ("\\.org\\'" . org-mode)
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda))
-  :init
-  (add-hook 'org-mode-hook 'my-org-mode-hook)
   :config
+  (add-hook 'org-mode-hook 'my-org-mode-hook)
+
   ;; I want a sane approach to multi-line emphasis, and this is the only way
   ;; to get it. Think about 10 lines.
   (setcar (nthcdr 4 org-emphasis-regexp-components) 10)

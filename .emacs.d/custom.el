@@ -64,7 +64,7 @@
     ((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED"))))
  '(package-selected-packages
    (quote
-    (esup gnu-elpa-keyring-update lsp-hack hack-mode rust-mode filladapt lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode tss switch-window python-mode paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi tide elm-mode monky)))
+    (modus-operandi-theme esup gnu-elpa-keyring-update lsp-hack hack-mode rust-mode filladapt lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode tss switch-window python-mode paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi tide elm-mode monky)))
  '(reb-re-syntax (quote string))
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values
@@ -92,9 +92,9 @@
  '(show-paren-style (quote parenthesis))
  '(tab-width 4)
  '(tags-revert-without-query t)
- '(tramp-completion-reread-directory-timeout nil nil (tramp))
+ '(tramp-completion-reread-directory-timeout nil)
  '(tramp-default-method "sshx" nil (tramp))
- '(tramp-use-ssh-controlmaster-options nil nil (tramp))
+ '(tramp-use-ssh-controlmaster-options nil)
  '(transient-mark-mode t)
  '(truncate-lines t)
  '(typescript-indent-level 2)

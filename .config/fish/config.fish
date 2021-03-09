@@ -14,14 +14,18 @@ if status --is-login
     end
 end
 
-function fish_title
-  true
-end
+if [ -n "$INSIDE_EMACS" ]
+  # This is here to make emacs and ansi-term work properly; I'm not *quite*
+  # sure what it does but it's probably cool.
+  function fish_title
+    true
+  end
 
-# This is here to make emacs and ansi-term work properly; I'm not *quite*
-# sure what it does but it's probably cool.
-function fish_title
-  true
+ # emacs dir tracking
+ function prompt_AnSiT -e fish_prompt
+    printf "\eAnSiTc %s\n" "$PWD"
+  end
+  printf "\eAnSiTu %s\n" "$USER"
 end
 
 # export EDITOR=ec

@@ -1,5 +1,5 @@
 if status --is-login
-    set PATH $PATH ~/bin
+    set PATH /opt/local/bin /opt/local/sbin $PATH ~/bin
     if test -d ~/devtools/buck/bin
        set PATH $PATH ~/devtools/buck/bin
     end

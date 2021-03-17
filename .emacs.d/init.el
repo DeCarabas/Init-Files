@@ -920,5 +920,18 @@
 ;; (necessary to find 'hphpd' for instance)
 (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
 
+;; ================================================================
+;; Zig
+;; ================================================================
+(use-package zig-mode :ensure
+    :mode (("\\.zig\\'" . zig-mode))
+    :config
+    (require 'lsp) ;; There's a use-package somewhere else...?
+    (add-to-list 'lsp-language-id-configuration '(zig-mode . "zig"))
+    (lsp-register-client
+     (make-lsp-client
+      :new-connection (lsp-stdio-connection "<path to zls>")
+      :major-modes '(zig-mode)
+      :server-id 'zls)))
 
 ;;; init.el ends here

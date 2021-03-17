@@ -114,3 +114,4 @@ if ! shopt -oq posix; then
 fi
 
 [ -s "/Users/doty/.dnx/dnvm/dnvm.sh" ] && . "/Users/doty/.dnx/dnvm/dnvm.sh" # Load dnvm
+source "$HOME/.cargo/env"

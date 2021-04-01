@@ -252,7 +252,7 @@
 (setq w32-use-w32-font-dialog t)
 
 ;; Adaptive fill for everybody!
-(use-package filladapt :ensure
+(use-package filladapt :ensure t
   :init (setq-default filladapt-mode t))
 
 (require 'ido)
@@ -285,9 +285,16 @@
 (add-hook 'text-mode-hook 'my-text-mode-hook)
 
 ;; =================================================================
+;; Company?
+;; =================================================================
+(use-package company :ensure t
+  :commands company-mode
+  :hook (typescript-mode . company-mode))
+
+;; =================================================================
 ;; LSP-mode. Common configuration for LSP-based systems.
 ;; =================================================================
-(use-package lsp-mode :ensure
+(use-package lsp-mode :ensure t
   :commands lsp-mode
   :config
   (use-package company-lsp
@@ -631,7 +638,6 @@
 ;; JavaScript Support
 ;; =================================================================
 ;; (require 'rjsx-mode)
-(require 'prettier-js)
 (require 'flycheck-flow)
 (require 'flow-minor-mode)
 
@@ -644,11 +650,11 @@
 ;; (add-to-list 'auto-mode-alist '("\\.js$" . rjsx-mode))
 ;; (add-to-list 'auto-mode-alist '("\\.jsx$" . rjsx-mode))
 
-(defun my-js-mode-hook ()
-  "My custom javascript mode hook."
-  (add-node-modules-path)
-  (flow-minor-enable-automatically)
-  (prettier-js-mode))
+;; (defun my-js-mode-hook ()
+;;   "My custom javascript mode hook."
+;;   (add-node-modules-path)
+;;   (flow-minor-enable-automatically)
+;;   (prettier-js-mode))
 
 ;; (add-hook 'rjsx-mode-hook #'my-js-mode-hook)
 
@@ -707,7 +713,7 @@
 ;; =================================================================
 ;; Go (#golang) Mode
 ;; =================================================================
-(use-package go-mode :ensure
+(use-package go-mode :ensure t
   :mode "\\.go\\'")
 
 ;; (require 'auto-complete-config)
@@ -744,24 +750,18 @@
 ;; =================================================================
 ;; Typescript-Mode
 ;; =================================================================
-(defun setup-tide-mode ()
-  "Common hooks for tide.
+(use-package typescript-mode :ensure t)
 
-(See more at https://github.com/ananthakumaran/tide.)"
-  (interactive)
-  (tide-setup)
-  (flycheck-mode +1)
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (eldoc-mode +1)
-  (tide-hl-identifier-mode +1)
-  (company-mode +1))
+(use-package add-node-modules-path :ensure t
+  :hook typescript-mode)
 
-;; ;; aligns annotation to the right hand side
-;; (setq company-tooltip-align-annotations t)
+(use-package prettier-js :ensure t
+  :hook (typescript-mode . prettier-js-mode))
 
-;; formats the buffer before saving
-(add-hook 'before-save-hook 'tide-format-before-save)
-(add-hook 'typescript-mode-hook #'setup-tide-mode)
+(use-package tide :ensure t
+  :hook ((typescript-mode . eldoc-mode)
+         (typescript-mode . tide-setup)
+         (typescript-mode . tide-hl-identifier-mode)))
 
 ;; =================================================================
 ;; Archive mode for appx
@@ -818,7 +818,7 @@
 (setq vc-handled-backends (remove 'Hg vc-handled-backends))
 ;; But I have monky enabled so I can use it instead.
 (use-package monky
-  :ensure
+  :ensure t
   :config
   (setq monky-process-type 'cmdserver)
   :bind
@@ -895,7 +895,7 @@
 ;; =================================================================
 ;; Clojure
 ;; =================================================================
-(use-package clojure-mode :ensure
+(use-package clojure-mode :ensure t
     :mode (("\\.clj\\'" . clojure-mode)
            ("\\.edn\\'" . clojure-mode))
     :config
@@ -923,7 +923,7 @@
 ;; ================================================================
 ;; Zig
 ;; ================================================================
-(use-package zig-mode :ensure
+(use-package zig-mode :ensure t
     :mode (("\\.zig\\'" . zig-mode))
     :config
     (require 'lsp) ;; There's a use-package somewhere else...?

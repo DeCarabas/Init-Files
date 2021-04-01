@@ -17,7 +17,7 @@
  '(comint-prompt-read-only t)
  '(comint-scroll-to-bottom-on-input t)
  '(company-backends
-   '(company-bbdb company-nxml company-css company-eclim company-semantic company-clang company-xcode company-cmake company-capf company-files
+   '(company-bbdb company-nxml company-css company-semantic company-clang company-cmake company-capf company-files
                   (company-dabbrev-code company-gtags company-etags company-keywords)
                   company-oddmuse company-dabbrev company-flow))
  '(css-indent-offset 2)
@@ -58,7 +58,7 @@
  '(org-odd-levels-only t)
  '(org-todo-keywords '((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED")))
  '(package-selected-packages
-   '(zig-mode modus-operandi-theme esup gnu-elpa-keyring-update lsp-hack hack-mode rust-mode filladapt lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode tss switch-window python-mode paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi tide elm-mode monky))
+   '(prettier-js zig-mode modus-operandi-theme esup gnu-elpa-keyring-update lsp-hack hack-mode rust-mode filladapt lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode tss switch-window python-mode paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi tide elm-mode monky))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values

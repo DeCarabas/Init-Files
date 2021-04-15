@@ -273,6 +273,19 @@
         (emacs-lisp-docstring-fill-column t))
     (fill-paragraph nil region)))
 
+(defun my--fix-aspell ()
+  "Fix aspell location when it's not there, by looking in
+  hard-coded locations."
+  (require 'ispell)
+  (if (and (not (executable-find ispell-program-name))
+           (file-exists-p "c:/msys64/usr/bin/aspell.exe"))
+      (progn
+        (message "Redirecting aspell to known location")
+        (setq ispell-program-name "c:/msys64/usr/bin/aspell.exe"))))
+
+(add-hook 'ispell-minor-mode-hook 'my--fix-aspell)
+(add-hook 'flyspell-mode-hook 'my--fix-aspell)
+
 ;; =================================================================
 ;; Text mode configuration.
 ;; =================================================================
@@ -280,6 +293,7 @@
   "Doty's hook for text mode."
   (setq fill-column 70)
   (turn-on-auto-fill)
+  (my--fix-aspell)
   (flyspell-mode))
 
 (add-hook 'text-mode-hook 'my-text-mode-hook)
@@ -732,6 +746,7 @@
 (defun my-org-mode-hook ()
   "My org mode hook."
   (turn-off-filladapt-mode)
+  (my--fix-aspell)
   (require 'ox-quip))
 
 (use-package org
@@ -778,7 +793,7 @@
   (interactive)
   (dolist
       (ev (split-string
-           (shell-command-to-string "cmd /c \" \"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && set \"")
+           (shell-command-to-string "cmd /c \" \"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build\\vcvars64.bat\" && set \"")
            "[\n]+"))
     (letrec ((spev (split-string ev "="))
              (vn (car spev))
@@ -808,7 +823,8 @@
 ;; =================================================================
 ;; Magit stuff
 ;; =================================================================
-(global-set-key (kbd "C-x g") 'magit-status)
+(use-package magit :ensure
+  :bind ("C-x g" . magit-status))
 
 
 ;; =================================================================

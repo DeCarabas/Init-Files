@@ -306,15 +306,24 @@
   :hook (typescript-mode . company-mode))
 
 ;; =================================================================
-;; LSP-mode. Common configuration for LSP-based systems.
+;; Common configuration for LSP-based systems.
 ;; =================================================================
-(use-package lsp-mode :ensure t
-  :commands lsp-mode
+;; (use-package lsp-mode :ensure
+;;   :init (setq lsp-pyls-server-command "pyls-language-server")
+;;   :commands (lsp lsp-mode lsp-deferred)
+;;   :hook (python-mode . lsp-deferred)
+;;   :config
+;;   (use-package company-lsp
+;;     :config (add-to-list 'company-backends 'company-lsp))
+;;   (use-package lsp-ui
+;;     :config (add-hook 'lsp-mode-hook 'lsp-ui-mode)))
+(use-package eglot :ensure
+  :commands eglot-ensure
+  :hook (python-mode . eglot-ensure)
   :config
-  (use-package company-lsp
-    :config (add-to-list 'company-backends 'company-lsp))
-  (use-package lsp-ui
-    :config (add-hook 'lsp-mode-hook 'lsp-ui-mode)))
+  (add-to-list 'eglot-server-programs '(python-mode . ("pyls-language-server")))
+  )
+
 
 
 ;; =================================================================
@@ -646,6 +655,7 @@
     (blacken-mode)))
 
 (add-hook 'python-mode-hook 'my-python-mode-hook)
+
 
 
 ;; =================================================================

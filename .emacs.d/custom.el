@@ -17,9 +17,9 @@
  '(comint-prompt-read-only t)
  '(comint-scroll-to-bottom-on-input t)
  '(company-backends
-   '(company-bbdb company-nxml company-css company-semantic company-clang company-cmake company-capf company-files
-                  (company-dabbrev-code company-gtags company-etags company-keywords)
-                  company-oddmuse company-dabbrev company-flow))
+   '(company-tasks company-reviewers company-bbdb company-nxml company-css company-capf
+                   (company-dabbrev-code company-keywords)))
+ '(company-minimum-prefix-length 1)
  '(css-indent-offset 2)
  '(custom-safe-themes
    '("3dbb18bf06f41012d4525e6c64c392d6cfef06a2f8fe1bf7b565c4e020255466" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" default))
@@ -58,7 +58,7 @@
  '(org-odd-levels-only t)
  '(org-todo-keywords '((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED")))
  '(package-selected-packages
-   '(prettier-js zig-mode modus-operandi-theme esup gnu-elpa-keyring-update lsp-hack hack-mode rust-mode filladapt lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode tss switch-window python-mode paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi tide elm-mode monky))
+   '(eglot prettier-js zig-mode modus-operandi-theme esup gnu-elpa-keyring-update lsp-hack hack-mode rust-mode filladapt lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode tss switch-window python-mode paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi tide elm-mode monky))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values
@@ -84,8 +84,8 @@
  '(tab-width 4)
  '(tags-revert-without-query t)
  '(tramp-completion-reread-directory-timeout nil)
- '(tramp-default-method "sshx" nil (tramp))
- '(tramp-use-ssh-controlmaster-options nil nil (tramp))
+ '(tramp-default-method "sshx")
+ '(tramp-use-ssh-controlmaster-options nil)
  '(transient-mark-mode t)
  '(truncate-lines t)
  '(typescript-indent-level 2)

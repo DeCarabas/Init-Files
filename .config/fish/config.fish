@@ -1,13 +1,13 @@
 if status --is-login
     set PATH /opt/local/bin /opt/local/sbin $PATH ~/bin
+    if test -d ~/.cargo/bin
+       set PATH ~/.cargo/bin $PATH
+    end
     if test -d ~/devtools/buck/bin
        set PATH $PATH ~/devtools/buck/bin
     end
     if test -d /snap/bin
        set PATH $PATH /snap/bin
-    end
-    if test -d ~/.cargo/bin
-       set PATH $PATH ~/.cargo/bin
     end
     if test -d ~/.local/bin
        set PATH $PATH ~/.local/bin

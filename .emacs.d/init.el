@@ -179,18 +179,19 @@
 
       (setq my-font-choice
             (font-candidate
-             "Input Mono Narrow-12:weight=light"
-             "InputMonoNarrow Light-12:light"
+             "Input Mono Narrow:pixelsize=14:weight=normal"
              "Consolas-10"
              "Inconsolata-11"
              "Monaco-14"))
+
+
 
       ;; This is just here for playing with things.
       (set-frame-font my-font-choice)
 
       ;;
       ;; To obtain new font string, execute eval-expression, and eval this:
-      ;;(insert(prin1-to-string(w32-select-font)))
+      ;; (insert(prin1-to-string(w32-select-font)))
       ;; This will show the required string in the scratch buffer.
 
       (setq jd-frame-height
@@ -319,11 +320,18 @@
 ;;     :config (add-hook 'lsp-mode-hook 'lsp-ui-mode)))
 (use-package eglot :ensure
   :commands eglot-ensure
-  :hook (python-mode . eglot-ensure)
+  :hook
+  (python-mode . eglot-ensure)
+  (rust-mode   . eglot-ensure)
   :config
   (add-to-list 'eglot-server-programs '(python-mode . ("pyls-language-server")))
-  )
+  :init
+  (flycheck-mode -1))
 
+;; NOTE: elgot defers to flymake for error information.
+(use-package flymake
+  :bind (("C-c n" . 'flymake-goto-next-error)
+         ("C-c p" . 'flymake-goto-prev-error)))
 
 
 ;; =================================================================
@@ -356,8 +364,6 @@
   (turn-on-auto-fill)
   (flyspell-prog-mode)
   (define-key c-mode-base-map "\C-m" 'c-context-line-break)
-  (unless is-fb-environment
-    (set-fill-column 120))
   ;; (local-set-key "}" 'indent-on-closing-bracket)
   )
 
@@ -918,6 +924,9 @@
   :config
   (setq rust-format-on-save t))
 
+(use-package flycheck-rust :ensure t
+  :hook (rust-mode . flycheck-rust-setup))
+
 ;; =================================================================
 ;; Clojure
 ;; =================================================================
@@ -959,5 +968,11 @@
       :new-connection (lsp-stdio-connection "<path to zls>")
       :major-modes '(zig-mode)
       :server-id 'zls)))
+
+;; ================================================================
+;; Pico-8
+;; ================================================================
+(use-package pico8-mode
+    :mode (("\\.p8\\'" . pico8-mode)))
 
 ;;; init.el ends here

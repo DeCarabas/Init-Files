@@ -180,6 +180,7 @@
       (setq my-font-choice
             (font-candidate
              "Input Mono Narrow:pixelsize=14:weight=normal"
+             "InputMonoNarrow-14"
              "Consolas-10"
              "Inconsolata-11"
              "Monaco-14"))
@@ -309,6 +310,14 @@
 ;; =================================================================
 ;; Common configuration for LSP-based systems.
 ;; =================================================================
+(defvar my-clangd-executable (executable-find "clangd")
+  "Path to the clangd binary.")
+
+(defun my-disable-flycheck-on-eglot ()
+  "Disable flycheck in eglot-managed buffers."
+  (message "%s %s" "Called..." (eglot-managed-p))
+  (flycheck-mode (if (eglot-managed-p) -1 nil)))
+
 ;; (use-package lsp-mode :ensure
 ;;   :init (setq lsp-pyls-server-command "pyls-language-server")
 ;;   :commands (lsp lsp-mode lsp-deferred)
@@ -319,14 +328,14 @@
 ;;   (use-package lsp-ui
 ;;     :config (add-hook 'lsp-mode-hook 'lsp-ui-mode)))
 (use-package eglot :ensure
-  :commands eglot-ensure
+  :commands (eglot-ensure eglot)
   :hook
   (python-mode . eglot-ensure)
   (rust-mode   . eglot-ensure)
   :config
   (add-to-list 'eglot-server-programs '(python-mode . ("pyls-language-server")))
-  :init
-  (flycheck-mode -1))
+  (add-to-list 'eglot-server-programs `(c++-mode . (,my-clangd-executable)))
+  (add-hook 'eglot-managed-mode-hook 'my-disable-flycheck-on-eglot))
 
 ;; NOTE: elgot defers to flymake for error information.
 (use-package flymake

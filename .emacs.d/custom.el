@@ -22,7 +22,7 @@
  '(company-minimum-prefix-length 1)
  '(css-indent-offset 2)
  '(custom-safe-themes
-   '("7b3ce93a17ce4fc6389bba8ecb9fee9a1e4e01027a5f3532cc47d160fe303d5a" "3dbb18bf06f41012d4525e6c64c392d6cfef06a2f8fe1bf7b565c4e020255466" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" default))
+   '("d6da24347c813d1635a217d396cf1e3be26484fd4d05be153f3bd2b293d2a0b5" "7b3ce93a17ce4fc6389bba8ecb9fee9a1e4e01027a5f3532cc47d160fe303d5a" "3dbb18bf06f41012d4525e6c64c392d6cfef06a2f8fe1bf7b565c4e020255466" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" default))
  '(fast-lock-cache-directories '("~/flc-cache"))
  '(fast-lock-minimum-size nil)
  '(fill-column 77)
@@ -58,7 +58,7 @@
  '(org-odd-levels-only t)
  '(org-todo-keywords '((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED")))
  '(package-selected-packages
-   '(flycheck-rust eglot ink-mode prettier-js zig-mode modus-operandi-theme esup gnu-elpa-keyring-update lsp-hack hack-mode rust-mode filladapt lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode tss switch-window python-mode paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi tide elm-mode monky))
+   '(tree-sitter flycheck-rust eglot ink-mode prettier-js zig-mode modus-operandi-theme esup gnu-elpa-keyring-update lsp-hack hack-mode rust-mode filladapt lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode tss switch-window python-mode paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi tide elm-mode monky))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values

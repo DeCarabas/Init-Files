@@ -213,7 +213,7 @@
               (width            . 91)
               (height           . ,jd-frame-height)))
 
-      (use-package modus-operandi-theme :ensure)))
+      (use-package modus-themes :ensure)))
 
 ;; =================================================================
 ;; FUN WITH KEY BINDINGS!  YAAAAYYY!!!
@@ -974,5 +974,24 @@
 ;; ================================================================
 (use-package pico8-mode
     :mode (("\\.p8\\'" . pico8-mode)))
+
+;; ================================================================
+;; Ink
+;; ================================================================
+(defun my-ink-mode-hook ()
+  "My hook for ink mode."
+  (flymake-mode)
+  (flycheck-mode 0)
+  (turn-off-auto-fill)
+  (setq truncate-lines nil)
+  (visual-line-mode))
+
+(use-package ink-mode :ensure t
+  :mode (("\\.ink\\'" . ink-mode))
+  :bind (("M-." . ink-follow-link-at-point)
+         ("C-c ! n" . flymake-goto-next-error))
+  :config
+  (add-hook 'ink-mode-hook 'my-ink-mode-hook))
+
 
 ;;; init.el ends here

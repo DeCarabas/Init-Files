@@ -50,7 +50,7 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[cpp]": {
-        "editor.defaultFormatter": "nuclide.cpp"
+        "editor.defaultFormatter": "ms-vscode.cpptools"
     },
     "pyls.BuckFormatOnSave": true,
     "pyls.formatAlreadyFormattedFilesOnSave": true,

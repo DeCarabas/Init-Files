@@ -318,6 +318,9 @@
   (message "%s %s" "Called..." (eglot-managed-p))
   (flycheck-mode (if (eglot-managed-p) -1 nil)))
 
+(defvar my-cppls-fbcode-executable (executable-find "cppls-wrapper")
+  "The path to the fbcode C++ language service wrapper.")
+
 ;; (use-package lsp-mode :ensure
 ;;   :init (setq lsp-pyls-server-command "pyls-language-server")
 ;;   :commands (lsp lsp-mode lsp-deferred)
@@ -334,7 +337,8 @@
   (rust-mode   . eglot-ensure)
   :config
   (add-to-list 'eglot-server-programs '(python-mode . ("pyls-language-server")))
-  (add-to-list 'eglot-server-programs `(c++-mode . (,my-clangd-executable)))
+  (add-to-list 'eglot-server-programs `(c++-mode . (,my-cppls-fbcode-executable ,my-clangd-executable)))
+  (add-to-list 'eglot-server-programs `(c-mode . (,my-cppls-fbcode-executable ,my-clangd-executable)))
   (add-hook 'eglot-managed-mode-hook 'my-disable-flycheck-on-eglot))
 
 ;; NOTE: elgot defers to flymake for error information.

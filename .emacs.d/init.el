@@ -107,7 +107,6 @@
 ;; =================================================================
 ;; Common stuff that's needed once
 ;; =================================================================
-(require 'cl)
 (require 'saveplace) ;; Am I using this?
 (require 'ffap)      ;; Am I using this?
 (require 'uniquify)  ;; Unique buffers based on file name.
@@ -125,9 +124,8 @@
 ;; If you want to have comments displayed in italics,
 ;; uncomment the following line. Note that this must
 ;; be done before font settings! (Emacs 20)
-(setq w32-enable-italics t)
-(when (eq window-system 'w32)
-  (setq tramp-default-method "plink"))
+(when (boundp 'w32-enable-italics)
+  (setq w32-enable-italics t))
 
 ;; Shut off annoying sound
 (if (fboundp 'set-message-beep) (set-message-beep 'silent))
@@ -213,8 +211,14 @@
             `((font             . ,my-font-choice)
               (width            . 91)
               (height           . ,jd-frame-height)))
+      ))
 
-      (use-package modus-themes :ensure)))
+(use-package modus-themes :ensure
+  :config
+  (load-theme (if (display-graphic-p)
+                  'modus-operandi
+                'modus-vivendi)
+              t))
 
 ;; =================================================================
 ;; FUN WITH KEY BINDINGS!  YAAAAYYY!!!
@@ -310,16 +314,23 @@
 ;; =================================================================
 ;; Common configuration for LSP-based systems.
 ;; =================================================================
-(defvar my-clangd-executable (executable-find "clangd")
+(defvar my-clangd-executable
+  (or (executable-find "clangd") "clangd")
   "Path to the clangd binary.")
+
+(defvar my-cppls-fbcode-executable
+  (or (executable-find "cppls-wrapper") "cppls-wrapper")
+  "The path to the fbcode C++ language service wrapper.")
 
 (defun my-disable-flycheck-on-eglot ()
   "Disable flycheck in eglot-managed buffers."
-  (message "%s %s" "Called..." (eglot-managed-p))
   (flycheck-mode (if (eglot-managed-p) -1 nil)))
 
-(defvar my-cppls-fbcode-executable (executable-find "cppls-wrapper")
-  "The path to the fbcode C++ language service wrapper.")
+(defun my-eglot-connect-hook (server)
+  "Don't send configuration information in C or C++."
+  (unless (or (eq major-mode 'c++-mode)
+              (eq major-mode 'c-mode))
+    (eglot-signal-didChangeConfiguration server)))
 
 ;; (use-package lsp-mode :ensure
 ;;   :init (setq lsp-pyls-server-command "pyls-language-server")
@@ -335,11 +346,16 @@
   :hook
   (python-mode . eglot-ensure)
   (rust-mode   . eglot-ensure)
+  (c++-mode    . eglot-ensure)
+  (c-mode      . eglot-ensure)
   :config
+  (let ((cpp-executable (or my-cppls-fbcode-executable my-clangd-executable)))
+    (when cpp-executable
+      (add-to-list 'eglot-server-programs `((c++-mode c-mode) . (,cpp-executable)))))
   (add-to-list 'eglot-server-programs '(python-mode . ("pyls-language-server")))
-  (add-to-list 'eglot-server-programs `(c++-mode . (,my-cppls-fbcode-executable ,my-clangd-executable)))
-  (add-to-list 'eglot-server-programs `(c-mode . (,my-cppls-fbcode-executable ,my-clangd-executable)))
-  (add-hook 'eglot-managed-mode-hook 'my-disable-flycheck-on-eglot))
+  (add-hook 'eglot-managed-mode-hook 'my-disable-flycheck-on-eglot)
+  (remove-hook 'eglot-connect-hook 'eglot-signal-didChangeConfiguration)
+  (add-hook 'eglot-connect-hook 'my-eglot-connect-hook))
 
 ;; NOTE: elgot defers to flymake for error information.
 (use-package flymake
@@ -967,6 +983,9 @@
 ;; Let tramp search $PATH as given to the $USER on the remote machine
 ;; (necessary to find 'hphpd' for instance)
 (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+;; Use putty on windows
+(when (eq window-system 'w32)
+  (setq tramp-default-method "plink"))
 
 ;; ================================================================
 ;; Zig

@@ -22,7 +22,7 @@
  '(company-minimum-prefix-length 1)
  '(css-indent-offset 2)
  '(custom-safe-themes
-   '("0568a5426239e65aab5e7c48fa1abde81130a87ddf7f942613bf5e13bf79686b" "d6da24347c813d1635a217d396cf1e3be26484fd4d05be153f3bd2b293d2a0b5" "3dbb18bf06f41012d4525e6c64c392d6cfef06a2f8fe1bf7b565c4e020255466" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" default))
+   '("0568a5426239e65aab5e7c48fa1abde81130a87ddf7f942613bf5e13bf79686b" "d6da24347c813d1635a217d396cf1e3be26484fd4d05be153f3bd2b293d2a0b5" "7b3ce93a17ce4fc6389bba8ecb9fee9a1e4e01027a5f3532cc47d160fe303d5a" "3dbb18bf06f41012d4525e6c64c392d6cfef06a2f8fe1bf7b565c4e020255466" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" default))
  '(fast-lock-cache-directories '("~/flc-cache"))
  '(fast-lock-minimum-size nil)
  '(fill-column 77)

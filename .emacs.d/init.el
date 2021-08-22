@@ -167,21 +167,28 @@
 ;; segfaulting on my devserver when it called find-font, and I'll be damned
 ;; if I'm going to debug it.)
 ;;
+
 (if (display-graphic-p)
-    (let ((my-font-choice) (jd-frame-height))
+    (let ((jd-frame-height))
       ;; Consolas. (And, to a lesser extent, Inconsolata.)
       ;;
       (defun font-candidate (&rest fonts)
         "Return existing font which first match."
         (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts))
 
-      (setq my-font-choice
-            (font-candidate
-             "Input Mono Narrow:pixelsize=14:weight=normal"
-             "InputMonoNarrow-14"
-             "Consolas-10"
-             "Inconsolata-11"
-             "Monaco-14"))
+      (defvar my-font-choice
+        (cond
+         ((string-equal (downcase (system-name)) "bifrost")
+          "InputMonoNarrow-14")
+
+         (t
+          (font-candidate
+           "Input Mono Narrow:pixelsize=14:weight=normal"
+           "InputMonoNarrow-14"
+           "Consolas-10"
+           "Inconsolata-11"
+           "Monaco-14")))
+        "The font I'm using, in graphics mode.")
 
       ;; This is just here for playing with things.
       (set-frame-font my-font-choice)

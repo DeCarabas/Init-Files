@@ -319,19 +319,31 @@
 ;; Common configuration for LSP-based systems.
 ;; =================================================================
 (defvar my-clangd-executable
-  (or (executable-find "clangd") "clangd")
+  (executable-find "clangd")
   "Path to the clangd binary.")
 
 (defvar my-cppls-fbcode-executable
-  (or (executable-find "cppls-wrapper") "cppls-wrapper")
+  (executable-find "cppls-wrapper")
   "The path to the fbcode C++ language service wrapper.")
+
+(defvar my-pylsp-executable
+  (executable-find "pylsp")
+  "The path to the python-lsp-server binary.")
+
+(defvar my-pyls-executable
+  (executable-find "pyls")
+  "The path to the python-language-server binary.")
+
+(defvar my-pyls-language-server-executable
+  (executable-find "pyls-langauge-server")
+  "The path to the pyls-language-server binary (used at FB).")
 
 (defun my-disable-flycheck-on-eglot ()
   "Disable flycheck in eglot-managed buffers."
   (flycheck-mode (if (eglot-managed-p) -1 nil)))
 
 (defun my-eglot-connect-hook (server)
-  "Don't send configuration information in C or C++."
+  "Connect to SERVER. Don't send configuration information in C or C++."
   (unless (or (eq major-mode 'c++-mode)
               (eq major-mode 'c-mode))
     (eglot-signal-didChangeConfiguration server)))
@@ -353,10 +365,17 @@
   (c++-mode    . eglot-ensure)
   (c-mode      . eglot-ensure)
   :config
-  (let ((cpp-executable (or my-cppls-fbcode-executable my-clangd-executable)))
+  (let ((cpp-executable (or my-cppls-fbcode-executable
+                            my-clangd-executable)))
     (when cpp-executable
       (add-to-list 'eglot-server-programs `((c++-mode c-mode) . (,cpp-executable)))))
-  (add-to-list 'eglot-server-programs '(python-mode . ("pyls-language-server")))
+
+  (let ((py-executable (or my-pyls-language-server-executable
+                           my-pylsp-executable
+                           my-pyls-executable)))
+    (when py-executable
+      (add-to-list 'eglot-server-programs `(python-mode . (,py-executable)))))
+
   (add-hook 'eglot-managed-mode-hook 'my-disable-flycheck-on-eglot)
   (remove-hook 'eglot-connect-hook 'eglot-signal-didChangeConfiguration)
   (add-hook 'eglot-connect-hook 'my-eglot-connect-hook))

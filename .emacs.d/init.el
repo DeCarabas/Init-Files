@@ -285,8 +285,7 @@
     (fill-paragraph nil region)))
 
 (defun my--fix-aspell ()
-  "Fix aspell location when it's not there, by looking in
-  hard-coded locations."
+  "Fix aspell location when it's not there, by looking in hard-coded locations."
   (require 'ispell)
   (if (and (not (executable-find ispell-program-name))
            (file-exists-p "c:/msys64/usr/bin/aspell.exe"))

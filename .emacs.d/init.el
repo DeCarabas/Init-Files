@@ -53,7 +53,6 @@
   "The directory containing the init file.")
 
 ;; (setq autoload-file (concat init-dir "loaddefs.el"))
-(setq package-user-dir (concat init-dir "elpa"))
 (setq custom-file (concat init-dir "custom.el"))
 (load custom-file)
 

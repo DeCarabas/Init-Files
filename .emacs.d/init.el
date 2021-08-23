@@ -928,11 +928,12 @@
 (add-hook 'shell-mode-hook 'my-shell-mode-hook)
 
 ;; xterm-color
-(require 'xterm-color)
-(progn (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter)
-       (setq comint-output-filter-functions
-             (remove 'ansi-color-process-output
-                     comint-output-filter-functions)))
+(use-package xterm-color :ensure
+  :config
+  (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter)
+  (setq comint-output-filter-functions
+        (remove 'ansi-color-process-output
+                comint-output-filter-functions)))
 
 ;; ag
 (global-set-key (kbd "M-p") 'ag-project-regexp)

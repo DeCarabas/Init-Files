@@ -35,6 +35,9 @@
 ;;;              ...turns out that lots of the customization still makes
 ;;;              sense.  But fetching the packages is still the hard part.
 ;;;
+;;; (Changes before this are lost in the mists of time.  This file dates from
+;;; at least 1998.)
+;;;
 ;;; Code:
 ;; =================================================================
 ;; First, before anything... server goop.

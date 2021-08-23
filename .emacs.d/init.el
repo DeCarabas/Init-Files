@@ -198,10 +198,12 @@
       ;; (insert(prin1-to-string(w32-select-font)))
       ;; This will show the required string in the scratch buffer.
 
-      (setq jd-frame-height
-            (cond ((> (display-pixel-height) 900) 60)
-                  ((> (display-pixel-height) 768) 48)
-                  ('t 40)))
+
+      ;; (setq jd-frame-height
+      ;;       (cond ((> (display-pixel-height) 900) 60)
+      ;;             ((> (display-pixel-height) 768) 48)
+      ;;             ('t 40)))
+
 
       ;; frame settings.  default-frame-alist controls what a default frame
       ;; looks like.

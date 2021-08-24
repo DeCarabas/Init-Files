@@ -65,5 +65,7 @@
     "editor.suggestSelection": "first",
     "files.associations": {
         "*.gadget": "thrift"
-    }
+    },
+    "fb.doctor.kerberos-keychain": true,
+    "editor.suggest.snippetsPreventQuickSuggestions": false
 }

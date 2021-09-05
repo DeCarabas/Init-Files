@@ -823,8 +823,9 @@
 
 (use-package org
   :mode ("\\.org\\'" . org-mode)
-  :bind (("C-c l" . org-store-link)
-         ("C-c a" . org-agenda))
+  :bind (:map org-mode-map
+              ("C-c l" . org-store-link)
+              ("C-c a" . org-agenda))
   :config
   (add-hook 'org-mode-hook 'my-org-mode-hook)
 
@@ -1050,8 +1051,9 @@
 
 (use-package ink-mode :ensure t
   :mode (("\\.ink\\'" . ink-mode))
-  :bind (("M-." . ink-follow-link-at-point)
-         ("C-c ! n" . flymake-goto-next-error))
+  :bind (:map ink-mode-map
+              ("M-." . ink-follow-link-at-point)
+              ("C-c ! n" . flymake-goto-next-error))
   :config
   (add-hook 'ink-mode-hook 'my-ink-mode-hook))
 

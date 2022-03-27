@@ -1035,8 +1035,15 @@
 ;; ================================================================
 ;; Pico-8
 ;; ================================================================
+(defun my-pico8-hook ()
+  "My hook for pico-8 mode."
+  ;; Pico-8 has a small indent.
+  (setq lua-indent-level 2)
+  (set-fill-column 32))
+
 (use-package pico8-mode
-    :mode (("\\.p8\\'" . pico8-mode)))
+  :mode (("\\.p8\\'" . pico8-mode))
+  :config (add-hook 'pico8-mode-hook 'my-pico8-hook))
 
 ;; ================================================================
 ;; Ink

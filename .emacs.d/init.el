@@ -702,12 +702,6 @@
 ;; =================================================================
 ;; Python Support
 ;; =================================================================
-(autoload 'python-mode "python-mode" "Python editing mode." t)
-(autoload 'blacken-mode "blacken" "Automatically run black before saving." t)
-
-(add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
-(add-to-list 'interpreter-mode-alist '("python" . python-mode))
-
 (defun my-python-mode-hook ()
   "My hook for `python-mode`."
   (when is-fb-environment
@@ -716,8 +710,14 @@
                (string-match-p "TARGETS" (buffer-file-name)))
     (blacken-mode)))
 
-(add-hook 'python-mode-hook 'my-python-mode-hook)
+(use-package python-mode :ensure
+  :mode "\\.py\\'"
+  :config
+  (add-to-list 'interpreter-mode-alist '("python" . python-mode))
+  (add-hook 'python-mode-hook 'my-python-mode-hook))
 
+
+(autoload 'blacken-mode "blacken" "Automatically run black before saving." t)
 
 
 ;; =================================================================

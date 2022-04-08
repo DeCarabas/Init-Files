@@ -456,9 +456,12 @@
                                    ))))
 
 (defun clang-format-cpp-buffer ()
-  "Format a buffer with clang-format but only if it's C or C++."
+  "Format a buffer with clang-format but only if it's C or C++.
+
+Or, uh, Objective C, I guess."
   (when (or (eq major-mode 'c++-mode)
-            (eq major-mode 'c-mode))
+            (eq major-mode 'c-mode)
+            (eq major-mode 'objc-mode))
     (clang-format-buffer)))
 
 (defun my-c-mode-hook ()
@@ -469,6 +472,7 @@
 (add-hook 'c-mode-hook    'my-c-mode-hook)
 (add-hook 'c++-mode-hook  'my-c-mode-hook)
 (add-hook 'java-mode-hook 'my-c-mode-hook)
+(add-hook 'objc-mode-hook 'my-c-mode-hook)
 
 (defconst jd-more-keywords
   '(;; These are keywords in Microsoft C/C++

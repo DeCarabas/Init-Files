@@ -30,7 +30,6 @@
   "editor.fontSize": 14,
   "editor.fontLigatures": true,
   "editor.formatOnSaveTimeout": 1500,
-  "window.zoomLevel": 1,
   "terminal.integrated.shell.windows": "C:\\WINDOWS\\System32\\cmd.exe",
   "C_Cpp.clang_format_fallbackStyle": "llvm",
   "latex-workshop.view.pdf.viewer": "tab",
@@ -48,7 +47,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[cpp]": {
-    "editor.defaultFormatter": "ms-vscode.cpptools"
+    "editor.defaultFormatter": "nuclide.cpp"
   },
   "pyls.BuckFormatOnSave": true,
   "pyls.formatAlreadyFormattedFilesOnSave": true,
@@ -67,5 +66,13 @@
   "fb.doctor.kerberos-keychain": true,
   "editor.suggest.snippetsPreventQuickSuggestions": false,
   "security.workspace.trust.untrustedFiles": "open",
-  "git.autofetch": true
+  "git.autofetch": true,
+  "fb.ms-remote-connections.odtypes": [
+    {
+      "type": "ondemand_fbcode",
+      "flavor": "default",
+      "folders": []
+    }
+  ],
+  "hg.jumpToNextConflictOnSave": "Jump On Save And Open ISL When Done"
 }

@@ -1068,5 +1068,51 @@ Or, uh, Objective C, I guess."
   :config
   (add-hook 'ink-mode-hook 'my-ink-mode-hook))
 
+;; =================================================================
+;; Note taking
+;; =================================================================
+;; howm http://howm.osdn.jp/
+;; Based on http://dotyl.ink/l/kc56hcn64e
+
+(defvar my-dropbox-dir
+  (expand-file-name
+   (cond
+    ((file-directory-p "~/Dropbox (Personal)") "~/Dropbox (Personal)")
+    ((file-directory-p "~/Dropbox") "~/Dropbox")))
+  "Where is my dropbox?")
+
+(use-package howm :ensure
+  :init
+  ;; Directory configuration
+  ;;
+  ;; (This is in :init because apparently you need to set this stuff before
+  ;; you load howm?)
+  (setq howm-home-directory (expand-file-name "notes/howm" my-dropbox-dir))
+  (setq howm-directory      howm-home-directory)
+  (make-directory howm-directory t)
+  (setq howm-keyword-file (expand-file-name ".howm-keys" howm-home-directory))
+  (setq howm-history-file (expand-file-name ".howm-history" howm-home-directory))
+  (setq howm-file-name-format "%Y/%m/%Y-%m-%d-%H%M%S.md")
+
+  ;; Use ripgrep as grep
+  (setq howm-view-use-grep t)
+  (setq howm-view-grep-command "rg")
+  (setq howm-view-grep-option "-nH --no-heading --color never")
+  (setq howm-view-grep-extended-option nil)
+  (setq howm-view-grep-fixed-option "-F")
+  (setq howm-view-grep-expr-option nil)
+  (setq howm-view-grep-file-stdin-option nil)
+
+  :config
+  ;; un-bind control-h from the howm thing
+  (define-key howm-menu-mode-map "\C-h" nil)
+  (define-key riffle-summary-mode-map "\C-h" nil)
+  (define-key howm-view-contents-mode-map "\C-h" nil)
+
+  ;; Rename buffers to their title
+  (add-hook 'howm-mode-hook 'howm-mode-set-buffer-name)
+  (add-hook 'after-save-hook 'howm-mode-set-buffer-name)
+  )
+
 
 ;;; init.el ends here

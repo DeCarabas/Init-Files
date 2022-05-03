@@ -61,7 +61,7 @@
 ;; =================================================================
 
 ;; add private lisp directory to load-path.
-(add-to-list 'load-path "~/site-lisp")
+(add-to-list 'load-path (directory-file-name "~/site-lisp"))
 
 ;; =================================================================
 ;; FB STUFF
@@ -352,15 +352,7 @@
               (eq major-mode 'c-mode))
     (eglot-signal-didChangeConfiguration server)))
 
-;; (use-package lsp-mode :ensure
-;;   :init (setq lsp-pyls-server-command "pyls-language-server")
-;;   :commands (lsp lsp-mode lsp-deferred)
-;;   :hook (python-mode . lsp-deferred)
-;;   :config
-;;   (use-package company-lsp
-;;     :config (add-to-list 'company-backends 'company-lsp))
-;;   (use-package lsp-ui
-;;     :config (add-hook 'lsp-mode-hook 'lsp-ui-mode)))
+
 (use-package eglot :ensure
   :commands (eglot-ensure eglot)
   :hook
@@ -372,13 +364,24 @@
   (let ((cpp-executable (or my-cppls-fbcode-executable
                             my-clangd-executable)))
     (when cpp-executable
-      (add-to-list 'eglot-server-programs `((c++-mode c-mode) . (,cpp-executable)))))
+      (add-to-list 'eglot-server-programs
+                   `((c++-mode c-mode) . (,cpp-executable)))))
 
   (let ((py-executable (or my-pyls-language-server-executable
                            my-pylsp-executable
                            my-pyls-executable)))
     (when py-executable
-      (add-to-list 'eglot-server-programs `(python-mode . (,py-executable)))))
+      (add-to-list 'eglot-server-programs
+                   `(python-mode . (,py-executable)))))
+
+  ;; 2022-04-28 Configuration for Deno.
+  (defclass eglot-deno (eglot-lsp-server) ()
+    :documentation "A custom class for deno lsp.")
+  (cl-defmethod eglot-initialization-options ((server eglot-deno))
+    (list :enable t :lint t))
+  (add-to-list 'eglot-server-programs
+               '((js-mode typescript-mode) . (eglot-deno "deno" "lsp")))
+  ;; --
 
   (add-hook 'eglot-managed-mode-hook 'my-disable-flycheck-on-eglot)
   (remove-hook 'eglot-connect-hook 'eglot-signal-didChangeConfiguration)
@@ -842,7 +845,23 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Typescript-Mode
 ;; =================================================================
-(use-package typescript-mode :ensure t)
+(defun ts/is-deno-project ()
+  "Return non-nil if this is a deno project, otherwise nil."
+  (locate-dominating-file (buffer-file-name) ".deno"))
+
+(defun ts/enable-eglot-or-tide ()
+  "Enable eglot if this is a deno project, otherwise enable tide."
+  (if (ts/is-deno-project)
+      (eglot-ensure)
+
+    ;; Not a deno project; just enable tide and the normal
+    (eldoc-mode)
+    (tide-setup)
+    (tide-hl-identifier-mode)))
+
+(use-package typescript-mode :ensure t
+  :config
+  (add-hook 'typescript-mode-hook 'ts/enable-eglot-or-tide))
 
 (use-package add-node-modules-path :ensure t
   :hook typescript-mode)
@@ -850,10 +869,7 @@ Or, uh, Objective C, I guess."
 (use-package prettier-js :ensure t
   :hook (typescript-mode . prettier-js-mode))
 
-(use-package tide :ensure t
-  :hook ((typescript-mode . eldoc-mode)
-         (typescript-mode . tide-setup)
-         (typescript-mode . tide-hl-identifier-mode)))
+(use-package tide :ensure t)
 
 ;; =================================================================
 ;; Archive mode for appx

@@ -1094,7 +1094,8 @@ Or, uh, Objective C, I guess."
   (expand-file-name
    (cond
     ((file-directory-p "~/Dropbox (Personal)") "~/Dropbox (Personal)")
-    ((file-directory-p "~/Dropbox") "~/Dropbox")))
+    ((file-directory-p "~/Dropbox") "~/Dropbox")
+    ((file-directory-p "/mnt/c/Users/john/Dropbox") "/mnt/c/Users/john/Dropbox")))
   "Where is my dropbox?")
 
 (use-package howm :ensure

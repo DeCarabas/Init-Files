@@ -61,7 +61,7 @@
 ;; =================================================================
 
 ;; add private lisp directory to load-path.
-(add-to-list 'load-path "~/site-lisp")
+(add-to-list 'load-path (directory-file-name "~/site-lisp"))
 
 ;; =================================================================
 ;; FB STUFF
@@ -355,15 +355,7 @@
               (eq major-mode 'c-mode))
     (eglot-signal-didChangeConfiguration server)))
 
-;; (use-package lsp-mode :ensure
-;;   :init (setq lsp-pyls-server-command "pyls-language-server")
-;;   :commands (lsp lsp-mode lsp-deferred)
-;;   :hook (python-mode . lsp-deferred)
-;;   :config
-;;   (use-package company-lsp
-;;     :config (add-to-list 'company-backends 'company-lsp))
-;;   (use-package lsp-ui
-;;     :config (add-hook 'lsp-mode-hook 'lsp-ui-mode)))
+
 (use-package eglot :ensure
   :commands (eglot-ensure eglot)
   :hook
@@ -375,13 +367,24 @@
   (let ((cpp-executable (or my-cppls-fbcode-executable
                             my-clangd-executable)))
     (when cpp-executable
-      (add-to-list 'eglot-server-programs `((c++-mode c-mode) . (,cpp-executable)))))
+      (add-to-list 'eglot-server-programs
+                   `((c++-mode c-mode) . (,cpp-executable)))))
 
   (let ((py-executable (or my-pyls-language-server-executable
                            my-pylsp-executable
                            my-pyls-executable)))
     (when py-executable
-      (add-to-list 'eglot-server-programs `(python-mode . (,py-executable)))))
+      (add-to-list 'eglot-server-programs
+                   `(python-mode . (,py-executable)))))
+
+  ;; 2022-04-28 Configuration for Deno.
+  (defclass eglot-deno (eglot-lsp-server) ()
+    :documentation "A custom class for deno lsp.")
+  (cl-defmethod eglot-initialization-options ((server eglot-deno))
+    (list :enable t :lint t))
+  (add-to-list 'eglot-server-programs
+               '((js-mode typescript-mode) . (eglot-deno "deno" "lsp")))
+  ;; --
 
   (add-hook 'eglot-managed-mode-hook 'my-disable-flycheck-on-eglot)
   (remove-hook 'eglot-connect-hook 'eglot-signal-didChangeConfiguration)
@@ -459,9 +462,12 @@
                                    ))))
 
 (defun clang-format-cpp-buffer ()
-  "Format a buffer with clang-format but only if it's C or C++."
+  "Format a buffer with clang-format but only if it's C or C++.
+
+Or, uh, Objective C, I guess."
   (when (or (eq major-mode 'c++-mode)
-            (eq major-mode 'c-mode))
+            (eq major-mode 'c-mode)
+            (eq major-mode 'objc-mode))
     (clang-format-buffer)))
 
 (defun my-c-mode-hook ()
@@ -472,6 +478,7 @@
 (add-hook 'c-mode-hook    'my-c-mode-hook)
 (add-hook 'c++-mode-hook  'my-c-mode-hook)
 (add-hook 'java-mode-hook 'my-c-mode-hook)
+(add-hook 'objc-mode-hook 'my-c-mode-hook)
 
 (defconst jd-more-keywords
   '(;; These are keywords in Microsoft C/C++
@@ -705,12 +712,6 @@
 ;; =================================================================
 ;; Python Support
 ;; =================================================================
-(autoload 'python-mode "python-mode" "Python editing mode." t)
-(autoload 'blacken-mode "blacken" "Automatically run black before saving." t)
-
-(add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
-(add-to-list 'interpreter-mode-alist '("python" . python-mode))
-
 (defun my-python-mode-hook ()
   "My hook for `python-mode`."
   (when is-fb-environment
@@ -719,8 +720,14 @@
                (string-match-p "TARGETS" (buffer-file-name)))
     (blacken-mode)))
 
-(add-hook 'python-mode-hook 'my-python-mode-hook)
+(use-package python-mode :ensure
+  :mode "\\.py\\'"
+  :config
+  (add-to-list 'interpreter-mode-alist '("python" . python-mode))
+  (add-hook 'python-mode-hook 'my-python-mode-hook))
 
+
+(autoload 'blacken-mode "blacken" "Automatically run black before saving." t)
 
 
 ;; =================================================================
@@ -841,7 +848,23 @@
 ;; =================================================================
 ;; Typescript-Mode
 ;; =================================================================
-(use-package typescript-mode :ensure t)
+(defun ts/is-deno-project ()
+  "Return non-nil if this is a deno project, otherwise nil."
+  (locate-dominating-file (buffer-file-name) ".deno"))
+
+(defun ts/enable-eglot-or-tide ()
+  "Enable eglot if this is a deno project, otherwise enable tide."
+  (if (ts/is-deno-project)
+      (eglot-ensure)
+
+    ;; Not a deno project; just enable tide and the normal
+    (eldoc-mode)
+    (tide-setup)
+    (tide-hl-identifier-mode)))
+
+(use-package typescript-mode :ensure t
+  :config
+  (add-hook 'typescript-mode-hook 'ts/enable-eglot-or-tide))
 
 (use-package add-node-modules-path :ensure t
   :hook typescript-mode)
@@ -849,10 +872,7 @@
 (use-package prettier-js :ensure t
   :hook (typescript-mode . prettier-js-mode))
 
-(use-package tide :ensure t
-  :hook ((typescript-mode . eldoc-mode)
-         (typescript-mode . tide-setup)
-         (typescript-mode . tide-hl-identifier-mode)))
+(use-package tide :ensure t)
 
 ;; =================================================================
 ;; Archive mode for appx
@@ -1038,8 +1058,15 @@
 ;; ================================================================
 ;; Pico-8
 ;; ================================================================
+(defun my-pico8-hook ()
+  "My hook for pico-8 mode."
+  ;; Pico-8 has a small indent.
+  (setq lua-indent-level 2)
+  (set-fill-column 32))
+
 (use-package pico8-mode
-    :mode (("\\.p8\\'" . pico8-mode)))
+  :mode (("\\.p8\\'" . pico8-mode))
+  :config (add-hook 'pico8-mode-hook 'my-pico8-hook))
 
 ;; ================================================================
 ;; Ink
@@ -1059,6 +1086,53 @@
               ("C-c ! n" . flymake-goto-next-error))
   :config
   (add-hook 'ink-mode-hook 'my-ink-mode-hook))
+
+;; =================================================================
+;; Note taking
+;; =================================================================
+;; howm http://howm.osdn.jp/
+;; Based on http://dotyl.ink/l/kc56hcn64e
+
+(defvar my-dropbox-dir
+  (expand-file-name
+   (cond
+    ((file-directory-p "~/Dropbox (Personal)") "~/Dropbox (Personal)")
+    ((file-directory-p "~/Dropbox") "~/Dropbox")
+    ((file-directory-p "/mnt/c/Users/john/Dropbox") "/mnt/c/Users/john/Dropbox")))
+  "Where is my dropbox?")
+
+(use-package howm :ensure
+  :init
+  ;; Directory configuration
+  ;;
+  ;; (This is in :init because apparently you need to set this stuff before
+  ;; you load howm?)
+  (setq howm-home-directory (expand-file-name "notes/howm" my-dropbox-dir))
+  (setq howm-directory      howm-home-directory)
+  (make-directory howm-directory t)
+  (setq howm-keyword-file (expand-file-name ".howm-keys" howm-home-directory))
+  (setq howm-history-file (expand-file-name ".howm-history" howm-home-directory))
+  (setq howm-file-name-format "%Y/%m/%Y-%m-%d-%H%M%S.md")
+
+  ;; Use ripgrep as grep
+  (setq howm-view-use-grep t)
+  (setq howm-view-grep-command "rg")
+  (setq howm-view-grep-option "-nH --no-heading --color never")
+  (setq howm-view-grep-extended-option nil)
+  (setq howm-view-grep-fixed-option "-F")
+  (setq howm-view-grep-expr-option nil)
+  (setq howm-view-grep-file-stdin-option nil)
+
+  :config
+  ;; un-bind control-h from the howm thing
+  (define-key howm-menu-mode-map "\C-h" nil)
+  (define-key riffle-summary-mode-map "\C-h" nil)
+  (define-key howm-view-contents-mode-map "\C-h" nil)
+
+  ;; Rename buffers to their title
+  (add-hook 'howm-mode-hook 'howm-mode-set-buffer-name)
+  (add-hook 'after-save-hook 'howm-mode-set-buffer-name)
+  )
 
 
 ;;; init.el ends here

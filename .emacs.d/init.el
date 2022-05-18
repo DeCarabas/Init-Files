@@ -183,6 +183,9 @@
          ((string-equal (downcase (system-name)) "bifrost")
           "InputMonoNarrow-14")
 
+         ((string-equal (downcase (system-name)) "unstablesurface")
+          "Input Mono Narrow:pixelsize=28:weight=normal")
+
          (t
           (font-candidate
            "Input Mono Narrow:pixelsize=14:weight=normal"

@@ -12,6 +12,12 @@ if status --is-login
     if test -d ~/.local/bin
        set PATH $PATH ~/.local/bin
     end
+    if test -d /nix
+       set PATH $PATH /nix/var/nix/profiles/default/bin
+    end
+    if test -d $HOME/Library/Python/3.10/bin
+       set PATH $PATH $HOME/Library/Python/3.10/bin
+    end
 end
 
 if [ -n "$INSIDE_EMACS" ]
@@ -27,16 +33,3 @@ if [ -n "$INSIDE_EMACS" ]
   end
   printf "\eAnSiTu %s\n" "$USER"
 end
-
-# export EDITOR=ec
-# export VISUAL=ec
-
-# export FBANDROID_DIR=/Users/doty/fbsource/fbandroid
-# alias quicklog_update=/Users/doty/fbsource/fbandroid/scripts/quicklog/quicklog_update.sh
-# alias qlu=quicklog_update
-
-# # added by setup_fb4a.sh
-# export ANDROID_SDK=/opt/android_sdk
-# export ANDROID_NDK_REPOSITORY=/opt/android_ndk
-# export ANDROID_HOME={ANDROID_SDK}
-# export PATH={PATH}:{ANDROID_SDK}/tools:{ANDROID_SDK}/platform-tools

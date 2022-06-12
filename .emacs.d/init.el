@@ -204,7 +204,9 @@
       ;; This will show the required string in the scratch buffer.
 
 
-      ;; (setq jd-frame-height
+      ;; NOTE: I used to compute the height of the initial frame based on
+      ;; display pixel height but it got unsustainable and I hated it.  (setq
+      ;; jd-frame-height
       ;;       (cond ((> (display-pixel-height) 900) 60)
       ;;             ((> (display-pixel-height) 768) 48)
       ;;             ('t 40)))
@@ -215,14 +217,12 @@
       (setq default-frame-alist
             `((font             . ,my-font-choice)
               (width            . 91)
-              (height           . ,jd-frame-height)
               ,@default-frame-alist))
 
       ;; initial-frame-alist controls what the first frame looks like.
       (setq initial-frame-alist
             `((font             . ,my-font-choice)
-              (width            . 91)
-              (height           . ,jd-frame-height)))
+              (width            . 91)))
       ))
 
 (use-package modus-themes :ensure

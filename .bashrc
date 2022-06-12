@@ -115,3 +115,4 @@ fi
 
 [ -s "/Users/doty/.dnx/dnvm/dnvm.sh" ] && . "/Users/doty/.dnx/dnvm/dnvm.sh" # Load dnvm
 source "$HOME/.cargo/env"
+. "$HOME/.cargo/env"

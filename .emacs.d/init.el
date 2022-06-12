@@ -726,9 +726,19 @@ Or, uh, Objective C, I guess."
   (add-to-list 'interpreter-mode-alist '("python" . python-mode))
   (add-hook 'python-mode-hook 'my-python-mode-hook))
 
-
 (autoload 'blacken-mode "blacken" "Automatically run black before saving." t)
 
+;; =================================================================
+;; Bazel Support
+;; =================================================================
+
+(use-package bazel :ensure
+  :mode  (("/\\.bazelignore\\'"                     . bazelignore-mode)
+          ("/\\(?:\\(?:bazel\\)?\\.bazelrc\\)\\'"   . bazelrc-mode)
+          ("/.+\\.bzl\\'"                           . bazel-starlark-mode)
+          ("/MODULE\\.bazel\\'"                     . bazel-module-mode)
+          ("/\\(?:WORKSPACE\\(?:\\.bazel\\)?\\)\\'" . bazel-workspace-mode)
+          ("/\\(?:BUILD\\(?:\\.bazel\\)?\\)\\'"     . bazel-build-mode)))
 
 ;; =================================================================
 ;; JavaScript Support

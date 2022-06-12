@@ -690,22 +690,22 @@ Or, uh, Objective C, I guess."
               (append flycheck-disabled-checkers
                       '(json-jsonlist)))
 
-(flycheck-define-checker python-fb-flake8
-  "A Python syntax and style checker using FB's Flake8."
-  :command ("flake8" source-original "--shebang" "--py2" "--py3")
-  :standard-input nil
-  :error-filter (lambda (errors)
-                  (let ((errors (flycheck-sanitize-errors errors)))
-                    (seq-do #'flycheck-flake8-fix-error-level errors)
-                    errors))
-  :error-patterns
-  ((warning line-start
-            (file-name) ":" line ":" (optional column ":") " "
-            (id (one-or-more (any alpha)) (one-or-more digit)) " "
-            (message (one-or-more not-newline))
-            line-end))
-  :modes python-mode)
-(add-to-list 'flycheck-checkers 'python-fb-flake8)
+;; (flycheck-define-checker python-fb-flake8
+;;   "A Python syntax and style checker using FB's Flake8."
+;;   :command ("flake8" source-original "--shebang" "--py2" "--py3")
+;;   :standard-input nil
+;;   :error-filter (lambda (errors)
+;;                   (let ((errors (flycheck-sanitize-errors errors)))
+;;                     (seq-do #'flycheck-flake8-fix-error-level errors)
+;;                     errors))
+;;   :error-patterns
+;;   ((warning line-start
+;;             (file-name) ":" line ":" (optional column ":") " "
+;;             (id (one-or-more (any alpha)) (one-or-more digit)) " "
+;;             (message (one-or-more not-newline))
+;;             line-end))
+;;   :modes python-mode)
+;; (add-to-list 'flycheck-checkers 'python-fb-flake8)
 
 (global-flycheck-mode)
 

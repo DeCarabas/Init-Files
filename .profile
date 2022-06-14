@@ -12,7 +12,7 @@
 if [ -n "$BASH_VERSION" ]; then
     # include .bashrc if it exists
     if [ -f "$HOME/.bashrc" ]; then
-	. "$HOME/.bashrc"
+    . "$HOME/.bashrc"
     fi
 fi
 
@@ -21,7 +21,7 @@ if [ -d "$HOME/bin" ] ; then
     PATH="$HOME/bin:$PATH"
 fi
 
-# added by Anaconda3 2.4.1 installer
-export PATH="/Users/doty/anaconda/bin:$PATH"
-
-. "$HOME/.cargo/env"
+# if we have a local cargo then grab it
+if [ -f "$HOME/.cargo/env" ] ; then
+   . "$HOME/.cargo/env"
+fi

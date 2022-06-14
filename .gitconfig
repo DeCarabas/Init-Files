@@ -1,14 +1,6 @@
 [user]
-	name = John Doty
-	email = john@d0ty.me
-[core]
-	autocrlf = input
-[pretty]
-	doty = * %C(bold green)%h%Creset -%C(bold white)%d%Creset %s %C(bold)(%cr)%Creset <%aN>%Creset
-[format]
-	pretty = doty
-[alias]
-    st = status
-    ci = commit
-[push]
-	default = upstream
+    name = John Doty
+    email = john@d0ty.me
+
+[include]
+    path = .gitconfig.shared

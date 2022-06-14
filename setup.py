@@ -11,6 +11,7 @@ ignore = {
     "vscode",
     "terminal",
     ".DS_Store",
+    ".config",
 }
 
 
@@ -35,13 +36,27 @@ def link_helper(source, dst):
         print("Linking: {} -> {}".format(source, dst))
         os.symlink(source, dst)
 
+root_directory = os.getcwd()
+
 # Set up the vast majority of the files here: most things in *this* directory
 # go into the home directory directly. (Directly directory?)
 home = os.path.expanduser("~")
-source_files = [file for file in os.listdir(os.getcwd()) if file not in ignore]
+source_files = [file for file in os.listdir(root_directory) if file not in ignore]
 for source in source_files:
     source = os.path.abspath(source)
     dst = os.path.join(home, os.path.split(source)[1])
+    link_helper(source, dst)
+
+
+# Mess with .config.
+#
+# .config is special; sometimes we arrive on a machine with a .config already
+# present, and want to maintain it. Sometimes we just don't want to track a
+# subdirectory. You know.
+home_config = os.path.join(os.path.expanduser("~"), ".config")
+for source in os.listdir(os.path.join(root_directory, ".config")):
+    source = os.path.abspath(source)
+    dst = os.path.join(home_config, os.path.split(source)[1])
     link_helper(source, dst)
 
 # VS Code goes somewhere else, not in the home directory. It depends on the

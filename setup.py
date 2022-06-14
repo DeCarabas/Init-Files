@@ -54,8 +54,9 @@ for source in source_files:
 # present, and want to maintain it. Sometimes we just don't want to track a
 # subdirectory. You know.
 home_config = os.path.join(os.path.expanduser("~"), ".config")
-for source in os.listdir(os.path.join(root_directory, ".config")):
-    source = os.path.abspath(source)
+root_config = os.path.join(root_directory, ".config")
+for source in os.listdir(root_config):
+    source = os.path.abspath(os.path.join(root_config, source))
     dst = os.path.join(home_config, os.path.split(source)[1])
     link_helper(source, dst)
 
@@ -101,3 +102,5 @@ if os.getenv("LOCALAPPDATA") is not None:
                 terminal_root
             )
         )
+
+# Check to set the shell to fish, if we need to

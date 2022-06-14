@@ -1,5 +1,6 @@
 #!/usr/local/bin/python3
 import os
+import subprocess
 
 ignore = {
     "install.sh",
@@ -104,3 +105,7 @@ if os.getenv("LOCALAPPDATA") is not None:
         )
 
 # Check to set the shell to fish, if we need to
+if os.getenv("CODER_WORKSPACE_ID"):
+    subprocess.run(["sudo", "apt-get", "update"])
+    subprocess.run(["sudo", "apt-get", "install", "-y", "fish"])
+    subprocess.run(["sudo", "chsh", "-s", "/usr/bin/fish", os.getenv("USER")])

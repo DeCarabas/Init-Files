@@ -2,6 +2,7 @@
 import os
 
 ignore = {
+    "install.sh",
     "setup.cmd",
     "setup.py",
     "setup.ps1",

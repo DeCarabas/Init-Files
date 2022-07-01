@@ -13,10 +13,10 @@ python3 "./setup.py"
 # OK this stuff here is better in bash, and also is specific to setting up
 # coder.com instances, so. Add packages that I want in my coder image.
 sudo apt-get update
-sudo apt-get install -y fish tmux gh
+sudo apt-get install -y fish
 
 # NOTE: THIS NEEDS TO BE INSTALLED IN THE BASE IMAGE OR CLANG DON'T RUN
-sudo apt-get install -y libtinfo5
+# sudo apt-get install -y libtinfo5
 
 # Change my shell to fish.
 sudo chsh -s /usr/bin/fish $USER
@@ -30,6 +30,6 @@ git config --global include.path .gitconfig.shared
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 # Install bazelisk
-wget https://github.com/bazelbuild/bazelisk/releases/download/v1.12.0/bazelisk-linux-amd64
-mv ./bazelisk-linux-amd64 ~/bin/bazelisk
-chmod a+x ~/bin/bazelisk
+# wget https://github.com/bazelbuild/bazelisk/releases/download/v1.12.0/bazelisk-linux-amd64
+# mv ./bazelisk-linux-amd64 ~/bin/bazelisk
+# chmod a+x ~/bin/bazelisk

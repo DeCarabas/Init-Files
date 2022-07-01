@@ -820,7 +820,9 @@ Or, uh, Objective C, I guess."
 ;; Go (#golang) Mode
 ;; =================================================================
 (use-package go-mode :ensure t
-  :mode "\\.go\\'")
+  :mode "\\.go\\'"
+  :config
+  (add-hook 'before-save-hook 'gofmt-before-save))
 
 ;; (require 'auto-complete-config)
 ;; (require 'go-autocomplete)

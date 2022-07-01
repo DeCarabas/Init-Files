@@ -17,8 +17,8 @@
  '(comint-prompt-read-only t)
  '(comint-scroll-to-bottom-on-input t)
  '(company-backends
-   '(company-tasks company-reviewers company-bbdb company-nxml company-css company-capf
-                   (company-dabbrev-code company-keywords)))
+   '(company-bbdb company-nxml company-css company-capf
+                  (company-dabbrev-code company-keywords)))
  '(company-minimum-prefix-length 1)
  '(css-indent-offset 2)
  '(custom-safe-themes t)
@@ -50,6 +50,7 @@
  '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
  '(nrepl-use-ssh-fallback-for-remote-hosts t)
  '(omnisharp-server-executable-path nil)
+ '(org-adapt-indentation t)
  '(org-export-backends '(ascii html icalendar latex md odt))
  '(org-export-with-toc nil)
  '(org-hide-leading-stars t)

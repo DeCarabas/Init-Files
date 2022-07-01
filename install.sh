@@ -12,9 +12,8 @@ python3 "./setup.py"
 
 # OK this stuff here is better in bash, and also is specific to setting up
 # coder.com instances, so. Add packages that I want in my coder image.
-sudo add-apt-repository ppa:kelleyk/emacs -y
 sudo apt-get update
-sudo apt-get install -y fish emacs-nox tmux gh
+sudo apt-get install -y fish tmux gh
 
 # NOTE: THIS NEEDS TO BE INSTALLED IN THE BASE IMAGE OR CLANG DON'T RUN
 sudo apt-get install -y libtinfo5

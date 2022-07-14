@@ -1,23 +1,32 @@
-if status --is-login
-    set PATH /opt/local/bin /opt/local/sbin $PATH ~/bin
-    if test -d ~/.cargo/bin
-       set PATH ~/.cargo/bin $PATH
-    end
-    if test -d ~/devtools/buck/bin
-       set PATH $PATH ~/devtools/buck/bin
-    end
-    if test -d /snap/bin
-       set PATH $PATH /snap/bin
-    end
-    if test -d ~/.local/bin
-       set PATH $PATH ~/.local/bin
-    end
-    if test -d /nix
-       set PATH $PATH /nix/var/nix/profiles/default/bin
-    end
-    if test -d $HOME/Library/Python/3.10/bin
-       set PATH $PATH $HOME/Library/Python/3.10/bin
-    end
+if test -d /opt/local/bin
+   set PATH /opt/local/bin $PATH
+end
+if test -d /opt/local/sbin
+   set PATH /opt/local/sbin $PATH
+end
+if test -d ~/bin
+   set PATH ~/bin $PATH
+end
+if test -d ~/.cargo/bin
+   set PATH ~/.cargo/bin $PATH
+end
+if test -d ~/devtools/buck/bin
+   set PATH $PATH ~/devtools/buck/bin
+end
+if test -d /snap/bin
+   set PATH $PATH /snap/bin
+end
+if test -d ~/go/bin
+   set PATH $PATH ~/go/bin
+end
+if test -d ~/.local/bin
+   set PATH $PATH ~/.local/bin
+end
+if test -d /nix
+   set PATH $PATH /nix/var/nix/profiles/default/bin
+end
+if test -d $HOME/Library/Python/3.10/bin
+   set PATH $PATH $HOME/Library/Python/3.10/bin
 end
 
 if [ -n "$INSIDE_EMACS" ]

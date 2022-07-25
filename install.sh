@@ -15,14 +15,14 @@ sudo apt update
 sudo apt install -y wget fish java-common
 
 # Temporary until we get java in the image or java in the WORKSPACE
-wget -O- https://apt.corretto.aws/corretto.key | sudo apt-key add -
-sudo add-apt-repository 'deb https://apt.corretto.aws stable main'
+# wget -O- https://apt.corretto.aws/corretto.key | sudo apt-key add -
+# sudo add-apt-repository 'deb https://apt.corretto.aws stable main'
 
 
-# OK this stuff here is better in bash, and also is specific to setting up
-# coder.com instances, so. Add packages that I want in my coder image.
-sudo apt-get update
-sudo apt-get install -y java-1.8.0-amazon-corretto-jdk
+# # OK this stuff here is better in bash, and also is specific to setting up
+# # coder.com instances, so. Add packages that I want in my coder image.
+# sudo apt-get update
+# sudo apt-get install -y java-1.8.0-amazon-corretto-jdk
 
 # NOTE: THIS NEEDS TO BE INSTALLED IN THE BASE IMAGE OR CLANG DON'T RUN
 # sudo apt-get install -y libtinfo5

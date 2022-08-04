@@ -363,6 +363,9 @@
   (rust-mode   . eglot-ensure)
   (c++-mode    . eglot-ensure)
   (c-mode      . eglot-ensure)
+  (go-mode     . eglot-ensure) ;; 2022-07-29 Add eglot for go
+  :bind
+  ("C-c \\" . eglot-code-actions) ;; 2022-07-29 I want to make code actions easier.
   :config
   (let ((cpp-executable (or my-cppls-fbcode-executable
                             my-clangd-executable)))
@@ -819,6 +822,24 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Go (#golang) Mode
 ;; =================================================================
+(require 'project)
+
+;;-----
+;; 2022-07-28 Forgot why I added this configuration; disabling it because it
+;; makes it very slow, and .git is accurate anyways.
+;;
+;; (defun project-find-go-module (dir)
+;;   "A function for finding the dominating go.mod file in DIR for a go project."
+;;   (when-let ((root (locate-dominating-file dir "go.mod")))
+;;     (cons 'go-module root)))
+
+;; (cl-defmethod project-root ((project (head go-module)))
+;;   "Shrug PROJECT."
+;;   (cdr project))
+
+;; (add-hook 'project-find-functions #'project-find-go-module)
+;;-----
+
 (use-package go-mode :ensure t
   :mode "\\.go\\'"
   :config
@@ -1146,5 +1167,9 @@ Or, uh, Objective C, I guess."
   (add-hook 'after-save-hook 'howm-mode-set-buffer-name)
   )
 
+;; =================================================================
+;; Protocol Buffers
+;; =================================================================
+(use-package protobuf-mode :ensure)
 
 ;;; init.el ends here

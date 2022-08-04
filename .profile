@@ -21,6 +21,10 @@ if [ -d "$HOME/bin" ] ; then
     PATH="$HOME/bin:$PATH"
 fi
 
+if [ -d "$HOME/go/bin" ] ; then
+    PATH="$HOME/go/bin:$PATH"
+fi
+
 # if we have a local cargo then grab it
 if [ -f "$HOME/.cargo/env" ] ; then
    . "$HOME/.cargo/env"

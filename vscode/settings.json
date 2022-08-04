@@ -1,6 +1,8 @@
 {
   "breadcrumbs.enabled": true,
-  "editor.rulers": [80],
+  "editor.rulers": [
+    80
+  ],
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
   "editor.minimap.enabled": false,
@@ -38,7 +40,7 @@
   "interactive-smartlog.pull": "arc pull",
   "interactive-smartlog.fetch": "jf get",
   "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "vscode.json-language-features"
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -74,5 +76,15 @@
       "folders": []
     }
   ],
-  "hg.jumpToNextConflictOnSave": "Jump On Save And Open ISL When Done"
+  "hg.jumpToNextConflictOnSave": "Jump On Save And Open ISL When Done",
+  "rust-analyzer.checkOnSave.overrideCommand": [    
+    "python3",
+    "/Users/doty/lacework/services/bazel/rust/clippyallrust.py",
+  ],
+  "bazel.buildifierFixOnFormat": true,
+  "bazel.enableCodeLens": true,
+  "rust-analyzer.cargo.buildScripts.overrideCommand": [
+    "python3",
+    "/Users/doty/lacework/services/bazel/rust/clippyallrust.py",
+  ],
 }

@@ -1,5 +1,10 @@
 directory: /var/media/music
 library: /var/media/music/musiclibrary.db
-plugins: ftintitle fetchart embedart lyrics chroma
+plugins: ftintitle fetchart embedart lyrics chroma convert
 import:
     move: yes
+convert:
+    dest: /var/media/mp3
+    auto: no
+    embed: yes
+    never_convert_lossy_files: yes

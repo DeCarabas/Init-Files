@@ -31,3 +31,4 @@ vscode/globalStorage
 .config/configstore/update-notifier-yo.json
 .config/wireshark/recent
 .config/wireshark/recent_common
+.config/htop/htoprc

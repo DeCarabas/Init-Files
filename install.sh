@@ -11,7 +11,7 @@ cd $MY_PATH
 python3 "./setup.py"
 
 # # Un-minimize this installation
-# yes | sudo unminimize
+sudo python3 "./unminimize.py"
 
 # # OK this stuff here is better in bash, and also is specific to setting up
 # # coder.com instances, so. Add packages that I want in my coder image.

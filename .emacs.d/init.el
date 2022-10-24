@@ -1172,4 +1172,10 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 (use-package protobuf-mode :ensure)
 
+;; =================================================================
+;; Deadgrep for searching
+;; =================================================================
+(use-package deadgrep :ensure)
+
+
 ;;; init.el ends here

@@ -1027,7 +1027,14 @@ Or, uh, Objective C, I guess."
   (when is-fb-environment
     (require 'fb-note-publish)))
 
-(add-hook 'markdown-mode-hook 'my-markdown-mode-hook)
+(use-package markdown-mode :ensure t
+  :mode "\\.md\\'"
+  :config (add-hook 'markdown-mode-hook 'my-markdown-mode-hook))
+
+(use-package adaptive-wrap :ensure t
+  :commands adaptive-wrap-prefix-mode
+  :init
+  (add-hook 'markdown-mode-hook 'adaptive-wrap-prefix-mode))
 
 
 ;; =================================================================

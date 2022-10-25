@@ -1,8 +1,6 @@
 {
   "breadcrumbs.enabled": true,
-  "editor.rulers": [
-    80
-  ],
+  "editor.rulers": [80],
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
   "editor.minimap.enabled": false,
@@ -60,7 +58,7 @@
     }
   ],
   "terminal.integrated.shell.linux": "/usr/bin/fish",
-  "workbench.colorTheme": "Monokai",
+  "workbench.colorTheme": "Solarized Dark",
   "editor.suggestSelection": "first",
   "files.associations": {
     "*.gadget": "thrift"
@@ -77,14 +75,23 @@
     }
   ],
   "hg.jumpToNextConflictOnSave": "Jump On Save And Open ISL When Done",
-  "rust-analyzer.checkOnSave.overrideCommand": [    
+  "rust-analyzer.checkOnSave.overrideCommand": [
     "python3",
-    "/Users/doty/lacework/services/bazel/rust/clippyallrust.py",
+    "/Users/doty/lacework/services/bazel/rust/clippyallrust.py"
   ],
   "bazel.buildifierFixOnFormat": true,
   "bazel.enableCodeLens": true,
   "rust-analyzer.cargo.buildScripts.overrideCommand": [
     "python3",
-    "/Users/doty/lacework/services/bazel/rust/clippyallrust.py",
+    "/Users/doty/lacework/services/bazel/rust/clippyallrust.py"
   ],
+  "remote.SSH.showLoginTerminal": true,
+  "remote.SSH.remotePlatform": {
+    "coder.doty-dev": "linux",
+    "coder.doty-dev2": "linux"
+  },
+  "java.import.maven.enabled": false,
+  "remote.autoForwardPortsSource": "process",
+  "go.toolsManagement.autoUpdate": true,
+  "bazel.queriesShareServer": true
 }

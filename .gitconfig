@@ -4,3 +4,13 @@
 
 [include]
     path = .gitconfig.shared
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/local/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/local/bin/gh auth git-credential
+[init]
+	defaultBranch = main
+[github]
+	user = DeCarabas

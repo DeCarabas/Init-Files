@@ -58,7 +58,7 @@
  '(org-odd-levels-only t)
  '(org-todo-keywords '((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED")))
  '(package-selected-packages
-   '(deadgrep protobuf-mode bazel howm python-mode color-theme-sanityinc-solarized monokai-theme rust-mode tide typescript-mode modus-themes tree-sitter flycheck-rust eglot ink-mode prettier-js zig-mode esup gnu-elpa-keyring-update lsp-hack hack-mode filladapt lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode tss switch-window paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi elm-mode monky color-theme-sanityinc-tomorrow))
+   '(deadgrep solarized-theme gist adaptive-wrap kubel protobuf-mode bazel howm python-mode color-theme-sanityinc-solarized monokai-theme rust-mode tide typescript-mode modus-themes tree-sitter flycheck-rust eglot ink-mode prettier-js zig-mode esup gnu-elpa-keyring-update lsp-hack hack-mode filladapt lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode tss switch-window paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi elm-mode monky color-theme-sanityinc-tomorrow))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values
@@ -90,6 +90,7 @@
  '(truncate-lines t)
  '(typescript-indent-level 2)
  '(use-dialog-box nil)
+ '(warning-suppress-types '(((unlock-file))))
  '(web-mode-code-indent-offset 2)
  '(web-mode-css-indent-offset 2)
  '(which-func-mode-global t nil (which-func))

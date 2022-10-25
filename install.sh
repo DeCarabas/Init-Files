@@ -21,6 +21,12 @@ sudo apt install -y wget fish java-common
 # Change my shell to fish.
 sudo chsh -s /usr/bin/fish $USER
 
+# Install fisher
+curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher
+
+# nvm.fish
+fisher install jorgebucaran/nvm.fish
+
 # Make sure that the gitconfig that's on my computer links to my shared
 # config.
 git config --global include.path .gitconfig.shared

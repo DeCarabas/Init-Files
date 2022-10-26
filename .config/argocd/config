@@ -1,0 +1,11 @@
+contexts:
+- name: argo.ops.lacework.engineering
+  server: argo.ops.lacework.engineering
+  user: argo.ops.lacework.engineering
+current-context: argo.ops.lacework.engineering
+servers:
+- grpc-web-root-path: ""
+  server: argo.ops.lacework.engineering
+users:
+- auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcmdvY2QiLCJzdWIiOiJhZG1pbjpsb2dpbiIsImV4cCI6MTY2MDc5NzA1MSwibmJmIjoxNjYwNzEwNjUxLCJpYXQiOjE2NjA3MTA2NTEsImp0aSI6ImU2MzEzMzA4LTM5ZDEtNGQ3Yy04NTA2LTM3MzFlOTIxYWU1ZSJ9.q_PCCcsUQrZJ3-fV9_I8oEqDX4y1n5tRMwXy1D_L8dw
+  name: argo.ops.lacework.engineering

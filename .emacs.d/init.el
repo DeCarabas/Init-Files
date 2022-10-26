@@ -1184,5 +1184,12 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 (use-package deadgrep :ensure)
 
+;; =================================================================
+;; Terraform
+;; =================================================================
+(use-package terraform-mode :ensure
+  :mode "\\.tf(vars)?\\'"
+  :config (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))
+
 
 ;;; init.el ends here

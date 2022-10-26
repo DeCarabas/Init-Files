@@ -16,7 +16,7 @@ sudo python3 "./unminimize.py"
 # # OK this stuff here is better in bash, and also is specific to setting up
 # # coder.com instances, so. Add packages that I want in my coder image.
 sudo apt update
-sudo apt install -y wget fish java-common
+sudo apt install -y wget fish java-common atop
 
 # Change my shell to fish.
 sudo chsh -s /usr/bin/fish $USER

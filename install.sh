@@ -16,7 +16,7 @@ sudo python3 "./unminimize.py"
 # # OK this stuff here is better in bash, and also is specific to setting up
 # # coder.com instances, so. Add packages that I want in my coder image.
 sudo apt update
-sudo apt install -y wget fish java-common atop
+sudo apt install -y wget fish java-common atop htop
 
 # Change my shell to fish.
 sudo chsh -s /usr/bin/fish $USER
@@ -30,7 +30,7 @@ git config --global include.path .gitconfig.shared
 
 # Install local rust so I have rustfmt at the very least.
 # (This should be in the image I think.)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+# curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 # Install bazelisk
 # wget https://github.com/bazelbuild/bazelisk/releases/download/v1.12.0/bazelisk-linux-amd64

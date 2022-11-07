@@ -16,12 +16,8 @@
 .config/deluge/deluged.pid
 .config/deluge/ssl/
 .config/deluge/state/
-.config/fish/completions
-.config/fish/conf.d
 .config/fish/fish_history
 .config/fish/fish_variables
-.config/fish/fishd*
-.config/fish/functions
 .config/fish/generated_completions
 .config/gh/hosts.yml
 .config/htop/htoprc

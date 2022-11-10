@@ -24,12 +24,3 @@ sudo chsh -s /usr/bin/fish $USER
 # Make sure that the gitconfig that's on my computer links to my shared
 # config.
 git config --global include.path .gitconfig.shared
-
-# Install local rust so I have rustfmt at the very least.
-# (This should be in the image I think.)
-# curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-
-# Install bazelisk
-# wget https://github.com/bazelbuild/bazelisk/releases/download/v1.12.0/bazelisk-linux-amd64
-# mv ./bazelisk-linux-amd64 ~/bin/bazelisk
-# chmod a+x ~/bin/bazelisk

@@ -9,3 +9,5 @@
     ci = commit
 [push]
     default = upstream
+[init]
+    defaultBranch = main

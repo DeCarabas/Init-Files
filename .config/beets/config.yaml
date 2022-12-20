@@ -1,5 +1,5 @@
-directory: /var/media/music
-library: /var/media/music/musiclibrary.db
+directory: /zmain/media/music
+library: /zmain/media/music/musiclibrary.db
 plugins: ftintitle fetchart embedart lyrics chroma convert
 import:
     move: yes

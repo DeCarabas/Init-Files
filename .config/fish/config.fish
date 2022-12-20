@@ -10,6 +10,9 @@ end
 if test -d ~/.cargo/bin
    set PATH ~/.cargo/bin $PATH
 end
+if test -d ~/.local/bin
+   set PATH ~/.local/bin $PATH
+end
 if test -d ~/devtools/buck/bin
    set PATH $PATH ~/devtools/buck/bin
 end

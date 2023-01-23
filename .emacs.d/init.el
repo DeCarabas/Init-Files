@@ -1191,5 +1191,11 @@ Or, uh, Objective C, I guess."
   :mode "\\.tf(vars)?\\'"
   :config (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))
 
+;; =================================================================
+;; Earthly
+;; =================================================================
+(use-package earthfile-mode :ensure
+  :mode ("\\.earth\\'" "Earthfile\\'"))
+
 
 ;;; init.el ends here

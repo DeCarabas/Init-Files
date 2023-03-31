@@ -32,7 +32,7 @@ if test -d $HOME/Library/Python/3.10/bin
    set PATH $PATH $HOME/Library/Python/3.10/bin
 end
 
-if test -n "$CODER_WORKSPACE_ID"
+if test -n "$CODER_WORKSPACE_ID$CODER"
   if test -z "$BROWSER"
      set -x BROWSER "fwd-browse"
   end

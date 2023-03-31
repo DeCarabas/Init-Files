@@ -38,6 +38,15 @@ if test -n "$CODER_WORKSPACE_ID"
   end
 end
 
+if test -d /home/linuxbrew/.linuxbrew
+  set -x HOMEBREW_PREFIX "/home/linuxbrew/.linuxbrew"
+  set -x HOMEBREW_CELLAR "/home/linuxbrew/.linuxbrew/Cellar"
+  set -x HOMEBREW_REPOSITORY "/home/linuxbrew/.linuxbrew/Homebrew"
+  set PATH "/home/linuxbrew/.linuxbrew/bin" "/home/linuxbrew/.linuxbrew/sbin" $PATH
+  set MANPATH "/home/linuxbrew/.linuxbrew/share/man" $MANPATH
+  set INFOPATH "/home/linuxbrew/.linuxbrew/share/info" $INFOPATH
+end
+
 if [ -n "$INSIDE_EMACS" ]
   # This is here to make emacs and ansi-term work properly; I'm not *quite*
   # sure what it does but it's probably cool.

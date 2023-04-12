@@ -741,7 +741,9 @@ Or, uh, Objective C, I guess."
           ("/.+\\.bzl\\'"                           . bazel-starlark-mode)
           ("/MODULE\\.bazel\\'"                     . bazel-module-mode)
           ("/\\(?:WORKSPACE\\(?:\\.bazel\\)?\\)\\'" . bazel-workspace-mode)
-          ("/\\(?:BUILD\\(?:\\.bazel\\)?\\)\\'"     . bazel-build-mode)))
+          ("/\\(?:BUILD\\(?:\\.bazel\\)?\\)\\'"     . bazel-build-mode)
+          ("/.+\\.tilt\\'"                          . bazel-starlark-mode)
+          ("/Tiltfile$"                             . bazel-starlark-mode)))
 
 ;; =================================================================
 ;; JavaScript Support

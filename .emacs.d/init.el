@@ -101,10 +101,13 @@
   (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
   )
 (package-initialize)
-
 (unless package-archive-contents
-  (package-refresh-contents)
-  (package-install-selected-packages))
+  (package-refresh-contents))
+
+;; Really we should be marking *everyting* here with :ensure rather than
+;; downloading it all up front.
+;;
+;;   (package-install-selected-packages))
 
 ;; =================================================================
 ;; Common stuff that's needed once

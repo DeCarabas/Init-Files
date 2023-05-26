@@ -29,14 +29,17 @@ def slug():
 
 
 def get_default_target(namespace, pod):
-    pod = json.loads(
-        subprocess.run(
-            ["kubectl", "get", "pod", "--namespace", namespace, pod, "-o", "json"],
-            check=True,
-            capture_output=True,
-            encoding="utf-8",
-        ).stdout
+    kubectl = subprocess.run(
+        ["kubectl", "get", "pod", "--namespace", namespace, pod, "-o", "json"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        encoding="utf-8",
     )
+    if kubectl.returncode != 0:
+        print(f"Unable to find job: {kubectl.stdout}")
+        sys.exit(1)
+
+    pod = json.loads(kubectl.stdout)
 
     annotation_default = (
         pod.get("metadata", {})
@@ -62,14 +65,14 @@ def get_pod_container_state(namespace, pod, container):
     statuses = pod.get("status", {}).get("ephemeralContainerStatuses", [])
     for status in statuses:
         if status.get("name", None) != container:
-            state_keys = list(status.get("state", {"waiting": {}}).keys())
+            state_keys = list(status.get("state", {}).keys())
             if len(state_keys) == 0:
-                return "waiting"
+                return "no keys"
             if len(state_keys) > 1:
-                return "INTERNAL ERROR"
+                return "internal error"
             return state_keys[0]
 
-    return None
+    return f"not found in pod {pod}"
 
 
 def create_debugger_container(namespace, pod, target, image):
@@ -83,7 +86,9 @@ def create_debugger_container(namespace, pod, target, image):
         service_line = proxy.stdout.readline().decode("utf-8").strip()
         PREFIX = "Starting to serve on 127.0.0.1:"
         if not service_line.startswith(PREFIX):
-            raise Exception("Cannot get the port from the kubectl proxy")
+            print(f"Cannot get the port from the kubectl proxy: {service_line}")
+            sys.exit(1)
+
         port = service_line[len(PREFIX) :]
 
         # Pod must exist, yay!
@@ -128,7 +133,8 @@ def create_debugger_container(namespace, pod, target, image):
             stderr=subprocess.STDOUT,
         )
         if curl.returncode != 0:
-            raise Exception(f"curl failed with code {curl.returncode}:\n{curl.stdout}")
+            print(f"curl failed with code {curl.returncode}: {curl.stdout}")
+            sys.exit(1)
 
         return container_name
 
@@ -152,6 +158,7 @@ def attach_debugger(namespace, pod, target, image):
     # Wait for the dang container to be ready.
     for i in range(3000):
         state = get_pod_container_state(namespace, pod, container)
+        print(f"{container}: {state}")
         if state == "running":
             break
         time.sleep(0.100)  # 100ms

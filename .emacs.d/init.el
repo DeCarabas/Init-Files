@@ -329,12 +329,10 @@
 ;; Common configuration for LSP-based systems.
 ;; =================================================================
 (defvar my-clangd-executable
-  (executable-find "clangd")
+  (or (executable-find "clangd-mp-14")  ;; Support newer clangd
+      (executable-find "cppls-wrapper")
+      (executable-find "clangd"))
   "Path to the clangd binary.")
-
-(defvar my-cppls-fbcode-executable
-  (executable-find "cppls-wrapper")
-  "The path to the fbcode C++ language service wrapper.")
 
 (defvar my-pylsp-executable
   (executable-find "pylsp")
@@ -353,11 +351,10 @@
   (flycheck-mode (if (eglot-managed-p) -1 nil)))
 
 (defun my-eglot-connect-hook (server)
-  "Connect to SERVER. Don't send configuration information in C or C++."
+  "Connect to SERVER.  Don't send configuration information in C or C++."
   (unless (or (eq major-mode 'c++-mode)
               (eq major-mode 'c-mode))
     (eglot-signal-didChangeConfiguration server)))
-
 
 (use-package eglot :ensure
   :commands (eglot-ensure eglot)
@@ -371,11 +368,9 @@
   :bind
   ("C-c \\" . eglot-code-actions) ;; 2022-07-29 I want to make code actions easier.
   :config
-  (let ((cpp-executable (or my-cppls-fbcode-executable
-                            my-clangd-executable)))
-    (when cpp-executable
-      (add-to-list 'eglot-server-programs
-                   `((c++-mode c-mode) . (,cpp-executable)))))
+  (when my-clangd-executable
+    (add-to-list 'eglot-server-programs
+                 `((c++-mode c-mode) . (,my-clangd-executable))))
 
   (let ((py-executable (or my-pyls-language-server-executable
                            my-pylsp-executable

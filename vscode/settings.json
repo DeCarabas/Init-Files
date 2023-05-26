@@ -1,6 +1,8 @@
 {
   "breadcrumbs.enabled": true,
-  "editor.rulers": [80],
+  "editor.rulers": [
+    80
+  ],
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
   "editor.minimap.enabled": false,
@@ -47,7 +49,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[cpp]": {
-    "editor.defaultFormatter": "nuclide.cpp"
+    "editor.defaultFormatter": "ms-vscode.cpptools"
   },
   "pyls.BuckFormatOnSave": true,
   "pyls.formatAlreadyFormattedFilesOnSave": true,
@@ -88,10 +90,23 @@
   "remote.SSH.showLoginTerminal": true,
   "remote.SSH.remotePlatform": {
     "coder.doty-dev": "linux",
-    "coder.doty-dev2": "linux"
+    "192.168.0.114": "linux",
+    "coder-vscode--johndoty--doty-dev": "linux"
   },
   "java.import.maven.enabled": false,
   "remote.autoForwardPortsSource": "process",
   "go.toolsManagement.autoUpdate": true,
-  "bazel.queriesShareServer": true
+  "bazel.queriesShareServer": true,
+  "remote.portsAttributes": {
+    "443": {
+      "protocol": "https"
+    },
+    "8443": {
+      "protocol": "https"
+    }
+  },
+  "[python]": {
+    "editor.formatOnType": true
+  },
+  "git.confirmSync": false
 }

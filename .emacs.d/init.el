@@ -367,6 +367,7 @@
   (c++-mode    . eglot-ensure)
   (c-mode      . eglot-ensure)
   (go-mode     . eglot-ensure) ;; 2022-07-29 Add eglot for go
+  (before-save . eglot-format) ;; 2023-05-25 Format buffers on save
   :bind
   ("C-c \\" . eglot-code-actions) ;; 2022-07-29 I want to make code actions easier.
   :config

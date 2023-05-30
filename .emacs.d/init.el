@@ -728,7 +728,14 @@ Or, uh, Objective C, I guess."
   (add-to-list 'interpreter-mode-alist '("python" . python-mode))
   (add-hook 'python-mode-hook 'my-python-mode-hook))
 
-(autoload 'blacken-mode "blacken" "Automatically run black before saving." t)
+(use-package blacken :ensure
+  :commands (blacken-mode)
+  :hook (python-mode . blacken-mode))
+
+(use-package lsp-pyright :ensure
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp))))  ; or lsp-deferred
 
 ;; =================================================================
 ;; Bazel Support

@@ -24,3 +24,7 @@ sudo chsh -s /usr/bin/fish $USER
 # Make sure that the gitconfig that's on my computer links to my shared
 # config.
 git config --global include.path .gitconfig.shared
+
+# Install blacken and prettier
+pip3 install --index-url=https://pypi.org/simple black
+npm install -g prettier

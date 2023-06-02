@@ -1,39 +1,16 @@
-if test -d /opt/local/bin
-   set PATH /opt/local/bin $PATH
-end
-if test -d /opt/local/sbin
-   set PATH /opt/local/sbin $PATH
-end
-if test -d ~/bin
-   set PATH ~/bin $PATH
-end
-if test -d ~/.cargo/bin
-   set PATH ~/.cargo/bin $PATH
-end
-if test -d ~/.local/bin
-   set PATH ~/.local/bin $PATH
-end
-if test -d ~/devtools/buck/bin
-   set PATH $PATH ~/devtools/buck/bin
-end
-if test -d /snap/bin
-   set PATH $PATH /snap/bin
-end
-if test -d ~/go/bin
-   set PATH $PATH ~/go/bin
-end
-if test -d ~/.local/bin
-   set PATH $PATH ~/.local/bin
-end
-if test -d /nix
-   set PATH $PATH /nix/var/nix/profiles/default/bin
-end
-if test -d $HOME/Library/Python/3.10/bin
-   set PATH $PATH $HOME/Library/Python/3.10/bin
-end
-if test -d /opt/awscli/bin
-   set PATH $PATH /opt/awscli/bin
-end
+fish_add_path ~/.local/bin \
+              ~/.cargo/bin \
+              ~/bin \
+              /opt/local/sbin \
+              /opt/local/bin
+
+fish_add_path --append \
+              ~/devtools/buck/bin \
+              /snap/bin \
+              ~/go/bin \
+              /nix/var/nix/profiles/default/bin \
+              ~/Library/Python/3.10/bin \
+              /opt/awscli/bin
 
 if test -n "$CODER_WORKSPACE_ID$CODER"
   if test -z "$BROWSER"

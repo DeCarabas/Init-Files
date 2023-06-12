@@ -28,5 +28,8 @@ git config --global include.path .gitconfig.shared
 # Install blacken and prettier and some versions of python.
 pip3 install --index-url=https://pypi.org/simple black
 sudo npm install -g prettier
-brew install python@3.9 python@3.10 python@3.11
 curl -sSL https://install.python-poetry.org | python3 -
+
+source /etc/profile.d/a00-homebrew-init.sh
+brew install python@3.9 python@3.10 python@3.11
+

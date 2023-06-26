@@ -359,7 +359,8 @@
 (use-package eglot :ensure
   :commands (eglot-ensure eglot)
   :hook
-  (python-mode . eglot-ensure)
+  ;; 2023-06-26 Using LSP mode for python these days.
+  ;; (python-mode . eglot-ensure)
   (rust-mode   . eglot-ensure)
   (c++-mode    . eglot-ensure)
   (c-mode      . eglot-ensure)

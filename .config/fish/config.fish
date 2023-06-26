@@ -12,6 +12,13 @@ fish_add_path --append \
               ~/Library/Python/3.10/bin \
               /opt/awscli/bin
 
+if command -s pyenv > /dev/null
+   set -Ux PYENV_ROOT $HOME/.pyenv
+   fish_add_path --move $PYENV_ROOT/bin
+   
+   pyenv init - | source
+end
+
 if test -n "$CODER_WORKSPACE_ID$CODER"
   if test -z "$BROWSER"
      set -x BROWSER "fwd-browse"

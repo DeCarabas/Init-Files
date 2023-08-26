@@ -11,3 +11,5 @@
     default = upstream
 [init]
     defaultBranch = main
+[rebase]
+    updateRefs = true

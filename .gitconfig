@@ -3,7 +3,7 @@
     email = john@d0ty.me
 
 [include]
-	path = .gitconfig.shared
+    path = .gitconfig.shared
 [credential "https://github.com"]
     helper =
     helper = !/opt/local/bin/gh auth git-credential
@@ -15,4 +15,4 @@
 [github]
     user = DeCarabas
 [safe]
-	directory = /home/linuxbrew/.linuxbrew/Homebrew/Library/Taps/homebrew/homebrew-core
+    directory = /home/linuxbrew/.linuxbrew/Homebrew/Library/Taps/homebrew/homebrew-core

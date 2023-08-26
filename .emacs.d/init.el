@@ -914,9 +914,10 @@ Or, uh, Objective C, I guess."
       (eglot-ensure)
 
     ;; Not a deno project; just enable tide and the normal
-    (eldoc-mode)
     (tide-setup)
-    (tide-hl-identifier-mode)))
+    (flycheck-mode +1)
+    (tide-hl-identifier-mode)
+    (eldoc-mode +1)))
 
 (use-package typescript-mode :ensure t
   :config
@@ -1124,7 +1125,7 @@ Or, uh, Objective C, I guess."
 (defun my-pico8-hook ()
   "My hook for pico-8 mode."
   ;; Pico-8 has a small indent.
-  (setq lua-indent-level 2)
+  (setq lua-indent-level 1)
   (set-fill-column 32))
 
 (use-package pico8-mode

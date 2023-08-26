@@ -323,7 +323,10 @@
 ;; =================================================================
 (use-package company :ensure t
   :commands company-mode
-  :hook (typescript-mode . company-mode))
+  :hook
+  (typescript-mode . company-mode)
+  (python-mode . company-mode) ;; 2023-08-23 Adding company-mode to compose with eglot
+  )
 
 ;; =================================================================
 ;; Common configuration for LSP-based systems.
@@ -334,17 +337,19 @@
       (executable-find "clangd"))
   "Path to the clangd binary.")
 
-(defvar my-pylsp-executable
-  (executable-find "pylsp")
-  "The path to the python-lsp-server binary.")
-
-(defvar my-pyls-executable
-  (executable-find "pyls")
-  "The path to the python-language-server binary.")
-
-(defvar my-pyls-language-server-executable
-  (executable-find "pyls-langauge-server")
-  "The path to the pyls-language-server binary (used at FB).")
+;; 2023-08-23 Disabling all this nonsense for now; I'm using pyright at
+;;            work and don't feel like maintaining this stuff.
+;; (defvar my-pylsp-executable
+;;   (executable-find "pylsp")
+;;   "The path to the python-lsp-server binary.")
+;;
+;; (defvar my-pyls-executable
+;;   (executable-find "pyls")
+;;   "The path to the python-language-server binary.")
+;;
+;; (defvar my-pyls-language-server-executable
+;;   (executable-find "pyls-langauge-server")
+;;   "The path to the pyls-language-server binary (used at FB).")
 
 (defun my-disable-flycheck-on-eglot ()
   "Disable flycheck in eglot-managed buffers."
@@ -359,26 +364,30 @@
 (use-package eglot :ensure
   :commands (eglot-ensure eglot)
   :hook
-  ;; 2023-06-26 Using LSP mode for python these days.
-  ;; (python-mode . eglot-ensure)
+  (python-mode . eglot-ensure)
   (rust-mode   . eglot-ensure)
   (c++-mode    . eglot-ensure)
   (c-mode      . eglot-ensure)
   (go-mode     . eglot-ensure) ;; 2022-07-29 Add eglot for go
   (before-save . eglot-format) ;; 2023-05-25 Format buffers on save
   :bind
+  ("C-c r"  . eglot-rename)       ;; 2022-08-23 Make rename more accessible
   ("C-c \\" . eglot-code-actions) ;; 2022-07-29 I want to make code actions easier.
   :config
   (when my-clangd-executable
     (add-to-list 'eglot-server-programs
                  `((c++-mode c-mode) . (,my-clangd-executable))))
 
-  (let ((py-executable (or my-pyls-language-server-executable
-                           my-pylsp-executable
-                           my-pyls-executable)))
-    (when py-executable
-      (add-to-list 'eglot-server-programs
-                   `(python-mode . (,py-executable)))))
+  ;; 2023-08-23 Disabling all this nonsense for now; I'm using pyright at
+  ;;            work and don't feel like maintaining this stuff.
+  ;;
+  ;; (let ((py-executable (or my-pyright-executable
+  ;;                          my-pyls-language-server-executable
+  ;;                          my-pylsp-executable
+  ;;                          my-pyls-executable)))
+  ;;   (when py-executable
+  ;;     (add-to-list 'eglot-server-programs
+  ;;                  `(python-mode . (,py-executable)))))
 
   ;; 2022-04-28 Configuration for Deno.
   (defclass eglot-deno (eglot-lsp-server) ()
@@ -724,7 +733,10 @@ Or, uh, Objective C, I guess."
     (blacken-mode)))
 
 (use-package python-mode :ensure
-  :mode "\\.py\\'"
+  :init
+  ;; NOTE: Not using :mode here because it implies :defer which... doesn't
+  ;; work with python-mode because it fights the built-in python mode.
+  (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
   :config
   (add-to-list 'interpreter-mode-alist '("python" . python-mode))
   (add-hook 'python-mode-hook 'my-python-mode-hook))
@@ -733,10 +745,12 @@ Or, uh, Objective C, I guess."
   :commands (blacken-mode)
   :hook (python-mode . blacken-mode))
 
-(use-package lsp-pyright :ensure
-  :hook (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp))))  ; or lsp-deferred
+;; 2023-08-23 Disabling all this nonsense for now; I'm using pyright at
+;;            work and don't feel like maintaining this stuff.
+;; (use-package lsp-pyright :ensure
+;;   :hook (python-mode . (lambda ()
+;;                           (require 'lsp-pyright)
+;;                           (lsp))))  ; or lsp-deferred
 
 ;; =================================================================
 ;; Bazel Support

@@ -31,7 +31,7 @@
  '(flycheck-python-flake8-executable "python3")
  '(font-lock-global-modes t)
  '(font-lock-maximum-size nil)
- '(font-lock-support-mode 'jit-lock-mode)
+ '(font-lock-support-mode 'jit-lock-mode t)
  '(global-auto-revert-mode t)
  '(global-font-lock-mode t nil (font-lock))
  '(ido-enable-flex-matching t)
@@ -58,7 +58,7 @@
  '(org-odd-levels-only t)
  '(org-todo-keywords '((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED")))
  '(package-selected-packages
-   '(lsp-pyright blacken nyan-mode earthfile-mode compat adaptive-wrap terraform-mode deadgrep protobuf-mode bazel howm python-mode color-theme-sanityinc-solarized monokai-theme rust-mode tide typescript-mode modus-themes tree-sitter flycheck-rust eglot ink-mode prettier-js zig-mode esup gnu-elpa-keyring-update lsp-hack hack-mode filladapt lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode tss switch-window paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi elm-mode monky color-theme-sanityinc-tomorrow))
+   '(vterm lsp-pyright blacken nyan-mode earthfile-mode compat adaptive-wrap terraform-mode deadgrep protobuf-mode bazel howm python-mode color-theme-sanityinc-solarized monokai-theme rust-mode tide typescript-mode modus-themes tree-sitter flycheck-rust eglot ink-mode prettier-js zig-mode esup gnu-elpa-keyring-update lsp-hack hack-mode filladapt lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company omnisharp geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode tss switch-window paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell csharp-mode color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi elm-mode monky color-theme-sanityinc-tomorrow))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values

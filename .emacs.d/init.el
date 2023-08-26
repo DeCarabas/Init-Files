@@ -319,13 +319,14 @@
 (add-hook 'text-mode-hook 'my-text-mode-hook)
 
 ;; =================================================================
-;; Company?
+;; Company? Company.
 ;; =================================================================
 (use-package company :ensure t
   :commands company-mode
-  :hook
-  (typescript-mode . company-mode)
-  (python-mode . company-mode) ;; 2023-08-23 Adding company-mode to compose with eglot
+  :config
+  ;; 2023-08-26: Enable comapny mode globally.
+  (setq company-idle-delay 0.3)
+  (global-company-mode t)
   )
 
 ;; =================================================================

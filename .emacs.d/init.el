@@ -323,10 +323,12 @@
 ;; =================================================================
 (use-package company :ensure t
   :commands company-mode
+  :init
+  ;; 2023-08-26: Enable comapny mode globally.  
+  (global-company-mode t)
   :config
   ;; 2023-08-26: Enable comapny mode globally.
   (setq company-idle-delay 0.3)
-  (global-company-mode t)
   )
 
 ;; =================================================================

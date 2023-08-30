@@ -306,6 +306,40 @@
 (add-hook 'ispell-minor-mode-hook 'my--fix-aspell)
 (add-hook 'flyspell-mode-hook 'my--fix-aspell)
 
+
+;; =================================================================
+;; Tree Sitter
+;; =================================================================
+;; https://www.masteringemacs.org/article/how-to-get-started-tree-sitter
+;;
+;; 2023-08-26 Wow, like what am I even doing? This goes at the top of the
+;; various things because we're going to be playing with modes and whatnot.
+
+(when (functionp 'tree-sitter-mode)
+  (setq treesit-language-source-alist
+        '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+          (cmake "https://github.com/uyha/tree-sitter-cmake")
+          (css "https://github.com/tree-sitter/tree-sitter-css")
+          (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+          (go "https://github.com/tree-sitter/tree-sitter-go")
+          (html "https://github.com/tree-sitter/tree-sitter-html")
+          (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
+          (json "https://github.com/tree-sitter/tree-sitter-json")
+          (make "https://github.com/alemuller/tree-sitter-make")
+          (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+          (python "https://github.com/tree-sitter/tree-sitter-python")
+          (rust "https://github.com/tree-sitter/tree-sitter-rust")
+          (toml "https://github.com/tree-sitter/tree-sitter-toml")
+          (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+          (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+          (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+
+  ;; (add-to-list 'major-mode-remap-alist '(rust-mode . rust-ts-mode))
+  )
+
+;; Install them all:
+;; (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist))
+
 ;; =================================================================
 ;; Text mode configuration.
 ;; =================================================================
@@ -367,12 +401,13 @@
 (use-package eglot :ensure
   :commands (eglot-ensure eglot)
   :hook
-  (python-mode . eglot-ensure)
-  (rust-mode   . eglot-ensure)
-  (c++-mode    . eglot-ensure)
-  (c-mode      . eglot-ensure)
-  (go-mode     . eglot-ensure) ;; 2022-07-29 Add eglot for go
-  (before-save . eglot-format) ;; 2023-05-25 Format buffers on save
+  (python-mode  . eglot-ensure)
+  (rust-mode    . eglot-ensure)
+  (rust-ts-mode . eglot-ensure) ;; 2023-08-26 Add eglot for tree-sitter rust?
+  (c++-mode     . eglot-ensure)
+  (c-mode       . eglot-ensure)
+  (go-mode      . eglot-ensure) ;; 2022-07-29 Add eglot for go
+  (before-save  . eglot-format) ;; 2023-05-25 Format buffers on save
   :bind
   ("C-c r"  . eglot-rename)       ;; 2022-08-23 Make rename more accessible
   ("C-c \\" . eglot-code-actions) ;; 2022-07-29 I want to make code actions easier.
@@ -773,14 +808,14 @@ Or, uh, Objective C, I guess."
 ;; JavaScript Support
 ;; =================================================================
 ;; (require 'rjsx-mode)
-(require 'flycheck-flow)
-(require 'flow-minor-mode)
+;; (require 'flycheck-flow)
+;; (require 'flow-minor-mode)
 
 ;; disable jshint since we prefer eslint checking
-(setq-default flycheck-disabled-checkers
-              (append flycheck-disabled-checkers
-                      '(javascript-jshint)))
-(flycheck-add-next-checker 'javascript-eslint 'javascript-flow)
+;; (setq-default flycheck-disabled-checkers
+;;               (append flycheck-disabled-checkers
+;;                       '(javascript-jshint)))
+;; (flycheck-add-next-checker 'javascript-eslint 'javascript-flow)
 
 ;; (add-to-list 'auto-mode-alist '("\\.js$" . rjsx-mode))
 ;; (add-to-list 'auto-mode-alist '("\\.jsx$" . rjsx-mode))
@@ -1223,6 +1258,5 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 (use-package earthfile-mode :ensure
   :mode ("\\.earth\\'" "Earthfile\\'"))
-
 
 ;;; init.el ends here

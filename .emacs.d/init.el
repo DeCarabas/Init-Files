@@ -340,6 +340,10 @@
 ;; Install them all:
 ;; (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist))
 
+;; 2023-08-28 Maybe I like line numbers everywhere? Who can say?
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+
 ;; =================================================================
 ;; Text mode configuration.
 ;; =================================================================

@@ -618,21 +618,21 @@ Or, uh, Objective C, I guess."
     (require 'prettysharp)
     (prettysharp-mode)
     (turn-on-font-lock)
-    (omnisharp-mode)
     (c-set-style "ms-csharp"))
 
   :mode "\\.cs\\'"
 
   :config
-  (use-package omnisharp :ensure t
-    :commands omnisharp-mode
-    :bind (:map omnisharp-mode-map
-                ([remap xref-find-definitions] . omnisharp-go-to-definition)
-                ([remap xref-find-references] . omnisharp-find-usages)
-                ;; `xref-pop-marker-stack' works as expected.
-                )
-    :config
-    (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp)))
+  ;; 2023-09-03 Stop using omnisharp
+  ;; (use-package omnisharp :ensure t
+  ;;   :commands omnisharp-mode
+  ;;   :bind (:map omnisharp-mode-map
+  ;;               ([remap xref-find-definitions] . omnisharp-go-to-definition)
+  ;;               ([remap xref-find-references] . omnisharp-find-usages)
+  ;;               ;; `xref-pop-marker-stack' works as expected.
+  ;;               )
+  ;;   :config
+  ;;   (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp)))
 
   (use-package prettysharp
     :commands prettysharp-mode

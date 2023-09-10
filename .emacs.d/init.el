@@ -417,9 +417,19 @@
   (c++-mode           . eglot-ensure)
   (c-mode             . eglot-ensure)
   (go-mode            . eglot-ensure) ;; 2022-07-29 Add eglot for go
-  (before-save        . eglot-format) ;; 2023-05-25 Format buffers on save
   (typescript-mode    . eglot-ensure) ;; 2023-09-03 Eglot for typescript
   (typescript-ts-mode . eglot-ensure) ;; 2023-09-03 Eglot for typescript
+
+  ;; 2023-09-10 Respect language-specific formatters
+  ;;
+  ;; Something inside me *yearns* for the LSP to be the authoritative
+  ;; formatter, and therefore to be able to just say "eglot, take care of it"
+  ;; but it's just not the case right now. (The inciting incident is that
+  ;; prettier and typescript-language-server diagree on how typescript is to
+  ;; be formatted, and after much soul-searching I have decided to side with
+  ;; prettier.)
+  ;;
+  ;; (before-save     . eglot-format)
   :bind
   ("C-c r"  . eglot-rename)       ;; 2022-08-23 Make rename more accessible
   ("C-c \\" . eglot-code-actions) ;; 2022-07-29 I want to make code actions easier.

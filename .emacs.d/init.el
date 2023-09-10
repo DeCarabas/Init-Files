@@ -362,7 +362,7 @@
 (use-package company :ensure t
   :commands company-mode
   :init
-  ;; 2023-08-26: Enable comapny mode globally.  
+  ;; 2023-08-26: Enable company mode globally.
   (global-company-mode t)
   :config
   ;; 2023-08-26: Enable comapny mode globally.
@@ -402,16 +402,24 @@
               (eq major-mode 'c-mode))
     (eglot-signal-didChangeConfiguration server)))
 
+(defun ts/server-program (interactive)
+  "Choose which server program to run."
+  (cond ((ts/is-deno-project) '("deno" "lsp" :initializationOptions :enable t :lint t))
+        (t                    '("typescript-language-server" "--stdio"))))
+
+
 (use-package eglot :ensure
   :commands (eglot-ensure eglot)
   :hook
-  (python-mode  . eglot-ensure)
-  (rust-mode    . eglot-ensure)
-  (rust-ts-mode . eglot-ensure) ;; 2023-08-26 Add eglot for tree-sitter rust?
-  (c++-mode     . eglot-ensure)
-  (c-mode       . eglot-ensure)
-  (go-mode      . eglot-ensure) ;; 2022-07-29 Add eglot for go
-  (before-save  . eglot-format) ;; 2023-05-25 Format buffers on save
+  (python-mode        . eglot-ensure)
+  (rust-mode          . eglot-ensure)
+  (rust-ts-mode       . eglot-ensure) ;; 2023-08-26 Add eglot for tree-sitter rust?
+  (c++-mode           . eglot-ensure)
+  (c-mode             . eglot-ensure)
+  (go-mode            . eglot-ensure) ;; 2022-07-29 Add eglot for go
+  (before-save        . eglot-format) ;; 2023-05-25 Format buffers on save
+  (typescript-mode    . eglot-ensure) ;; 2023-09-03 Eglot for typescript
+  (typescript-ts-mode . eglot-ensure) ;; 2023-09-03 Eglot for typescript
   :bind
   ("C-c r"  . eglot-rename)       ;; 2022-08-23 Make rename more accessible
   ("C-c \\" . eglot-code-actions) ;; 2022-07-29 I want to make code actions easier.
@@ -431,13 +439,9 @@
   ;;     (add-to-list 'eglot-server-programs
   ;;                  `(python-mode . (,py-executable)))))
 
-  ;; 2022-04-28 Configuration for Deno.
-  (defclass eglot-deno (eglot-lsp-server) ()
-    :documentation "A custom class for deno lsp.")
-  (cl-defmethod eglot-initialization-options ((server eglot-deno))
-    (list :enable t :lint t))
+  ;; 2023-09-03 Re-work the way that the JS/Deno switch is handled.
   (add-to-list 'eglot-server-programs
-               '((js-mode typescript-mode) . (eglot-deno "deno" "lsp")))
+               '((js-mode typescript-mode) . ts/server-program))
   ;; --
 
   (add-hook 'eglot-managed-mode-hook 'my-disable-flycheck-on-eglot)
@@ -950,20 +954,23 @@ Or, uh, Objective C, I guess."
   "Return non-nil if this is a deno project, otherwise nil."
   (locate-dominating-file (buffer-file-name) ".deno"))
 
-(defun ts/enable-eglot-or-tide ()
-  "Enable eglot if this is a deno project, otherwise enable tide."
-  (if (ts/is-deno-project)
-      (eglot-ensure)
+;; 2023-09-03 Trying eglot instead of TIDE for now.
+;; (defun ts/enable-eglot-or-tide ()
+;;   "Enable eglot if this is a deno project, otherwise enable tide."
+;;   (if (ts/is-deno-project)
+;;       (eglot-ensure)
 
-    ;; Not a deno project; just enable tide and the normal
-    (tide-setup)
-    (flycheck-mode +1)
-    (tide-hl-identifier-mode)
-    (eldoc-mode +1)))
+;;     ;; Not a deno project; just enable tide and the normal
+;;     (tide-setup)
+;;     (flycheck-mode +1)
+;;     (tide-hl-identifier-mode)
+;;     (eldoc-mode +1)))
 
 (use-package typescript-mode :ensure t
-  :config
-  (add-hook 'typescript-mode-hook 'ts/enable-eglot-or-tide))
+  ;; 2023-09-03 Trying eglot instead of TIDE for now.
+  ;; :config
+  ;; (add-hook 'typescript-mode-hook 'ts/enable-eglot-or-tide)
+  )
 
 (use-package add-node-modules-path :ensure t
   :hook typescript-mode)
@@ -971,7 +978,8 @@ Or, uh, Objective C, I guess."
 (use-package prettier-js :ensure t
   :hook (typescript-mode . prettier-js-mode))
 
-(use-package tide :ensure t)
+;; 2023-09-03 Trying eglot instead of TIDE for now.
+;; (use-package tide :ensure t)
 
 ;; =================================================================
 ;; Archive mode for appx

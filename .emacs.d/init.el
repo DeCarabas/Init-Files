@@ -337,8 +337,10 @@
   ;; (add-to-list 'major-mode-remap-alist '(rust-mode . rust-ts-mode))
   )
 
-;; Install them all:
-;; (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist))
+(defun install-known-tree-sitter-grammars ()
+  "Install all known tree-sitter grammars."
+  (interactive)
+  (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist)))
 
 ;; 2023-08-28 Maybe I like line numbers everywhere? Who can say?
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)

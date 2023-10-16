@@ -323,6 +323,7 @@
           (elisp "https://github.com/Wilfred/tree-sitter-elisp")
           (go "https://github.com/tree-sitter/tree-sitter-go")
           (html "https://github.com/tree-sitter/tree-sitter-html")
+          (java "https://github.com/tree-sitter/tree-sitter-java" "master" "src")          
           (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
           (json "https://github.com/tree-sitter/tree-sitter-json")
           (make "https://github.com/alemuller/tree-sitter-make")
@@ -334,7 +335,7 @@
           (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
           (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
 
-  ;; (add-to-list 'major-mode-remap-alist '(rust-mode . rust-ts-mode))
+  (add-to-list 'major-mode-remap-alist '(rust-mode . rust-ts-mode))
   )
 
 (defun install-known-tree-sitter-grammars ()
@@ -414,6 +415,7 @@
   :commands (eglot-ensure eglot)
   :hook
   (python-mode        . eglot-ensure)
+  (python-ts-mode     . eglot-ensure)  
   (rust-mode          . eglot-ensure)
   (rust-ts-mode       . eglot-ensure) ;; 2023-08-26 Add eglot for tree-sitter rust?
   (c++-mode           . eglot-ensure)
@@ -547,7 +549,7 @@ Or, uh, Objective C, I guess."
 
 (add-hook 'c-mode-hook    'my-c-mode-hook)
 (add-hook 'c++-mode-hook  'my-c-mode-hook)
-(add-hook 'java-mode-hook 'my-c-mode-hook)
+;; (add-hook 'java-mode-hook 'my-c-mode-hook)
 (add-hook 'objc-mode-hook 'my-c-mode-hook)
 
 (defconst jd-more-keywords
@@ -790,14 +792,14 @@ Or, uh, Objective C, I guess."
                (string-match-p "TARGETS" (buffer-file-name)))
     (blacken-mode)))
 
-(use-package python-mode :ensure
-  :init
-  ;; NOTE: Not using :mode here because it implies :defer which... doesn't
-  ;; work with python-mode because it fights the built-in python mode.
-  (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
-  :config
-  (add-to-list 'interpreter-mode-alist '("python" . python-mode))
-  (add-hook 'python-mode-hook 'my-python-mode-hook))
+;; (use-package python-mode :ensure
+;;   :init
+;;   ;; NOTE: Not using :mode here because it implies :defer which... doesn't
+;;   ;; work with python-mode because it fights the built-in python mode.
+;;   (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
+;;   :config
+;;   (add-to-list 'interpreter-mode-alist '("python" . python-mode))
+;;   (add-hook 'python-mode-hook 'my-python-mode-hook))
 
 (use-package blacken :ensure
   :commands (blacken-mode)
@@ -1282,5 +1284,19 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 (use-package earthfile-mode :ensure
   :mode ("\\.earth\\'" "Earthfile\\'"))
+
+;; =================================================================
+;; Java
+;; =================================================================
+(use-package eglot-java :ensure
+  :after (eglot)
+  :hook
+  (java-mode  . eglot-java-mode))
+
+;; =================================================================
+;; SQL?
+;; =================================================================
+(use-package sql-indent :ensure)
+
 
 ;;; init.el ends here

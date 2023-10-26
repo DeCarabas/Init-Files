@@ -323,7 +323,7 @@
           (elisp "https://github.com/Wilfred/tree-sitter-elisp")
           (go "https://github.com/tree-sitter/tree-sitter-go")
           (html "https://github.com/tree-sitter/tree-sitter-html")
-          (java "https://github.com/tree-sitter/tree-sitter-java" "master" "src")          
+          (java "https://github.com/tree-sitter/tree-sitter-java" "master" "src")
           (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
           (json "https://github.com/tree-sitter/tree-sitter-json")
           (make "https://github.com/alemuller/tree-sitter-make")
@@ -415,7 +415,7 @@
   :commands (eglot-ensure eglot)
   :hook
   (python-mode        . eglot-ensure)
-  (python-ts-mode     . eglot-ensure)  
+  (python-ts-mode     . eglot-ensure)
   (rust-mode          . eglot-ensure)
   (rust-ts-mode       . eglot-ensure) ;; 2023-08-26 Add eglot for tree-sitter rust?
   (c++-mode           . eglot-ensure)
@@ -1130,11 +1130,22 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 (use-package rust-mode :ensure t
   :mode "\\.rs\\'"
+  :commands rust-format-buffer ; 2023-10-26 Make this command available even when the mode isn't used.
   :config
   (setq rust-format-on-save t))
 
-(use-package flycheck-rust :ensure t
-  :hook (rust-mode . flycheck-rust-setup))
+;; 2023-10-18 We're using eglot now, I presume we don't want this.
+;; (use-package flycheck-rust :ensure t
+;;   :hook (rust-mode . flycheck-rust-setup))
+
+(defun my/rust-ts-mode-hook ()
+  "Extra stuff for my rust mode."
+  ;; 2023-10-26 Use rust-format-buffer instead of eglot-format-buffer, I was
+  ;; having a hard time and it looked like eglot-format-buffer was screwing
+  ;; things up.
+  (add-hook 'before-save-hook 'rust-format-buffer 0 t))
+
+(add-hook 'rust-ts-mode-hook 'my/rust-ts-mode-hook)
 
 ;; =================================================================
 ;; Clojure

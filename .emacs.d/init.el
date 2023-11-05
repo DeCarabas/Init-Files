@@ -456,6 +456,11 @@
   ;; 2023-09-03 Re-work the way that the JS/Deno switch is handled.
   (add-to-list 'eglot-server-programs
                '((js-mode typescript-mode) . ts/server-program))
+
+  ;; 2023-10-26 Use cargo clippy instead of cargo check
+  (add-to-list 'eglot-server-programs
+               '((rust-mode rust-ts-mode) . ("rust-analyzer" :initializationOptions
+                                             (:check (:command "clippy")))))
   ;; --
 
   (add-hook 'eglot-managed-mode-hook 'my-disable-flycheck-on-eglot)

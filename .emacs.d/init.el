@@ -228,7 +228,7 @@
               (width            . 91)))
       ))
 
-(use-package modus-themes :ensure
+(use-package modus-themes :ensure t
   :config
   (load-theme (if (display-graphic-p)
                   'modus-operandi
@@ -411,7 +411,7 @@
         (t                    '("typescript-language-server" "--stdio"))))
 
 
-(use-package eglot :ensure
+(use-package eglot :ensure t
   :commands (eglot-ensure eglot)
   :hook
   (python-mode        . eglot-ensure)
@@ -737,8 +737,10 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Elm
 ;; =================================================================
-(require 'flycheck-elm)
-(add-to-list 'flycheck-checkers 'elm)
+(use-package flycheck-elm :ensure t
+  :after (flycheck)
+  :config
+  (add-to-list 'flycheck-checkers 'elm))
 
 (defun my-elm-hook ()
   "My ELM-MODE hook."
@@ -752,34 +754,13 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Flycheck
 ;; =================================================================
-(require 'flycheck)
-
-;; customize flycheck temp file prefix
-(setq-default flycheck-temp-prefix ".flycheck")
-
-;; disable json-jsonlist checking for json files
-(setq-default flycheck-disabled-checkers
-              (append flycheck-disabled-checkers
-                      '(json-jsonlist)))
-
-;; (flycheck-define-checker python-fb-flake8
-;;   "A Python syntax and style checker using FB's Flake8."
-;;   :command ("flake8" source-original "--shebang" "--py2" "--py3")
-;;   :standard-input nil
-;;   :error-filter (lambda (errors)
-;;                   (let ((errors (flycheck-sanitize-errors errors)))
-;;                     (seq-do #'flycheck-flake8-fix-error-level errors)
-;;                     errors))
-;;   :error-patterns
-;;   ((warning line-start
-;;             (file-name) ":" line ":" (optional column ":") " "
-;;             (id (one-or-more (any alpha)) (one-or-more digit)) " "
-;;             (message (one-or-more not-newline))
-;;             line-end))
-;;   :modes python-mode)
-;; (add-to-list 'flycheck-checkers 'python-fb-flake8)
-
-(global-flycheck-mode)
+(use-package flycheck :ensure t
+  :config
+  (setq-default flycheck-temp-prefix ".flycheck")
+  (setq-default flycheck-disabled-checkers
+                (append flycheck-disabled-checkers '(json-jsonlist)))
+  :hook (emacs-lisp-mode elm-mode) ;; 2023-11-05 NOTE I'm gonna have to rebuild this
+  )
 
 ;; =================================================================
 ;; Python Support
@@ -801,7 +782,7 @@ Or, uh, Objective C, I guess."
 ;;   (add-to-list 'interpreter-mode-alist '("python" . python-mode))
 ;;   (add-hook 'python-mode-hook 'my-python-mode-hook))
 
-(use-package blacken :ensure
+(use-package blacken :ensure t
   :commands (blacken-mode)
   :hook (python-mode . blacken-mode))
 
@@ -816,7 +797,7 @@ Or, uh, Objective C, I guess."
 ;; Bazel Support
 ;; =================================================================
 
-(use-package bazel :ensure
+(use-package bazel :ensure t
   :mode  (("/\\.bazelignore\\'"                     . bazelignore-mode)
           ("/\\(?:\\(?:bazel\\)?\\.bazelrc\\)\\'"   . bazelrc-mode)
           ("/.+\\.bzl\\'"                           . bazel-starlark-mode)
@@ -1040,7 +1021,7 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Magit stuff
 ;; =================================================================
-(use-package magit :ensure
+(use-package magit :ensure t
   :bind ("C-x g" . magit-status))
 
 
@@ -1073,7 +1054,7 @@ Or, uh, Objective C, I guess."
 (add-hook 'shell-mode-hook 'my-shell-mode-hook)
 
 ;; xterm-color
-(use-package xterm-color :ensure
+(use-package xterm-color :ensure t
   :config
   (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter)
   (setq comint-output-filter-functions
@@ -1154,7 +1135,7 @@ Or, uh, Objective C, I guess."
     :mode (("\\.clj\\'" . clojure-mode)
            ("\\.edn\\'" . clojure-mode))
     :config
-    (use-package cider :ensure
+    (use-package cider :ensure t
       :config
       ;; Put TARGETS in clojure-build-tool-files so that directories with TARGETS
       ;; get identified as projects.
@@ -1240,7 +1221,7 @@ Or, uh, Objective C, I guess."
     ((file-directory-p "/mnt/c/Users/john/Dropbox") "/mnt/c/Users/john/Dropbox")))
   "Where is my dropbox?")
 
-(use-package howm :ensure
+(use-package howm :ensure t
   :init
   ;; Directory configuration
   ;;
@@ -1276,30 +1257,31 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Protocol Buffers
 ;; =================================================================
-(use-package protobuf-mode :ensure)
+(use-package protobuf-mode :ensure t)
 
 ;; =================================================================
 ;; Deadgrep for searching
 ;; =================================================================
-(use-package deadgrep :ensure)
+(use-package deadgrep :ensure t)
+;; TODO: AUTOLOADS HERE
 
 ;; =================================================================
 ;; Terraform
 ;; =================================================================
-(use-package terraform-mode :ensure
+(use-package terraform-mode :ensure t
   :mode "\\.tf(vars)?\\'"
   :config (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))
 
 ;; =================================================================
 ;; Earthly
 ;; =================================================================
-(use-package earthfile-mode :ensure
+(use-package earthfile-mode :ensure t
   :mode ("\\.earth\\'" "Earthfile\\'"))
 
 ;; =================================================================
 ;; Java
 ;; =================================================================
-(use-package eglot-java :ensure
+(use-package eglot-java :ensure t
   :after (eglot)
   :hook
   (java-mode  . eglot-java-mode))
@@ -1307,7 +1289,7 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; SQL?
 ;; =================================================================
-(use-package sql-indent :ensure)
+(use-package sql-indent :ensure t)
 
 
 ;;; init.el ends here

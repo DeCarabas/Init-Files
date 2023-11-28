@@ -1,7 +1,21 @@
 import os
 import pathlib
 import subprocess
+import tempfile
 import urllib.request
+
+
+ODBC_INI_CONTENTS = """
+[snowflake]
+Description=SnowflakeDB
+Driver=SnowflakeDSIIDriver
+Locale=en-US
+PORT=443
+SSL=on
+
+[ODBC Data Sources]
+snowflake = SnowflakeDSIIDriver
+"""
 
 
 def run(*args):
@@ -14,6 +28,8 @@ def install_packages():
         "fish",
         "htop",
         "java-common",
+        "odbcinst",
+        "unixodbc",
         "unixodbc-dev",
         "wget",
     ]
@@ -55,7 +71,30 @@ def configure_python():
         restore_pip()
 
 
+def install_snowflake_odbc():
+    with tempfile.NamedTemporaryFile() as deb_file:
+        urllib.request.urlretrieve(
+            "https://sfc-repo.snowflakecomputing.com/odbc/linux/3.1.0/snowflake-odbc-3.1.0.x86_64.deb",
+            deb_file.name,
+        )
+        run("sudo", "dpkg", "-i", deb_file.name)
+
+    subprocess.run(
+        ["sudo", "sh", "-c", "cat > /etc/odbc.ini"],
+        input=ODBC_INI_CONTENTS.encode("utf-8"),
+        check=True,
+    )
+    run(
+        "sudo",
+        "ln",
+        "-s",
+        "/usr/lib/x86_64-linux-gnu/libodbcinst.so.2",
+        "/usr/lib/x86_64-linux-gnu/libodbcinst.so.1",
+    )
+
+
 install_packages()
 change_shell()
 configure_git()
 configure_python()
+install_snowflake_odbc()

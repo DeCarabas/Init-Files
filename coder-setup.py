@@ -1,5 +1,6 @@
 import os
 import pathlib
+import shutil
 import subprocess
 import tempfile
 import urllib.request
@@ -49,14 +50,20 @@ def configure_git():
 
 def backup_pip():
     pip = pathlib.Path.home() / ".config" / "pip"
+    pip_bak = pathlib.Path.home() / ".config" / "pip.bak"
+    if pip_bak.exists():
+        print("Removing stray backup directory...")
+        shutil.rmtree(pip_bak)
+
     if pip.exists():
-        pip.rename("pip.bak")
+        pip.rename(pip_bak)
 
 
 def restore_pip():
-    pip = pathlib.Path.home() / ".config" / "pip.bak"
-    if pip.exists():
-        pip.rename("pip")
+    pip = pathlib.Path.home() / ".config" / "pip"
+    pip_bak = pathlib.Path.home() / ".config" / "pip.bak"
+    if pip_bak.exists():
+        pip_bak.rename(pip)
 
 
 def configure_python():

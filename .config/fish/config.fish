@@ -15,7 +15,7 @@ fish_add_path --append \
 if command -s pyenv > /dev/null
    set -Ux PYENV_ROOT $HOME/.pyenv
    fish_add_path --move $PYENV_ROOT/bin
-   
+
    pyenv init - | source
 end
 

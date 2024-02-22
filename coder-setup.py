@@ -69,11 +69,10 @@ def restore_pip():
 def configure_python():
     backup_pip()
     try:
-        run("pip3", "install", "black")
+        run("python3", "-m", "pip", "install", "--user", "pipx")
+        run("python3", "-m", "pipx", "ensurepath")
+        run("/home/coder/.local/bin/pipx", "install", "poetry")
         run("sudo", "npm", "install", "-g", "prettier", "pyright")
-
-        installer = urllib.request.urlopen("https://install.python-poetry.org").read()
-        subprocess.run(["python3", "-"], input=installer, check=True)
     finally:
         restore_pip()
 

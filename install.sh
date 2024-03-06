@@ -10,5 +10,7 @@ cd $MY_PATH
 # Run the basic setup.
 python3 "./setup.py"
 
+bash -i -l -c "nvm install 18"
+
 # Run the coder setup.
 python3 "./coder-setup.py"

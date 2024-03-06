@@ -33,6 +33,7 @@ def install_packages():
         "unixodbc",
         "unixodbc-dev",
         "wget",
+        "earlyoom",
     ]
 
     run("sudo", "apt", "update")

@@ -88,9 +88,14 @@
     "/Users/doty/lacework/services/bazel/rust/clippyallrust.py"
   ],
   "remote.SSH.showLoginTerminal": true,
-  "remote.SSH.remotePlatform": {"coder.doty-dev":"linux","192.168.0.114":"linux","coder-vscode--johndoty--doty-dev":"linux"},
+  "remote.SSH.remotePlatform": {
+    "coder.doty-dev": "linux",
+    "192.168.0.114": "linux",
+    "coder-vscode--johndoty--doty-dev": "linux",
+    "doty-dev.johndoty.devspaces.dev.lacework.engineering": "linux"
+  },
   "java.import.maven.enabled": false,
-  "remote.autoForwardPortsSource": "process",
+  "remote.autoForwardPortsSource": "hybrid",
   "go.toolsManagement.autoUpdate": true,
   "bazel.queriesShareServer": true,
   "remote.portsAttributes": {
@@ -104,5 +109,7 @@
   "[python]": {
     "editor.formatOnType": true
   },
-  "git.confirmSync": false
+  "git.confirmSync": false,
+  "cmake.showOptionsMovedNotification": false,
+  "jupyter.askForKernelRestart": false
 }

@@ -984,7 +984,7 @@ Or, uh, Objective C, I guess."
   )
 
 (use-package add-node-modules-path :ensure t
-  :hook typescript-mode)
+  :hook (typescript-mode . add-node-modules-path))
 
 (use-package prettier-js :ensure t
   :hook (typescript-mode . prettier-js-mode))

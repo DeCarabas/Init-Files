@@ -411,6 +411,12 @@
   (cond ((ts/is-deno-project) '("deno" "lsp" :initializationOptions :enable t :lint t))
         (t                    '("typescript-language-server" "--stdio"))))
 
+(defun my-find-swift-lsp ()
+  "Try to find the swift LSP."
+  ;; On windows with scoop this lives in a weird place.
+  (or (executable-find "sourcekit-lsp")  ;; Support newer clangd
+      (executable-find "C:/Users/john/scoop/apps/swift/current/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/bin/sourcekit-lsp")
+      "sourcekit-lsp"))
 
 (use-package eglot :ensure t
   :commands (eglot-ensure eglot)
@@ -424,6 +430,7 @@
   (go-mode            . eglot-ensure) ;; 2022-07-29 Add eglot for go
   (typescript-mode    . eglot-ensure) ;; 2023-09-03 Eglot for typescript
   (typescript-ts-mode . eglot-ensure) ;; 2023-09-03 Eglot for typescript
+  (swift-mode         . eglot-ensure) ;; 2023-11-11 Eglot for swift?
 
   ;; 2023-09-10 Respect language-specific formatters
   ;;
@@ -464,9 +471,12 @@
                                              (:check (:command "clippy")))))
   ;; --
 
-  (add-hook 'eglot-managed-mode-hook 'my-disable-flycheck-on-eglot)
-  (remove-hook 'eglot-connect-hook 'eglot-signal-didChangeConfiguration)
-  (add-hook 'eglot-connect-hook 'my-eglot-connect-hook))
+  (add-to-list 'eglot-server-programs
+               `(swift-mode . ( ,(my-find-swift-lsp) "--sync" "--log-level" "debug")))
+
+  (add-hook     'eglot-managed-mode-hook 'my-disable-flycheck-on-eglot)
+  (remove-hook  'eglot-connect-hook      'eglot-signal-didChangeConfiguration)
+  (add-hook     'eglot-connect-hook      'my-eglot-connect-hook))
 
 ;; NOTE: elgot defers to flymake for error information.
 (use-package flymake
@@ -1298,5 +1308,10 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 (use-package sql-indent :ensure t)
 
+;; =================================================================
+;; Swift
+;; =================================================================
+(use-package swift-mode :ensure t
+  :mode "\\.swift\\(interface\\)?\\'")
 
 ;;; init.el ends here

@@ -1027,8 +1027,9 @@ Or, uh, Objective C, I guess."
 ;; Magit stuff
 ;; =================================================================
 (use-package magit :ensure t
-  :bind ("C-x g" . magit-status))
-
+  :bind (("C-x g" . magit-status)
+         ("C-c g" . magit-dispatch)
+         ("C-c f" . magit-file-dispatch)))
 
 ;; =================================================================
 ;; Mercurial stuff

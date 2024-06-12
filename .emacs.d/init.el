@@ -186,6 +186,9 @@
          ((string-equal (downcase (system-name)) "bifrost")
           "InputMonoNarrow-12")
 
+         ((string-equal (downcase (system-name)) "fred")
+          "InputMonoNarrow-16")
+
          ((string-equal (downcase (system-name)) "unstablesurface")
           "Input Mono Narrow:pixelsize=28:weight=normal")
 

@@ -12,7 +12,8 @@
  '(c-label-minimum-indentation 0)
  '(c-label-offset -4)
  '(clojure-build-tool-files
-   '("project.clj" "build.boot" "build.gradle" "build.gradle.kts" "deps.edn" "shadow-cljs.edn" "TARGETS"))
+   '("project.clj" "build.boot" "build.gradle" "build.gradle.kts" "deps.edn"
+     "shadow-cljs.edn" "TARGETS"))
  '(comint-input-ignoredups t)
  '(comint-prompt-read-only t)
  '(comint-scroll-to-bottom-on-input t)
@@ -58,23 +59,38 @@
  '(org-odd-levels-only t)
  '(org-todo-keywords '((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED")))
  '(package-selected-packages
-   '(swift-mode flycheck-elm sql-indent eglot-java vterm lsp-pyright blacken nyan-mode earthfile-mode compat adaptive-wrap terraform-mode deadgrep protobuf-mode bazel howm python-mode color-theme-sanityinc-solarized monokai-theme rust-mode tide typescript-mode modus-themes tree-sitter flycheck-rust eglot ink-mode prettier-js zig-mode esup gnu-elpa-keyring-update lsp-hack hack-mode filladapt lsp-ui yaml-mode wgrep fsharp-mode company-lsp cquery mustache-mode clang-format projectile dash-functional mocha add-node-modules-path rjsx-mode xref-js2 js2-refactor company geiser cider clojure-mode graphviz-dot-mode multi-term xterm-color thrift markdown-mode tuareg merlin ag use-package flycheck dockerfile-mode js2-mode web-mode tss switch-window paredit magit lua-mode go-mode go-autocomplete exec-path-from-shell color-theme-monokai auto-complete auto-complete-nxml flymake flyspell json-mode popup ruby-mode company-jedi elm-mode monky color-theme-sanityinc-tomorrow))
+   '(adaptive-wrap add-node-modules-path ag auto-complete auto-complete-nxml
+                   bazel blacken cider clang-format clojure-mode
+                   color-theme-monokai color-theme-sanityinc-solarized
+                   color-theme-sanityinc-tomorrow company company-jedi
+                   company-lsp compat cquery dash-functional deadgrep
+                   dockerfile-mode earthfile-mode eglot eglot-java elm-mode
+                   esup exec-path-from-shell filladapt flycheck flycheck-elm
+                   flycheck-rust flymake flyspell fsharp-mode geiser
+                   gnu-elpa-keyring-update go-autocomplete go-mode
+                   graphviz-dot-mode hack-mode haxe-mode howm ink-mode
+                   js2-mode js2-refactor json-mode lsp-hack lsp-pyright
+                   lsp-ui lua-mode magit markdown-mode merlin mocha
+                   modus-themes monky monokai-theme multi-term mustache-mode
+                   nyan-mode paredit popup prettier-js projectile
+                   protobuf-mode python-mode rjsx-mode ruby-mode rust-mode
+                   sql-indent swift-mode switch-window terraform-mode thrift
+                   tide tree-sitter tss tuareg typescript-mode use-package
+                   vterm web-mode wgrep xref-js2 xterm-color yaml-mode
+                   zig-mode))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values
    '((docker-image-name . "onceandfuture")
-     (eval ignore-errors "Write-contents-functions is a buffer-local alternative to before-save-hook"
+     (eval ignore-errors
+           "Write-contents-functions is a buffer-local alternative to before-save-hook"
            (add-hook 'write-contents-functions
-                     (lambda nil
-                       (delete-trailing-whitespace)
-                       nil))
+                     (lambda nil (delete-trailing-whitespace) nil))
            (require 'whitespace)
            "Sometimes the mode needs to be toggled off and on."
-           (whitespace-mode 0)
-           (whitespace-mode 1))
+           (whitespace-mode 0) (whitespace-mode 1))
      (whitespace-line-column . 80)
-     (whitespace-style face trailing lines-tail)
-     (require-final-newline . t)))
+     (whitespace-style face trailing lines-tail) (require-final-newline . t)))
  '(scroll-conservatively 1)
  '(scroll-step 1)
  '(sd-user-email "johndoty@microsoft.com")

@@ -233,10 +233,13 @@
 
 (use-package modus-themes :ensure t
   :config
-  (load-theme (if (display-graphic-p)
-                  'modus-operandi
-                'modus-vivendi)
-              t))
+  (unless (display-graphic-p)
+    (load-theme 'modus-vivendi t)))
+
+(use-package doom-themes :ensure t
+  :config
+  (if (display-graphic-p)
+      (load-theme 'doom-dark+ t)))
 
 ;; =================================================================
 ;; FUN WITH KEY BINDINGS!  YAAAAYYY!!!

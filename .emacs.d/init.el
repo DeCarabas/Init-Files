@@ -322,7 +322,8 @@
 ;; 2023-08-26 Wow, like what am I even doing? This goes at the top of the
 ;; various things because we're going to be playing with modes and whatnot.
 
-(when (functionp 'tree-sitter-mode)
+(when (and (functionp 'treesit-available-p)
+           (treesit-available-p))
   (setq treesit-language-source-alist
         '((bash "https://github.com/tree-sitter/tree-sitter-bash")
           (cmake "https://github.com/uyha/tree-sitter-cmake")
@@ -340,7 +341,9 @@
           (toml "https://github.com/tree-sitter/tree-sitter-toml")
           (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
           (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-          (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+          (yaml "https://github.com/ikatyang/tree-sitter-yaml")
+          (fine "~/src/lrparsers/tree-sitter-fine")
+          ))
 
   (add-to-list 'major-mode-remap-alist '(rust-mode . rust-ts-mode))
   )

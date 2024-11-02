@@ -301,7 +301,7 @@
         (emacs-lisp-docstring-fill-column t))
     (fill-paragraph nil region)))
 
-(defun my--fix-aspell ()
+(defun my/fix-aspell ()
   "Fix aspell location when it's not there, by looking in hard-coded locations."
   (require 'ispell)
   (if (and (not (executable-find ispell-program-name))
@@ -310,8 +310,8 @@
         (message "Redirecting aspell to known location")
         (setq ispell-program-name "c:/msys64/usr/bin/aspell.exe"))))
 
-(add-hook 'ispell-minor-mode-hook 'my--fix-aspell)
-(add-hook 'flyspell-mode-hook 'my--fix-aspell)
+(add-hook 'ispell-minor-mode-hook 'my/fix-aspell)
+(add-hook 'flyspell-mode-hook 'my/fix-aspell)
 
 
 ;; =================================================================

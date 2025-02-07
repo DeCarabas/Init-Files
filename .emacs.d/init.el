@@ -231,15 +231,14 @@
               (width            . 91)))
       ))
 
-(use-package modus-themes :ensure t
-  :config
-  (unless (display-graphic-p)
-    (load-theme 'modus-vivendi t)))
+;; (use-package modus-themes :ensure t
+;;   :config
+;;   (unless (display-graphic-p)
+;;     (load-theme 'modus-vivendi t)))
 
 (use-package doom-themes :ensure t
   :config
-  (if (display-graphic-p)
-      (load-theme 'doom-dark+ t)))
+  (load-theme 'doom-gruvbox t))
 
 ;; =================================================================
 ;; FUN WITH KEY BINDINGS!  YAAAAYYY!!!
@@ -301,7 +300,7 @@
         (emacs-lisp-docstring-fill-column t))
     (fill-paragraph nil region)))
 
-(defun my/fix-aspell ()
+(defun my--fix-aspell ()
   "Fix aspell location when it's not there, by looking in hard-coded locations."
   (require 'ispell)
   (if (and (not (executable-find ispell-program-name))
@@ -310,8 +309,20 @@
         (message "Redirecting aspell to known location")
         (setq ispell-program-name "c:/msys64/usr/bin/aspell.exe"))))
 
-(add-hook 'ispell-minor-mode-hook 'my/fix-aspell)
-(add-hook 'flyspell-mode-hook 'my/fix-aspell)
+(add-hook 'ispell-minor-mode-hook 'my--fix-aspell)
+(add-hook 'flyspell-mode-hook 'my--fix-aspell)
+
+(defun my/copy-buffer-file-as-kill ()
+  "Copy the current buffer file name to the kill ring."
+  (interactive)
+  (let ((filename (if (equal major-mode 'dired-mode)
+                      default-directory
+                    (buffer-file-name)))
+
+        (select-enable-clipboard t))
+    (when filename
+      (kill-new filename)
+      (message "Copied file name to kill ring: %s" filename))))
 
 
 ;; =================================================================
@@ -322,10 +333,10 @@
 ;; 2023-08-26 Wow, like what am I even doing? This goes at the top of the
 ;; various things because we're going to be playing with modes and whatnot.
 
-(when (and (functionp 'treesit-available-p)
-           (treesit-available-p))
+(when (functionp 'tree-sitter-mode)
   (setq treesit-language-source-alist
-        '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+        '(
+          (bash "https://github.com/tree-sitter/tree-sitter-bash")
           (cmake "https://github.com/uyha/tree-sitter-cmake")
           (css "https://github.com/tree-sitter/tree-sitter-css")
           (elisp "https://github.com/Wilfred/tree-sitter-elisp")
@@ -338,14 +349,15 @@
           (markdown "https://github.com/ikatyang/tree-sitter-markdown")
           (python "https://github.com/tree-sitter/tree-sitter-python")
           (rust "https://github.com/tree-sitter/tree-sitter-rust")
+          (scala "https://github.com/tree-sitter/tree-sitter-scala")
           (toml "https://github.com/tree-sitter/tree-sitter-toml")
           (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
           (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
           (yaml "https://github.com/ikatyang/tree-sitter-yaml")
-          (fine "~/src/lrparsers/tree-sitter-fine")
           ))
 
   (add-to-list 'major-mode-remap-alist '(rust-mode . rust-ts-mode))
+  (add-to-list 'major-mode-remap-alist '(scala-mode . scala-ts-mode))
   )
 
 (defun install-known-tree-sitter-grammars ()
@@ -358,13 +370,21 @@
 
 
 ;; =================================================================
+;; clipetty makes the kill ring interact with the terminal.
+;; =================================================================
+(when (getenv "TMUX")
+  (use-package clipetty
+    :ensure t
+    :hook (after-init . global-clipetty-mode)))
+
+;; =================================================================
 ;; Text mode configuration.
 ;; =================================================================
 (defun my-text-mode-hook ()
   "Doty's hook for text mode."
   (setq fill-column 70)
   (turn-on-auto-fill)
-  (my/fix-aspell)
+  (my--fix-aspell)
   (flyspell-mode))
 
 (add-hook 'text-mode-hook 'my-text-mode-hook)
@@ -440,6 +460,8 @@
   (typescript-mode    . eglot-ensure) ;; 2023-09-03 Eglot for typescript
   (typescript-ts-mode . eglot-ensure) ;; 2023-09-03 Eglot for typescript
   (swift-mode         . eglot-ensure) ;; 2023-11-11 Eglot for swift?
+  (scala-mode         . eglot-ensure) ;; 2024-09-24 Eglot for scala
+  (scala-ts-mode      . eglot-ensure) ;; 2024-09-24 Eglot for scala
 
   ;; 2023-09-10 Respect language-specific formatters
   ;;
@@ -478,6 +500,11 @@
   (add-to-list 'eglot-server-programs
                '((rust-mode rust-ts-mode) . ("rust-analyzer" :initializationOptions
                                              (:check (:command "clippy")))))
+
+  ;; 2024-09-19 Metals stuff
+  (add-to-list 'eglot-server-programs
+               '((scala-mode scala-ts-mode) . ("metals" :initializationOptions (:isHttpEnabled t))))
+
   ;; --
 
   (add-to-list 'eglot-server-programs
@@ -832,6 +859,14 @@ Or, uh, Objective C, I guess."
           ("/.+\\.tilt\\'"                          . bazel-starlark-mode)
           ("/Tiltfile$"                             . bazel-starlark-mode)))
 
+(defun my/open-bazel-build ()
+  "Open the build.bazel file that dominates this source file."
+  (interactive)
+  (find-file-other-window
+   (concat (locate-dominating-file (buffer-file-name) "BUILD.bazel")
+           "BUILD.bazel")))
+
+
 ;; =================================================================
 ;; JavaScript Support
 ;; =================================================================
@@ -950,7 +985,7 @@ Or, uh, Objective C, I guess."
 (defun my-org-mode-hook ()
   "My org mode hook."
   (turn-off-filladapt-mode)
-  (my/fix-aspell)
+  (my--fix-aspell)
   (require 'ox-quip))
 
 (use-package org
@@ -1324,29 +1359,46 @@ Or, uh, Objective C, I guess."
   :mode "\\.swift\\(interface\\)?\\'")
 
 ;; =================================================================
-;; Combobulate
+;; Scala
 ;; =================================================================
-;; (use-package combobulate
-;;   :preface
-;;   ;; You can customize Combobulate's key prefix here.
-;;   ;; Note that you may have to restart Emacs for this to take effect!
-;;   (setq combobulate-key-prefix "C-c o")
+(use-package scala-ts-mode :ensure t
+  :mode "\\.scala\\'"
+  :interpreter ("scala" . scala-mode)
+  )
 
-;;   ;; Optional, but recommended.
-;;   ;;
-;;   ;; You can manually enable Combobulate with `M-x
-;;   ;; combobulate-mode'.
-;;   ;; :hook
-;;   ;; ((python-ts-mode . combobulate-mode)
-;;   ;;  (js-ts-mode . combobulate-mode)
-;;   ;;  (html-ts-mode . combobulate-mode)
-;;   ;;  (css-ts-mode . combobulate-mode)
-;;   ;;  (yaml-ts-mode . combobulate-mode)
-;;   ;;  (typescript-ts-mode . combobulate-mode)
-;;   ;;  (json-ts-mode . combobulate-mode)
-;;   ;;  (tsx-ts-mode . combobulate-mode))
-;;   ;; Amend this to the directory where you keep Combobulate's source
-;;   ;; code.
-;;   :load-path ("/home/doty/src/combobulate"))
+(defun my/metals-import-project ()
+  "Tell metals to import the current project. Again.
+
+Do this when you edit your project view."
+  (interactive)
+  (jsonrpc-async-request (eglot--current-server-or-lose)
+                         :workspace/executeCommand
+                         '(:command "build-import" :arguments ())))
+
+;; =================================================================
+;; Jsonnet
+;; =================================================================
+(use-package jsonnet-mode :ensure t)
+
+
+;; =================================================================
+;; Copilot (ugh)
+;; =================================================================
+(use-package editorconfig :ensure)
+(use-package jsonrpc :ensure)
+;; (use-package copilot
+;;   :load-path (lambda () (expand-file-name "~/site-lisp/copilot"))
+;;   :after (editorconfig jsonrpc))
+
+;; =================================================================
+;; Fish shell
+;; =================================================================
+(use-package fish-mode :ensure)
+
+;; =================================================================
+;; gptel
+;; =================================================================
+(use-package gptel :ensure
+  :bind ("C-c RET" . gptel-send))
 
 ;;; init.el ends here

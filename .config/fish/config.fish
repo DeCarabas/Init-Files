@@ -47,3 +47,32 @@ if [ -n "$INSIDE_EMACS" ]
   end
   printf "\eAnSiTu %s\n" "$USER"
 end
+
+# Somehow fish does the wrong thing for tmux in 24bit color mode.
+# or tmux doesn't do the right thing with the low palette colors
+# or something anyway we re-map the colors explicitly for tmux.
+# These colors come from vscode dark+
+if test "$TERM" = "tmux-direct"
+  set -g fish_color_autosuggestion 666666
+  set -g fish_color_cancel -r
+  set -g fish_color_command 396ec7
+  set -g fish_color_comment c62f37
+  set -g fish_color_cwd 37be78
+  set -g fish_color_cwd_root c62f37
+  set -g fish_color_end 37be78
+  set -g fish_color_error e94a51
+  set -g fish_color_escape 49b7da
+  set -g fish_color_history_current --bold
+  set -g fish_color_host normal
+  set -g fish_color_host_remote e2e822
+  set -g fish_color_normal normal
+  set -g fish_color_operator 49b7da
+  set -g fish_color_param 3ba7cc
+  set -g fish_color_quote e2e822
+  set -g fish_color_redirection '3ba7cc'  '--bold'
+  set -g fish_color_search_match 'f2f84a'  '--background=666666'
+  set -g fish_color_selection 'e5e5e5'  '--bold'  '--background=666666'
+  set -g fish_color_status c62f37
+  set -g fish_color_user 45d38a
+  set -g fish_color_valid_path --underline
+end

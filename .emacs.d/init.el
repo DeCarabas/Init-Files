@@ -1380,25 +1380,52 @@ Do this when you edit your project view."
 ;; =================================================================
 (use-package jsonnet-mode :ensure t)
 
-
-;; =================================================================
-;; Copilot (ugh)
-;; =================================================================
-(use-package editorconfig :ensure)
-(use-package jsonrpc :ensure)
-;; (use-package copilot
-;;   :load-path (lambda () (expand-file-name "~/site-lisp/copilot"))
-;;   :after (editorconfig jsonrpc))
-
 ;; =================================================================
 ;; Fish shell
 ;; =================================================================
 (use-package fish-mode :ensure)
 
 ;; =================================================================
-;; gptel
+;; AI Shit
 ;; =================================================================
-(use-package gptel :ensure
-  :bind ("C-c RET" . gptel-send))
+(use-package request :ensure)
+
+(use-package claude
+  :load-path "~/site-lisp/"
+  :custom
+  (claude-model "claude-3-7-sonnet-20250219") ;; Current model as of March 2025
+  (claude-max-tokens 4000)
+  (claude-auto-display-results t)
+  :config
+  ;; If you want to add any custom tools, add them here
+  ;; (claude-register-tool
+  ;;  '(:name "my_custom_tool"
+  ;;    :description "A custom tool that does something specific"
+  ;;    :parameters ((properties
+  ;;                  (param1 (title . "Parameter 1")
+  ;;                        (type . "string")
+  ;;                        (description . "Description of parameter 1"))))))
+
+  ;; (claude-register-tool-handler
+  ;;  "my_custom_tool"
+  ;;  (lambda (parameters)
+  ;;    ;; Your implementation here
+  ;;    (format "Tool executed with param: %s" (cdr (assoc 'param1 parameters)))))
+
+  ;; Enable the minor mode for keybindings
+  (claude-mode 1)
+  :bind (:map claude-mode-map
+         ;; You can customize the keybindings if you prefer different ones
+         ("C-c C-a a" . claude-prompt-and-send) ;; Add a custom binding
+         ;; Default bindings included by claude-mode:
+         ;; C-c C-a s - claude-send-region
+         ;; C-c C-a b - claude-send-buffer
+         ;; C-c C-a r - claude-code-review
+         ;; C-c C-a e - claude-explain-code
+         ;; C-c C-a c - claude-complete-code
+         ;; C-c C-a t - claude-send-with-tools
+         ;; C-c C-a l - claude-list-requested-tools
+         ;; C-c C-a p - claude-prompt-and-send
+         ))
 
 ;;; init.el ends here

@@ -43,8 +43,8 @@
 (defvar claude-buffer-name "*Claude*"
   "Name of the buffer for Claude interactions.")
 
-(defvar claude-conversation-history nil
-  "History of the current conversation with Claude.")
+(defvar claude-last-request nil
+  "Store the last request data sent to Claude.")
 
 (defvar claude-response-mode-map
   (let ((map (make-sparse-keymap)))
@@ -93,29 +93,51 @@
               right-margin-width 2)))
     buffer))
 
-(defun claude-send-request (data &optional callback error-callback)
-  "Send request with DATA to Claude API.
-If CALLBACK is provided, call it with the response data.
-If ERROR-CALLBACK is provided, call it with any error."
-  (let ((api-key (claude-get-api-key)))
-    (request
-     "https://api.anthropic.com/v1/messages"
-     :type "POST"
-     :headers `(("Content-Type" . "application/json")
-                ("x-api-key" . ,api-key)
-                ("anthropic-version" . "2023-06-01"))
-     :data (json-encode data)
-     :parser 'json-read
-     :success (cl-function
-               (lambda (&key data &allow-other-keys)
-                 ;; (message "Claude: API response structure: %S" data)
-                 (when callback
-                   (funcall callback data))))
-     :error (cl-function
-             (lambda (&key error-thrown &allow-other-keys)
-               (if error-callback
-                   (funcall error-callback error-thrown)
-                 (message "Claude API error: %s" error-thrown)))))))
+(defun claude-send-message (prompt &optional system-prompt tools)
+  "Send PROMPT to Claude and display the response.
+If SYSTEM-PROMPT is provided, include it in the request.
+If TOOLS is provided, enable tool use."
+  (let ((data `((model . ,claude-model)
+                (max_tokens . ,claude-max-tokens)
+                (messages . [((role . "user")
+                             (content . ,prompt))]))))
+
+    ;; Add system prompt if provided
+    (when system-prompt
+      (setq data (append data `((system . ,system-prompt)))))
+
+    ;; Add tools if provided
+    (when tools
+      (setq data (append data `((tools . ,tools)
+                               (tool_choice . "auto")))))
+
+    ;; Store the request data for refresh functionality
+    (setq claude-last-request (list :prompt prompt
+                                   :system-prompt system-prompt
+                                   :tools tools))
+
+    ;; Display the buffer with a loading message
+    (let ((buffer (claude-ensure-buffer)))
+      (with-current-buffer buffer
+        (let ((inhibit-read-only t))
+          (erase-buffer)
+          (insert "Sending request to Claude...\n\n")))
+      (when claude-auto-display-results
+        (display-buffer buffer)))
+
+    ;; Send request
+    (claude-send-request
+     data
+     (lambda (data)
+       (if tools
+           (claude-handle-tool-response data (claude-ensure-buffer))
+         (claude-display-response data)))
+     (lambda (error-thrown)
+       (let ((buffer (claude-ensure-buffer)))
+         (with-current-buffer buffer
+           (let ((inhibit-read-only t))
+             (erase-buffer)
+             (insert (format "Error: %s" error-thrown)))))))))
 
 (defun claude-extract-text-content (message)
   "Extract text content from MESSAGE returned by the API."
@@ -274,9 +296,24 @@ If TOOLS is provided, enable tool use."
     (claude-send-message prompt)))
 
 (defun claude-refresh-last-request ()
-  "Refresh the last Claude request."
+  "Refresh the last Claude request by sending it again."
   (interactive)
-  (message "Refresh functionality not yet implemented."))
+  (if claude-last-request
+      (let ((prompt (plist-get claude-last-request :prompt))
+            (system-prompt (plist-get claude-last-request :system-prompt))
+            (tools (plist-get claude-last-request :tools)))
+
+        ;; Display refreshing message
+        (let ((buffer (claude-ensure-buffer)))
+          (with-current-buffer buffer
+            (let ((inhibit-read-only t))
+              (erase-buffer)
+              (insert "Refreshing last request to Claude...\n\n"))))
+
+        ;; Re-send the same request
+        (claude-send-message prompt system-prompt tools)
+        (message "Refreshing Claude request..."))
+    (message "No previous Claude request to refresh")))
 
 ;;; Tool use functionality:
 

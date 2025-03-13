@@ -4,12 +4,11 @@
 ;; Version: 1.0.0
 ;; Package-Requires: ((emacs "27.1") (request "0.3.0") (json "1.5"))
 ;; Keywords: tools, ai, assistant
-;; URL: https://git.d0ty.me/DeCarabas/claude-emacs
 
 ;;; Commentary:
-;; This package provides integration with the Claude AI assistant from Anthropic.
-;; It includes basic functionality like sending text to Claude, as well as
-;; code-specific features and tool use capabilities.
+;; This package provides integration with the Claude AI assistant from
+;; Anthropic. It includes basic functionality like sending text to Claude, as
+;; well as code-specific features and tool use capabilities.
 
 ;;; Code:
 

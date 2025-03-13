@@ -93,61 +93,28 @@
               right-margin-width 2)))
     buffer))
 
-(defun claude-send-message (prompt &optional system-prompt tools)
-  "Send PROMPT to Claude and display the response.
-If SYSTEM-PROMPT is provided, include it in the request.
-If TOOLS is provided, enable tool use."
-  (let ((data `((model . ,claude-model)
-                (max_tokens . ,claude-max-tokens)
-                (messages . [((role . "user")
-                             (content . ,prompt))]))))
-
-    ;; Add system prompt if provided
-    (when system-prompt
-      (setq data (append data `((system . ,system-prompt)))))
-
-    ;; Add tools if provided
-    (when tools
-      (setq data (append data `((tools . ,tools)
-                               (tool_choice . "auto")))))
-
-    ;; Store the request data for refresh functionality
-    (setq claude-last-request (list :prompt prompt
-                                   :system-prompt system-prompt
-                                   :tools tools))
-
-    ;; Display the buffer with a loading message
-    (let ((buffer (claude-ensure-buffer)))
-      (with-current-buffer buffer
-        (let ((inhibit-read-only t))
-          (erase-buffer)
-          (insert "Sending request to Claude...\n\n")))
-      (when claude-auto-display-results
-        (display-buffer buffer)))
-
-    ;; Send request
-    (claude-send-request
-     data
-     (lambda (data)
-       (if tools
-           (claude-handle-tool-response data (claude-ensure-buffer))
-         (claude-display-response data)))
-     (lambda (error-thrown)
-       (let ((buffer (claude-ensure-buffer)))
-         (with-current-buffer buffer
-           (let ((inhibit-read-only t))
-             (erase-buffer)
-             (insert (format "Error: %s" error-thrown)))))))))
-
-(defun claude-extract-text-content (message)
-  "Extract text content from MESSAGE returned by the API."
-  (let ((content-items (cdr (assoc 'content message)))
-        (result ""))
-    (dolist (item content-items)
-      (let ((type (cdr (assoc 'type item))))
-        (when (string= type "text")
-          (setq result (concat result (cdr (assoc 'text item)) "\n\n")))))
-    result))
+(defun claude-send-request (data &optional callback error-callback)
+  "Send request with DATA to Claude API.
+If CALLBACK is provided, call it with the response data.
+If ERROR-CALLBACK is provided, call it with any error."
+  (let ((api-key (claude-get-api-key)))
+    (request
+     "https://api.anthropic.com/v1/messages"
+     :type "POST"
+     :headers `(("Content-Type" . "application/json")
+                ("x-api-key" . ,api-key)
+                ("anthropic-version" . "2023-06-01"))
+     :data (json-encode data)
+     :parser 'json-read
+     :success (cl-function
+               (lambda (&key data &allow-other-keys)
+                 (when callback
+                   (funcall callback data))))
+     :error (cl-function
+             (lambda (&key error-thrown &allow-other-keys)
+               (if error-callback
+                   (funcall error-callback error-thrown)
+                 (message "Claude API error: %s" error-thrown)))))))
 
 (defun claude-display-response (data)
   "Display the response DATA from Claude with nice formatting."
@@ -192,19 +159,6 @@ If TOOLS is provided, enable tool use."
     (when claude-auto-display-results
       (unless (get-buffer-window buffer)
         (display-buffer-other-window buffer)))))
-
-;; (defun claude-display-response (data)
-;;   "Display the response DATA from Claude."
-;;   (let* ((message (aref (cdr (assoc 'messages data)) 0))
-;;          (content (claude-extract-text-content message))
-;;          (buffer (claude-ensure-buffer)))
-;;     (with-current-buffer buffer
-;;       (let ((inhibit-read-only t))
-;;         (erase-buffer)
-;;         (insert content)
-;;         (goto-char (point-min))))
-;;     (when claude-auto-display-results
-;;       (display-buffer buffer))))
 
 (defun claude-send-message (prompt &optional system-prompt tools)
   "Send PROMPT to Claude and display the response.

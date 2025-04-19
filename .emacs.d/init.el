@@ -333,11 +333,13 @@
 ;; 2023-08-26 Wow, like what am I even doing? This goes at the top of the
 ;; various things because we're going to be playing with modes and whatnot.
 
-(when (functionp 'tree-sitter-mode)
+(when (and (functionp 'treesit-available-p) (treesit-available-p))
+  (require 'treesit)
   (setq treesit-language-source-alist
         '(
           (bash "https://github.com/tree-sitter/tree-sitter-bash")
           (cmake "https://github.com/uyha/tree-sitter-cmake")
+          (csharp "https://github.com/tree-sitter/tree-sitter-c-sharp")
           (css "https://github.com/tree-sitter/tree-sitter-css")
           (elisp "https://github.com/Wilfred/tree-sitter-elisp")
           (go "https://github.com/tree-sitter/tree-sitter-go")
@@ -358,6 +360,7 @@
 
   (add-to-list 'major-mode-remap-alist '(rust-mode . rust-ts-mode))
   (add-to-list 'major-mode-remap-alist '(scala-mode . scala-ts-mode))
+  (add-to-list 'major-mode-remap-alist '(csharp-mode . csharp-ts-mode))
   )
 
 (defun install-known-tree-sitter-grammars ()
@@ -447,6 +450,12 @@
       (executable-find "C:/Users/john/scoop/apps/swift/current/Developer/Toolchains/unknown-Asserts-development.xctoolchain/usr/bin/sourcekit-lsp")
       "sourcekit-lsp"))
 
+(defun my-eglot-format-before-save ()
+  "Format with eglot when I'm in a buffer that supports it."
+  (when (or (eq major-mode 'csharp-mode)
+            (eq major-mode 'csharp-ts-mode))
+    (eglot-format)))
+
 (use-package eglot :ensure t
   :commands (eglot-ensure eglot)
   :hook
@@ -462,6 +471,8 @@
   (swift-mode         . eglot-ensure) ;; 2023-11-11 Eglot for swift?
   (scala-mode         . eglot-ensure) ;; 2024-09-24 Eglot for scala
   (scala-ts-mode      . eglot-ensure) ;; 2024-09-24 Eglot for scala
+  (csharp-mode        . eglot-ensure) ;; 2025-04-19 Eglot for csharp
+  (csharp-ts-mode     . eglot-ensure) ;; 2025-04-19 Eglot for csharp
 
   ;; 2023-09-10 Respect language-specific formatters
   ;;
@@ -472,7 +483,8 @@
   ;; be formatted, and after much soul-searching I have decided to side with
   ;; prettier.)
   ;;
-  ;; (before-save     . eglot-format)
+  ;; 2025-04-19 Use a custom function that is conditional on mode.
+  (before-save     . my-eglot-format-before-save)
   :bind
   ("C-c r"  . eglot-rename)       ;; 2022-08-23 Make rename more accessible
   ("C-c \\" . eglot-code-actions) ;; 2022-07-29 I want to make code actions easier.
@@ -694,6 +706,7 @@ Or, uh, Objective C, I guess."
 
   :config
   ;; 2023-09-03 Stop using omnisharp
+  ;; 2025-04-19 Still not using omnisharp, use it through eglot maybe
   ;; (use-package omnisharp :ensure t
   ;;   :commands omnisharp-mode
   ;;   :bind (:map omnisharp-mode-map

@@ -111,5 +111,7 @@
   },
   "git.confirmSync": false,
   "cmake.showOptionsMovedNotification": false,
-  "jupyter.askForKernelRestart": false
+  "jupyter.askForKernelRestart": false,
+  "dotnet.automaticallyCreateSolutionInWorkspace": false,
+  "dotnet.useLegacyDotnetResolution": false
 }

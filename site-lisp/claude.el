@@ -9,6 +9,9 @@
 ;; This package provides integration with the Claude AI assistant from
 ;; Anthropic. It includes basic functionality like sending text to Claude, as
 ;; well as code-specific features and tool use capabilities.
+;;
+;; It now features a conversational interface with support for context buffers
+;; and optional tool use.
 
 ;;; Code:
 
@@ -37,29 +40,77 @@
   :type 'boolean
   :group 'claude)
 
+(defcustom claude-conversation-buffer-name "*Claude Conversation*"
+  "Name of the buffer for Claude conversations."
+  :type 'string
+  :group 'claude)
+
+(defcustom claude-enable-markdown-fontification t
+  "If non-nil, enable markdown fontification in the conversation buffer."
+  :type 'boolean
+  :group 'claude)
+
+(defcustom claude-user-message-face 'font-lock-keyword-face
+  "Face for user messages in the conversation buffer."
+  :type 'face
+  :group 'claude)
+
+(defcustom claude-assistant-message-face 'font-lock-comment-face
+  "Face for Claude's messages in the conversation buffer."
+  :type 'face
+  :group 'claude)
+
+(defcustom claude-timestamp-face 'font-lock-doc-face
+  "Face for timestamps in the conversation buffer."
+  :type 'face
+  :group 'claude)
+
+(defcustom claude-separator-string "────────────────────────────────────────────────────────────"
+  "Separator string used between messages in the conversation buffer."
+  :type 'string
+  :group 'claude)
+
 ;;; Core functionality:
 
-(defvar claude-buffer-name "*Claude*"
-  "Name of the buffer for Claude interactions.")
+(defvar claude-conversation-history nil
+  "History of conversation with Claude as a list of alists with keys 'role' and 'content'.")
 
-(defvar claude-last-request nil
-  "Store the last request data sent to Claude.")
+(defvar claude-context-buffers nil
+  "List of buffers to provide as context for the conversation.")
 
-(defvar claude-response-mode-map
+(defvar claude-tools-enabled nil
+  "If non-nil, enable tool use in the conversation.")
+
+(defvar claude-conversation-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "q" 'quit-window)
-    (define-key map "r" 'claude-refresh-last-request)  ;; We'll define this function later
+    (define-key map (kbd "RET") 'claude-send-input)
+    (define-key map (kbd "C-c C-c") 'claude-send-input)
+    (define-key map (kbd "C-c C-k") 'claude-cancel-input)
+    ;; Change these keybindings to avoid conflict with the global prefix
+    (define-key map (kbd "C-c a") 'claude-add-context-buffer)     ;; was C-c C-a
+    (define-key map (kbd "C-c r") 'claude-remove-context-buffer)  ;; was C-c C-r
+    (define-key map (kbd "C-c l") 'claude-list-context-buffers)   ;; was C-c C-l
+    (define-key map (kbd "C-c t") 'claude-toggle-tool-use)          ;; was C-c C-t
+    (define-key map (kbd "C-c n") 'claude-new-conversation)         ;; was C-c C-n
     map)
-  "Keymap for Claude response buffers.")
+  "Keymap for Claude conversation buffers.")
 
-(define-derived-mode claude-response-mode markdown-mode "Claude"
-  "Major mode for viewing Claude AI responses."
-  (use-local-map claude-response-mode-map)
+(define-derived-mode claude-conversation-mode text-mode "Claude Conversation"
+  "Major mode for conversing with Claude AI assistant."
   ;; Enable visual line mode for word wrapping
   (visual-line-mode 1)
-  ;; Make buffer read-only by default
-  (setq buffer-read-only t))
+  (setq-local indent-tabs-mode nil)
 
+  (use-local-map claude-conversation-mode-map)
+
+  (when claude-enable-markdown-fontification
+    (when (fboundp 'markdown-mode)
+      ;; We only want the font-lock features of markdown mode
+      (setq-local font-lock-defaults (cadr (assoc 'font-lock-defaults
+                                                 (symbol-plist 'markdown-mode))))))
+  ;; Make the bottom of the buffer input-only
+  (setq-local claude-input-marker (point-max-marker))
+  (set-marker-insertion-type claude-input-marker nil)) ;; ?
 
 (defun claude-get-api-key ()
   "Get Claude API key from auth-source."
@@ -74,23 +125,33 @@
             secret))
       (error "Claude API key not found in auth-source"))))
 
-(defun claude-ensure-buffer ()
-  "Ensure the Claude buffer exists with proper formatting and keybindings."
-  (let ((buffer (get-buffer-create claude-buffer-name)))
+(defun claude-ensure-conversation-buffer ()
+  "Ensure the Claude conversation buffer exists and return it."
+  (let ((buffer (get-buffer-create claude-conversation-buffer-name)))
     (with-current-buffer buffer
-      (unless (eq major-mode 'claude-response-mode)
-        ;; Use our custom mode that has the q key binding
-        (if (fboundp 'markdown-mode)  ;; Check if markdown-mode is available
-            (claude-response-mode)    ;; Use our derived mode if markdown is available
-          ;; Fallback if markdown-mode isn't available
-          (special-mode)              ;; special-mode also has the q key binding
-          (visual-line-mode 1))
-
-        ;; Set word-wrap and margins regardless of mode
-        (setq word-wrap t)
-        (setq left-margin-width 2
-              right-margin-width 2)))
+      (unless (eq major-mode 'claude-conversation-mode)
+        (claude-conversation-mode)
+        (claude-insert-conversation-header)))
     buffer))
+
+(defun claude-insert-conversation-header ()
+  "Insert the header for a new conversation."
+  (let ((inhibit-read-only t))
+    (erase-buffer)
+    (insert (propertize "Claude Conversation" 'face 'bold) "\n\n")
+    (insert "Type your message below and press RET or C-c C-c to send.\n")
+    (insert "Commands:\n")
+    (insert "  C-c a: Add a context buffer\n")     ;; was C-c C-a
+    (insert "  C-c r: Remove a context buffer\n")  ;; was C-c C-r
+    (insert "  C-c l: List context buffers\n")     ;; was C-c C-l
+    (insert "  C-c t: Toggle tool use\n")            ;; was C-c C-t
+    (insert "  C-c n: Start a new conversation\n")   ;; was C-c C-n
+    (insert "\n")
+    (insert (propertize claude-separator-string 'face 'shadow))
+    (insert "\n\n")
+    ;; Set the input marker at the end of the buffer
+    (setq-local claude-input-marker (point-marker))
+    (set-marker-insertion-type claude-input-marker nil)))
 
 (defun claude-send-request (data &optional callback error-callback)
   "Send request with DATA to Claude API.
@@ -115,158 +176,237 @@ If ERROR-CALLBACK is provided, call it with any error."
                    (funcall error-callback error-thrown)
                  (message "Claude API error: %s" error-thrown)))))))
 
-(defun claude-display-response (data)
-  "Display the response DATA from Claude with nice formatting."
-  (let ((content (cdr (assoc 'content data)))
-        (buffer (claude-ensure-buffer)))
+(defun claude-append-to-conversation (role content)
+  "Append a message with ROLE and CONTENT to the conversation history."
+  (add-to-list 'claude-conversation-history
+               `((role . ,role)
+                 (content . ,content))
+               t))
+
+(defun claude-display-user-message (message)
+  "Display the user MESSAGE in the conversation buffer."
+  (let ((buffer (claude-ensure-conversation-buffer))
+        (timestamp (format-time-string "%H:%M:%S")))
     (with-current-buffer buffer
       (let ((inhibit-read-only t))
-        ;; Clear the buffer
-        (erase-buffer)
+        (save-excursion
+          (goto-char claude-input-marker)
+          (insert "\n")
+          (insert (propertize (format "[You - %s]" timestamp)
+                             'face claude-timestamp-face))
+          (insert "\n\n")
+          (insert (propertize message 'face claude-user-message-face))
+          (insert "\n\n")
+          (insert (propertize claude-separator-string 'face 'shadow))
+          (insert "\n\n")))
+      (setq-local claude-input-marker (point-max-marker)))))
 
-        ;; Add a timestamp header
-        (insert (propertize
-                 (format "Claude response at %s\n\n"
-                         (format-time-string "%H:%M:%S"))
-                 'face 'font-lock-comment-face))
+(defun claude-display-assistant-message (content)
+  "Display the assistant's CONTENT in the conversation buffer."
+  (let ((buffer (claude-ensure-conversation-buffer))
+        (timestamp (format-time-string "%H:%M:%S")))
+    (with-current-buffer buffer
+      (let ((inhibit-read-only t))
+        (save-excursion
+          (goto-char claude-input-marker)
+          (insert "\n")
+          (insert (propertize (format "[Claude - %s]" timestamp)
+                             'face claude-timestamp-face))
+          (insert "\n\n")
+          (insert (propertize content 'face claude-assistant-message-face))
+          (insert "\n\n")
+          (insert (propertize claude-separator-string 'face 'shadow))
+          (insert "\n\n")))
+      (setq-local claude-input-marker (point-max-marker))
+      (goto-char (point-max)))))
 
-        ;; Process content
-        (if (and content (arrayp content) (> (length content) 0))
-            (dotimes (i (length content))
-              (let* ((item (aref content i))
-                     (type (cdr (assoc 'type item))))
-                (when (string= type "text")
-                  (let ((text (cdr (assoc 'text item))))
-                    (insert text "\n\n")))))
+(defun claude-display-loading-indicator ()
+  "Display a loading indicator in the conversation buffer."
+  (let ((buffer (claude-ensure-conversation-buffer))
+        (timestamp (format-time-string "%H:%M:%S")))
+    (with-current-buffer buffer
+      (let ((inhibit-read-only t))
+        (save-excursion
+          (goto-char claude-input-marker)
+          (insert "\n")
+          (insert (propertize (format "[Claude - %s]" timestamp)
+                             'face claude-timestamp-face))
+          (insert "\n\n")
+          (insert (propertize "Thinking..." 'face 'italic))
+          ;; Don't insert separator yet
+          (insert "\n\n")
+          (setq-local claude-loading-indicator-point (point-marker))
+          (set-marker-insertion-type claude-loading-indicator-point t))))))
 
-          ;; Handle unexpected response format
-          (insert (propertize "Unexpected response format from Claude API.\n"
-                             'face 'font-lock-warning-face))
-          (insert "Response data: " (prin1-to-string data)))
-
-        ;; Add helpful instructions at the bottom
-        (goto-char (point-max))
-        (insert (propertize "\n──────────────────────────────────────\n"
-                           'face 'font-lock-comment-face))
-        (insert (propertize "Press q to close this window\n"
-                           'face 'font-lock-comment-face))
-
-        ;; Return to the start of the buffer
-        (goto-char (point-min))))
-
-    ;; Only display the buffer if requested and not already visible
-    (when claude-auto-display-results
-      (unless (get-buffer-window buffer)
-        (display-buffer-other-window buffer)))))
-
-(defun claude-send-message (prompt &optional system-prompt tools)
-  "Send PROMPT to Claude and display the response.
-If SYSTEM-PROMPT is provided, include it in the request.
-If TOOLS is provided, enable tool use."
-  (let ((data `((model . ,claude-model)
-                (max_tokens . ,claude-max-tokens)
-                (messages . [((role . "user")
-                             (content . ,prompt))]))))
-
-    ;; Add system prompt if provided
-    (when system-prompt
-      (setq data (append data `((system . ,system-prompt)))))
-
-    ;; Add tools if provided
-    (when tools
-      (setq data (append data `((tools . ,tools)
-                               (tool_choice . "auto")))))
-
-    ;; Display the buffer with a loading message
-    (let ((buffer (claude-ensure-buffer)))
+(defun claude-remove-loading-indicator ()
+  "Remove the loading indicator from the conversation buffer."
+  (when (and (boundp 'claude-loading-indicator-point)
+             claude-loading-indicator-point)
+    (let ((buffer (claude-ensure-conversation-buffer)))
       (with-current-buffer buffer
         (let ((inhibit-read-only t))
-          (erase-buffer)
-          (insert "Sending request to Claude...\n\n")))
-      (when claude-auto-display-results
-        (display-buffer buffer)))
+          (save-excursion
+            (goto-char claude-loading-indicator-point)
+            (forward-line -3) ;; Go to the start of the loading message
+            (delete-region (point) claude-loading-indicator-point)))))))
 
-    ;; Send request
+(defun claude-process-response (data)
+  "Process and display the response DATA from Claude."
+  (let ((content (cdr (assoc 'content data))))
+    (claude-remove-loading-indicator)
+
+    (if (and content (arrayp content) (> (length content) 0))
+        (let ((response-text ""))
+          ;; Collect text content from all response parts
+          (dotimes (i (length content))
+            (let* ((item (aref content i))
+                   (type (cdr (assoc 'type item))))
+              (when (string= type "text")
+                (let ((text (cdr (assoc 'text item))))
+                  (setq response-text (concat response-text text))))))
+
+          ;; Add to conversation history
+          (claude-append-to-conversation "assistant" response-text)
+
+          ;; Display the response
+          (claude-display-assistant-message response-text))
+
+      ;; Handle unexpected response format
+      (let ((error-message "Received an unexpected response format from Claude API."))
+        (claude-display-assistant-message
+         (concat error-message "\n\nResponse data: " (prin1-to-string data))))))
+
+  ;; Move to input area
+  (with-current-buffer (claude-ensure-conversation-buffer)
+    (goto-char (point-max))))
+
+(defun claude-get-context-content ()
+  "Get the content from all context buffers."
+  (let ((context-content ""))
+    (dolist (buffer claude-context-buffers)
+      (when (buffer-live-p buffer)
+        (with-current-buffer buffer
+          (setq context-content
+                (concat context-content
+                        (format "\n\nContent from buffer '%s':\n\n%s"
+                                (buffer-name buffer)
+                                (buffer-substring-no-properties (point-min) (point-max))))))))
+    context-content))
+
+(defun claude-send-message (prompt)
+  "Send PROMPT to Claude and display the response in the conversation buffer."
+  ;; Add user message to history
+  (claude-append-to-conversation "user" prompt)
+
+  ;; Display the user's message
+  (claude-display-user-message prompt)
+
+  ;; Show loading indicator
+  (claude-display-loading-indicator)
+
+  ;; Prepare messages for the API
+  (let* ((context (claude-get-context-content))
+         (final-prompt (if (string-empty-p context)
+                          prompt
+                        (concat prompt "\n\n" context)))
+         (messages-array (vconcat
+                          (apply #'vector
+                                 (mapcar (lambda (msg)
+                                           `((role . ,(cdr (assoc 'role msg)))
+                                             (content . ,(cdr (assoc 'content msg)))))
+                                         claude-conversation-history))))
+         (data `((model . ,claude-model)
+                 (max_tokens . ,claude-max-tokens)
+                 (messages . ,messages-array))))
+
+    ;; Add tools if enabled
+    (when claude-tools-enabled
+      (setq data (append data `((tools . ,(mapcar (lambda (tool)
+                                                  `((name . ,(plist-get tool :name))
+                                                    (description . ,(plist-get tool :description))
+                                                    (parameters . ,(plist-get tool :parameters))))
+                                                claude-tools))
+                                (tool_choice . "auto")))))
+
+    ;; Send the request
     (claude-send-request
      data
      (lambda (data)
-       (if tools
-           (claude-handle-tool-response data (claude-ensure-buffer))
-         (claude-display-response data)))
+       (if (and claude-tools-enabled
+                (or (assoc 'tool_use (aref (cdr (assoc 'content (aref (cdr (assoc 'messages data)) 0))) 0))
+                    (assoc 'tool_result (aref (cdr (assoc 'content (aref (cdr (assoc 'messages data)) 0))) 0))))
+           (claude-handle-tool-response data (claude-ensure-conversation-buffer))
+         (claude-process-response data)))
      (lambda (error-thrown)
-       (let ((buffer (claude-ensure-buffer)))
-         (with-current-buffer buffer
-           (let ((inhibit-read-only t))
-             (erase-buffer)
-             (insert (format "Error: %s" error-thrown)))))))))
+       (claude-remove-loading-indicator)
+       (claude-display-assistant-message (format "Error: %s" error-thrown))))))
 
-;;; Interactive commands:
-
-(defun claude-send-region (start end)
-  "Send the region between START and END to Claude and display the response."
-  (interactive "r")
-  (let ((prompt (buffer-substring-no-properties start end)))
-    (claude-send-message prompt)))
-
-(defun claude-send-buffer ()
-  "Send the entire buffer to Claude."
+(defun claude-send-input ()
+  "Send the current input to Claude."
   (interactive)
-  (claude-send-region (point-min) (point-max)))
+  (let ((buffer (claude-ensure-conversation-buffer)))
+    (with-current-buffer buffer
+      (let ((input (buffer-substring-no-properties claude-input-marker (point-max))))
+        (when (not (string-empty-p (string-trim input)))
+          ;; Delete the input text
+          (let ((inhibit-read-only t))
+            (delete-region claude-input-marker (point-max)))
+          ;; Send the message
+          (claude-send-message (string-trim input)))))))
 
-(defun claude-code-review ()
-  "Ask Claude to review the code in the current buffer."
+(defun claude-cancel-input ()
+  "Cancel the current input."
   (interactive)
-  (let ((code (buffer-substring-no-properties (point-min) (point-max))))
-    (claude-send-message
-     (concat "Please review the following code and suggest improvements:\n\n```\n"
-             code "\n```"))))
+  (let ((buffer (claude-ensure-conversation-buffer)))
+    (with-current-buffer buffer
+      (let ((inhibit-read-only t))
+        (delete-region claude-input-marker (point-max))))))
 
-(defun claude-explain-code ()
-  "Ask Claude to explain the selected code."
+(defun claude-new-conversation ()
+  "Start a new conversation with Claude."
   (interactive)
-  (if (use-region-p)
-      (let ((code (buffer-substring-no-properties (region-beginning) (region-end))))
-        (claude-send-message
-         (concat "Please explain what this code does in detail:\n\n```\n"
-                 code "\n```")))
-    (message "No region selected")))
+  (setq claude-conversation-history nil)
+  (setq claude-context-buffers nil)
+  (let ((buffer (claude-ensure-conversation-buffer)))
+    (with-current-buffer buffer
+      (claude-insert-conversation-header)))
+  (message "Started a new conversation with Claude"))
 
-(defun claude-complete-code ()
-  "Ask Claude to complete the code at point."
+(defun claude-add-context-buffer (buffer)
+  "Add BUFFER to the list of context buffers."
+  (interactive (list (read-buffer "Add buffer as context: " (other-buffer (current-buffer) t))))
+  (let ((buf (get-buffer buffer)))
+    (when buf
+      (unless (memq buf claude-context-buffers)
+        (add-to-list 'claude-context-buffers buf)
+        (message "Added %s to context buffers" (buffer-name buf))))))
+
+(defun claude-remove-context-buffer (buffer)
+  "Remove BUFFER from the list of context buffers."
+  (interactive
+   (list
+    (when claude-context-buffers
+      (let ((buffer-names (mapcar #'buffer-name claude-context-buffers)))
+        (completing-read "Remove buffer from context: " buffer-names nil t)))))
+  (when buffer
+    (let ((buf (get-buffer buffer)))
+      (when buf
+        (setq claude-context-buffers (delq buf claude-context-buffers))
+        (message "Removed %s from context buffers" (buffer-name buf))))))
+
+(defun claude-list-context-buffers ()
+  "List all context buffers in the minibuffer."
   (interactive)
-  (let* ((buffer-text (buffer-substring-no-properties (point-min) (point-max)))
-         (cursor-pos (point))
-         (text-before (buffer-substring-no-properties (point-min) cursor-pos))
-         (text-after (buffer-substring-no-properties cursor-pos (point-max))))
-    (claude-send-message
-     (concat "I'm writing code and need you to continue it from where the cursor is marked with [CURSOR]. Only provide the code that should replace [CURSOR], nothing else.\n\n```\n"
-             text-before "[CURSOR]" text-after "\n```"))))
+  (if claude-context-buffers
+      (let ((buffer-list (mapconcat #'buffer-name claude-context-buffers ", ")))
+        (message "Context buffers: %s" buffer-list))
+    (message "No context buffers set")))
 
-(defun claude-prompt-and-send ()
-  "Prompt for input and send to Claude."
+(defun claude-toggle-tool-use ()
+  "Toggle the use of tools in the conversation."
   (interactive)
-  (let ((prompt (read-string "Ask Claude: ")))
-    (claude-send-message prompt)))
-
-(defun claude-refresh-last-request ()
-  "Refresh the last Claude request by sending it again."
-  (interactive)
-  (if claude-last-request
-      (let ((prompt (plist-get claude-last-request :prompt))
-            (system-prompt (plist-get claude-last-request :system-prompt))
-            (tools (plist-get claude-last-request :tools)))
-
-        ;; Display refreshing message
-        (let ((buffer (claude-ensure-buffer)))
-          (with-current-buffer buffer
-            (let ((inhibit-read-only t))
-              (erase-buffer)
-              (insert "Refreshing last request to Claude...\n\n"))))
-
-        ;; Re-send the same request
-        (claude-send-message prompt system-prompt tools)
-        (message "Refreshing Claude request..."))
-    (message "No previous Claude request to refresh")))
+  (setq claude-tools-enabled (not claude-tools-enabled))
+  (message "Claude tool use %s" (if claude-tools-enabled "enabled" "disabled")))
 
 ;;; Tool use functionality:
 
@@ -300,95 +440,113 @@ The handler will be called with the parameters passed by Claude."
         (funcall handler parameters)
       (format "Error: No handler registered for tool %s" tool-name))))
 
-(defun claude-send-with-tools (prompt)
-  "Send PROMPT to Claude with tools enabled and handle the response."
-  (interactive "sPrompt: ")
-  (let ((tools-json (mapcar (lambda (tool)
-                            `((name . ,(plist-get tool :name))
-                              (description . ,(plist-get tool :description))
-                              (parameters . ,(plist-get tool :parameters))))
-                          claude-tools)))
-    (claude-send-message prompt nil tools-json)))
-
 (defun claude-handle-tool-response (data buffer)
   "Handle response DATA from Claude that may contain tool calls.
 Display results in BUFFER."
   (let ((message (aref (cdr (assoc 'messages data)) 0)))
+    (claude-remove-loading-indicator)
     (with-current-buffer buffer
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (let ((content-items (cdr (assoc 'content message))))
-          (dolist (item content-items)
-            (let ((type (cdr (assoc 'type item))))
-              (cond
-               ((string= type "text")
-                (insert (cdr (assoc 'text item)) "\n\n"))
-               ((string= type "tool_use")
-                (let* ((tool-use (cdr (assoc 'tool_use item)))
-                       (tool-name (cdr (assoc 'name tool-use)))
-                       (parameters (cdr (assoc 'parameters tool-use)))
-                       (handler (gethash tool-name claude-tool-handlers)))
+      (let ((content-items (cdr (assoc 'content message)))
+            (tool-usage-text "")
+            (response-text ""))
 
-                  ;; Check if we have this tool
-                  (if handler
-                      (let ((tool-result (claude-execute-tool tool-name parameters)))
-                        (insert (format "Tool call: %s\n" tool-name))
-                        (insert (format "Parameters: %s\n" (json-encode parameters)))
-                        (insert (format "Result: %s\n\n" tool-result))
+        ;; Process all content items
+        (dotimes (i (length content-items))
+          (let* ((item (aref content-items i))
+                 (type (cdr (assoc 'type item))))
+            (cond
+             ((string= type "text")
+              (setq response-text
+                    (concat response-text (cdr (assoc 'text item)) "\n\n")))
 
-                        ;; Send the tool result back to Claude
-                        (claude-send-tool-result data tool-name tool-result))
+             ((string= type "tool_use")
+              (let* ((tool-use (cdr (assoc 'tool_use item)))
+                     (tool-name (cdr (assoc 'name tool-use)))
+                     (parameters (cdr (assoc 'parameters tool-use)))
+                     (handler (gethash tool-name claude-tool-handlers)))
 
-                    ;; Tool not found - record the request and notify
-                    (let ((description (format "Tool requested by Claude for task: %s"
-                                             (or (cdr (assoc 'description tool-use))
-                                                 "No description provided")))
-                          (param-structure (or (cdr (assoc 'parameter_structure tool-use))
-                                              parameters)))
+                ;; Check if we have this tool
+                (if handler
+                    (let ((tool-result (claude-execute-tool tool-name parameters)))
+                      (setq tool-usage-text
+                            (concat tool-usage-text
+                                    (format "Tool call: %s\n" tool-name)
+                                    (format "Parameters: %s\n" (json-encode parameters))
+                                    (format "Result: %s\n\n" tool-result)))
 
-                      ;; Record the tool request
-                      (claude-request-tool tool-name description param-structure)
+                      ;; Send the tool result back to Claude
+                      (claude-send-tool-result data tool-name tool-result))
 
-                      ;; Notify Claude about missing tool
-                      (insert (format "Tool requested: %s\n" tool-name))
-                      (insert (format "This tool is not currently available.\n"))
-                      (insert "The request has been recorded. You can implement it with M-x claude-list-requested-tools.\n\n")
+                  ;; Tool not found - record the request and notify
+                  (let ((description (format "Tool requested by Claude for task: %s"
+                                           (or (cdr (assoc 'description tool-use))
+                                               "No description provided")))
+                        (param-structure (or (cdr (assoc 'parameter_structure tool-use))
+                                            parameters)))
 
-                      ;; Send error message back to Claude
-                      (let ((error-msg (format "The requested tool '%s' is not currently available. Would you like me to suggest an alternative approach?" tool-name)))
-                        (claude-send-tool-result data tool-name error-msg))))))))))))))
+                    ;; Record the tool request
+                    (claude-request-tool tool-name description param-structure)
+
+                    ;; Add to response text
+                    (setq tool-usage-text
+                          (concat tool-usage-text
+                                  (format "Tool requested: %s\n" tool-name)
+                                  "This tool is not currently available.\n"
+                                  "The request has been recorded. You can implement it with M-x claude-list-requested-tools.\n\n"))
+
+                    ;; Send error message back to Claude
+                    (let ((error-msg (format "The requested tool '%s' is not currently available. Would you like me to suggest an alternative approach?" tool-name)))
+                      (claude-send-tool-result data tool-name error-msg))))))))))
+
+        ;; Display the combined message
+        (let ((full-response (concat response-text
+                                    (if (not (string-empty-p tool-usage-text))
+                                        (concat "\n## Tool Usage\n\n" tool-usage-text)
+                                      ""))))
+          (claude-append-to-conversation "assistant" full-response)
+          (claude-display-assistant-message full-response)))))
 
 (defun claude-send-tool-result (data tool-name tool-result)
   "Send TOOL-RESULT for TOOL-NAME back to Claude based on the original DATA."
   (let ((message-id (cdr (assoc 'id (aref (cdr (assoc 'messages data)) 0))))
-        (tool-call-id (cdr (assoc 'id (cdr (assoc 'tool_use (aref (cdr (assoc 'content (aref (cdr (assoc 'messages data)) 0))) 0))))))
+        (tool-call-id nil)
         (api-key (claude-get-api-key))
-        (buffer (claude-ensure-buffer)))
+        (buffer (claude-ensure-conversation-buffer)))
 
-    (request
-     "https://api.anthropic.com/v1/messages"
-     :type "POST"
-     :headers `(("Content-Type" . "application/json")
-                ("x-api-key" . ,api-key)
-                ("anthropic-version" . "2023-06-01"))
-     :data (json-encode
-            `((model . ,claude-model)
-              (max_tokens . ,claude-max-tokens)
-              (messages . ,(vconcat (cdr (assoc 'messages data))
-                                   `[((role . "assistant")
-                                      (content . [((type . "tool_result")
-                                                   (tool_result . ((tool_call_id . ,tool-call-id)
-                                                                   (content . ,tool-result))))]))]))))
-     :parser 'json-read
-     :success (cl-function
-               (lambda (&key data &allow-other-keys)
-                 (claude-handle-tool-response data buffer)))
-     :error (cl-function
-             (lambda (&key error-thrown &allow-other-keys)
-               (with-current-buffer buffer
-                 (let ((inhibit-read-only t))
-                   (erase-buffer)
-                   (insert (format "Error: %s" error-thrown)))))))))
+    ;; Find the tool call ID
+    (let* ((content-items (cdr (assoc 'content (aref (cdr (assoc 'messages data)) 0)))))
+      (dotimes (i (length content-items))
+        (let* ((item (aref content-items i))
+               (type (cdr (assoc 'type item))))
+          (when (string= type "tool_use")
+            (setq tool-call-id (cdr (assoc 'id (cdr (assoc 'tool_use item)))))))))
+
+    (when tool-call-id
+      ;; Show loading indicator
+      (claude-display-loading-indicator)
+
+      (request
+       "https://api.anthropic.com/v1/messages"
+       :type "POST"
+       :headers `(("Content-Type" . "application/json")
+                  ("x-api-key" . ,api-key)
+                  ("anthropic-version" . "2023-06-01"))
+       :data (json-encode
+              `((model . ,claude-model)
+                (max_tokens . ,claude-max-tokens)
+                (messages . ,(vconcat (cdr (assoc 'messages data))
+                                     `[((role . "assistant")
+                                        (content . [((type . "tool_result")
+                                                     (tool_result . ((tool_call_id . ,tool-call-id)
+                                                                     (content . ,tool-result))))]))]))))
+       :parser 'json-read
+       :success (cl-function
+                 (lambda (&key data &allow-other-keys)
+                   (claude-handle-tool-response data buffer)))
+       :error (cl-function
+               (lambda (&key error-thrown &allow-other-keys)
+                 (claude-remove-loading-indicator)
+                 (claude-display-assistant-message (format "Error: %s" error-thrown))))))))
 
 (defun claude-request-tool (tool-name description parameters)
   "Record a request from Claude for a tool that isn't available."
@@ -635,21 +793,92 @@ Display results in BUFFER."
   (claude-clear-tools)
   (claude-register-filesystem-tools)
   (claude-register-emacs-tools)
+  ;; Uncomment the line below if you want shell tools enabled by default
   ;; (claude-register-shell-tools)
   )
+
+;;; Interactive commands:
+
+(defun claude-start-conversation ()
+  "Start or switch to a conversation with Claude."
+  (interactive)
+  (let ((buffer (claude-ensure-conversation-buffer)))
+    (switch-to-buffer buffer)))
+
+(defun claude-send-region (start end)
+  "Send the region between START and END to Claude in the conversation buffer."
+  (interactive "r")
+  (let ((prompt (buffer-substring-no-properties start end)))
+    (claude-start-conversation)
+    (with-current-buffer (claude-ensure-conversation-buffer)
+      (goto-char claude-input-marker)
+      (insert prompt)
+      (claude-send-input))))
+
+(defun claude-send-buffer ()
+  "Send the entire buffer to Claude in the conversation buffer."
+  (interactive)
+  (claude-send-region (point-min) (point-max)))
+
+(defun claude-code-review ()
+  "Ask Claude to review the code in the current buffer."
+  (interactive)
+  (let ((code (buffer-substring-no-properties (point-min) (point-max)))
+        (buffer-name (buffer-name))
+        (buffer (current-buffer)))
+    ;; Add the current buffer as context
+    (unless (memq buffer claude-context-buffers)
+      (add-to-list 'claude-context-buffers buffer))
+    ;; Start the conversation
+    (claude-start-conversation)
+    (with-current-buffer (claude-ensure-conversation-buffer)
+      (goto-char claude-input-marker)
+      (insert (format "Please review the code in %s and suggest improvements." buffer-name))
+      (claude-send-input))))
+
+(defun claude-explain-code ()
+  "Ask Claude to explain the selected code or current buffer."
+  (interactive)
+  (let ((buffer (current-buffer)))
+    ;; Add the current buffer as context
+    (unless (memq buffer claude-context-buffers)
+      (add-to-list 'claude-context-buffers buffer))
+    ;; Start the conversation
+    (claude-start-conversation)
+    (with-current-buffer (claude-ensure-conversation-buffer)
+      (goto-char claude-input-marker)
+      (if (use-region-p)
+          (insert "Please explain the selected code in detail.")
+        (insert (format "Please explain the code in %s in detail." (buffer-name buffer))))
+      (claude-send-input))))
+
+(defun claude-complete-code ()
+  "Ask Claude to complete the code at point."
+  (interactive)
+  (let* ((buffer (current-buffer))
+         (cursor-pos (point))
+         (buffer-name (buffer-name)))
+    ;; Add the current buffer as context
+    (unless (memq buffer claude-context-buffers)
+      (add-to-list 'claude-context-buffers buffer))
+    ;; Start the conversation
+    (claude-start-conversation)
+    (with-current-buffer (claude-ensure-conversation-buffer)
+      (goto-char claude-input-marker)
+      (insert (format "Complete the code at the cursor position in %s. The cursor is at position %d."
+                      buffer-name cursor-pos))
+      (claude-send-input))))
 
 ;;; Keybindings:
 
 (defvar claude-mode-map
   (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-a c") 'claude-start-conversation)
     (define-key map (kbd "C-c C-a s") 'claude-send-region)
     (define-key map (kbd "C-c C-a b") 'claude-send-buffer)
     (define-key map (kbd "C-c C-a r") 'claude-code-review)
     (define-key map (kbd "C-c C-a e") 'claude-explain-code)
-    (define-key map (kbd "C-c C-a c") 'claude-complete-code)
-    (define-key map (kbd "C-c C-a t") 'claude-send-with-tools)
-    (define-key map (kbd "C-c C-a l") 'claude-list-requested-tools)
-    (define-key map (kbd "C-c C-a p") 'claude-prompt-and-send)
+    (define-key map (kbd "C-c C-a o") 'claude-complete-code)
     map)
   "Keymap for Claude mode.")
 

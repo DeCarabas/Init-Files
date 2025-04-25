@@ -57,8 +57,28 @@
  '(org-log-done t)
  '(org-odd-levels-only t)
  '(org-todo-keywords '((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED")))
+ '(package-check-signature nil)
  '(package-selected-packages
-   '(gptel fish-mode editorconfig jsonnet-mode scala-ts-mode adaptive-wrap add-node-modules-path ag auto-complete auto-complete-nxml bazel blacken cider clang-format clojure-mode color-theme-monokai color-theme-sanityinc-solarized color-theme-sanityinc-tomorrow company company-jedi company-lsp compat cquery dash-functional deadgrep dockerfile-mode doom-themes earthfile-mode eglot eglot-java elm-mode esup exec-path-from-shell filladapt flycheck flycheck-elm flycheck-rust flymake flyspell fsharp-mode geiser gnu-elpa-keyring-update go-autocomplete go-mode graphviz-dot-mode hack-mode haxe-mode howm ink-mode js2-mode js2-refactor json-mode lsp-hack lsp-pyright lsp-ui lua-mode magit markdown-mode merlin mocha modus-themes monky monokai-theme multi-term mustache-mode nyan-mode paredit popup prettier-js projectile protobuf-mode python-mode rjsx-mode ruby-mode rust-mode sql-indent swift-mode switch-window terraform-mode thrift tide tree-sitter tss tuareg typescript-mode use-package vterm web-mode wgrep xref-js2 xterm-color yaml-mode zig-mode))
+   '(adaptive-wrap add-node-modules-path ag auto-complete auto-complete-nxml
+                   bazel blacken cider clang-format clipetty clojure-mode
+                   color-theme-monokai color-theme-sanityinc-solarized
+                   color-theme-sanityinc-tomorrow company company-jedi
+                   company-lsp compat cquery dash-functional deadgrep
+                   dockerfile-mode doom-themes earthfile-mode editorconfig
+                   eglot eglot-java elm-mode esup exec-path-from-shell
+                   filladapt fish-mode flycheck flycheck-elm flycheck-rust
+                   flymake flyspell fsharp-mode geiser
+                   gnu-elpa-keyring-update go-autocomplete go-mode gptel
+                   graphviz-dot-mode hack-mode haxe-mode howm ink-mode
+                   js2-mode js2-refactor json-mode jsonnet-mode lsp-hack
+                   lsp-pyright lsp-ui lua-mode magit markdown-mode merlin
+                   mocha modus-themes monky monokai-theme multi-term
+                   mustache-mode nyan-mode paredit popup prettier-js
+                   projectile protobuf-mode python-mode request rjsx-mode
+                   ruby-mode rust-mode scala-mode scala-ts-mode sql-indent
+                   swift-mode switch-window terraform-mode thrift tide
+                   tree-sitter tss tuareg typescript-mode use-package vterm
+                   web-mode wgrep xref-js2 xterm-color yaml-mode zig-mode))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values
@@ -73,8 +93,8 @@
            (whitespace-mode 0)
            (whitespace-mode 1))
      (whitespace-line-column . 80)
-     (whitespace-style face trailing lines-tail)
-     (require-final-newline . t)))
+     (whitespace-style face trailing lines-tail) (require-final-newline . t)))
+ '(scala-indent:use-javadoc-style t)
  '(scroll-conservatively 1)
  '(scroll-step 1)
  '(sd-user-email "johndoty@microsoft.com")
@@ -86,6 +106,7 @@
  '(tags-revert-without-query t)
  '(tramp-completion-reread-directory-timeout nil)
  '(tramp-default-method "sshx")
+ '(tramp-use-connection-share nil)
  '(tramp-use-ssh-controlmaster-options nil)
  '(transient-mark-mode t)
  '(truncate-lines t)

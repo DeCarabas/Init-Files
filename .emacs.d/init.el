@@ -1401,44 +1401,24 @@ Do this when you edit your project view."
 ;; =================================================================
 ;; AI Shit
 ;; =================================================================
-(use-package request :ensure)
+(defun claude-get-api-key ()
+  "Get Claude API key from auth-source."
+  (let ((auth-info (nth 0 (auth-source-search :host "anthropic.com"
+                                             :user "claude-api"
+                                             :require '(:secret)
+                                             :create t))))
+    (if auth-info
+        (let ((secret (plist-get auth-info :secret)))
+          (if (functionp secret)
+              (funcall secret)
+            secret))
+      (error "Claude API key not found in auth-source"))))
 
-(use-package claude
-  :load-path "~/site-lisp/"
-  :custom
-  (claude-model "claude-3-7-sonnet-20250219") ;; Current model as of March 2025
-  (claude-max-tokens 4000)
-  (claude-auto-display-results t)
+(use-package gptel :ensure
   :config
-  ;; If you want to add any custom tools, add them here
-  ;; (claude-register-tool
-  ;;  '(:name "my_custom_tool"
-  ;;    :description "A custom tool that does something specific"
-  ;;    :parameters ((properties
-  ;;                  (param1 (title . "Parameter 1")
-  ;;                        (type . "string")
-  ;;                        (description . "Description of parameter 1"))))))
-
-  ;; (claude-register-tool-handler
-  ;;  "my_custom_tool"
-  ;;  (lambda (parameters)
-  ;;    ;; Your implementation here
-  ;;    (format "Tool executed with param: %s" (cdr (assoc 'param1 parameters)))))
-
-  ;; Enable the minor mode for keybindings
-  (claude-mode 1)
-  :bind (:map claude-mode-map
-         ;; You can customize the keybindings if you prefer different ones
-         ("C-c C-a a" . claude-prompt-and-send) ;; Add a custom binding
-         ;; Default bindings included by claude-mode:
-         ;; C-c C-a s - claude-send-region
-         ;; C-c C-a b - claude-send-buffer
-         ;; C-c C-a r - claude-code-review
-         ;; C-c C-a e - claude-explain-code
-         ;; C-c C-a c - claude-complete-code
-         ;; C-c C-a t - claude-send-with-tools
-         ;; C-c C-a l - claude-list-requested-tools
-         ;; C-c C-a p - claude-prompt-and-send
-         ))
-
+  (setq
+   gptel-model 'claude-3-7-sonnet-20250219 ;  "claude-3-opus-20240229" also available
+   gptel-backend (gptel-make-anthropic "Claude"
+                   :stream t :key #'claude-get-api-key))
+  )
 ;;; init.el ends here

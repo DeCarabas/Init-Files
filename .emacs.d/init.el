@@ -870,7 +870,10 @@ Or, uh, Objective C, I guess."
           ("/\\(?:WORKSPACE\\(?:\\.bazel\\)?\\)\\'" . bazel-workspace-mode)
           ("/\\(?:BUILD\\(?:\\.bazel\\)?\\)\\'"     . bazel-build-mode)
           ("/.+\\.tilt\\'"                          . bazel-starlark-mode)
-          ("/Tiltfile$"                             . bazel-starlark-mode)))
+          ("/Tiltfile$"                             . bazel-starlark-mode)
+          ("BUCK"                                   . bazel-build-mode)
+          ("/..bxl\\'"                              . bazel-starlark-mode)
+          ))
 
 (defun my/open-bazel-build ()
   "Open the build.bazel file that dominates this source file."
@@ -1421,4 +1424,19 @@ Do this when you edit your project view."
    gptel-backend (gptel-make-anthropic "Claude"
                    :stream t :key #'claude-get-api-key))
   )
+
+;; =================================================================
+;; Debugging
+;; =================================================================
+(use-package dap-mode :ensure
+  :commands dap-debug
+  :config
+  (require 'dap-netcore))
+
+;; =================================================================
+;; WGSL
+;; =================================================================
+(use-package wgsl-mode :ensure
+  :mode "\\.wgsl\\'")
+
 ;;; init.el ends here

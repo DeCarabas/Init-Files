@@ -1405,17 +1405,20 @@ Do this when you edit your project view."
 ;; AI Shit
 ;; =================================================================
 (defun claude-get-api-key ()
-  "Get Claude API key from auth-source."
-  (let ((auth-info (nth 0 (auth-source-search :host "anthropic.com"
-                                             :user "claude-api"
-                                             :require '(:secret)
-                                             :create t))))
-    (if auth-info
-        (let ((secret (plist-get auth-info :secret)))
-          (if (functionp secret)
-              (funcall secret)
-            secret))
-      (error "Claude API key not found in auth-source"))))
+  "Get Claude API key from ~/.config/io.datasette.llm/keys.json file."
+  (let* ((keys-file (expand-file-name "~/.config/io.datasette.llm/keys.json"))
+         (json-object-type 'hash-table)
+         (json-array-type 'list)
+         (json-key-type 'string))
+    (if (file-exists-p keys-file)
+        (let* ((json-data (with-temp-buffer
+                            (insert-file-contents keys-file)
+                            (json-read-from-string (buffer-string))))
+               (claude-key (gethash "claude" json-data)))
+          (if claude-key
+              claude-key
+            (error "Claude API key not found in keys.json")))
+      (error "Key file keys.json file not found at %s" keys-file))))
 
 (use-package gptel :ensure
   :config

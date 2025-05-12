@@ -231,14 +231,13 @@
               (width            . 91)))
       ))
 
-;; (use-package modus-themes :ensure t
-;;   :config
-;;   (unless (display-graphic-p)
-;;     (load-theme 'modus-vivendi t)))
-
 (use-package doom-themes :ensure t
   :config
-  (load-theme 'doom-gruvbox t))
+  (load-theme 'doom-vibrant t)
+
+  ;; I like fairy-floss' italic keywords, so let's do this.
+  (custom-set-faces
+   '(font-lock-keyword-face ((t (:slant italic))))))
 
 ;; =================================================================
 ;; FUN WITH KEY BINDINGS!  YAAAAYYY!!!
@@ -370,6 +369,8 @@
 
 ;; 2023-08-28 Maybe I like line numbers everywhere? Who can say?
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+;; 2025-04-25 This is combined with adaptive-wrap is kinda nice, let's try it.
+(add-hook 'prog-mode-hook 'visual-line-mode)
 
 
 ;; =================================================================
@@ -1180,7 +1181,8 @@ Or, uh, Objective C, I guess."
 (use-package adaptive-wrap :ensure t
   :commands adaptive-wrap-prefix-mode
   :init
-  (add-hook 'markdown-mode-hook 'adaptive-wrap-prefix-mode))
+  (add-hook 'markdown-mode-hook 'adaptive-wrap-prefix-mode)
+  (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode))
 
 
 ;; =================================================================

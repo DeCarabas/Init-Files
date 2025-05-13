@@ -61,9 +61,10 @@
  '(org-todo-keywords '((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED")))
  '(package-check-signature nil)
  '(package-selected-packages
-   '(adaptive-wrap add-node-modules-path ag auto-complete auto-complete-nxml
-                   bazel blacken cider clang-format clipetty clojure-mode
-                   color-theme-monokai color-theme-sanityinc-solarized
+   '(adaptive-wrap add-node-modules-path ag async auto-complete
+                   auto-complete-nxml bazel blacken cider clang-format
+                   clipetty clojure-mode color-theme-monokai
+                   color-theme-sanityinc-solarized
                    color-theme-sanityinc-tomorrow company company-jedi
                    company-lsp compat cquery dap-mode dap-netcore
                    dash-functional deadgrep dockerfile-mode doom-themes
@@ -76,8 +77,8 @@
                    lsp-pyright lsp-ui lua-mode magit markdown-mode merlin
                    mocha modus-themes monky monokai-theme multi-term
                    mustache-mode nyan-mode paredit popup prettier-js
-                   projectile protobuf-mode python-mode request rjsx-mode ruby-mode
-                   rust-mode scala-ts-mode sql-indent swift-mode
+                   projectile protobuf-mode python-mode request rjsx-mode
+                   ruby-mode rust-mode scala-ts-mode sql-indent swift-mode
                    switch-window terraform-mode thrift tide tree-sitter tss
                    tuareg typescript-mode use-package vterm web-mode wgrep
                    wgsl-mode xref-js2 xterm-color yaml-mode zig-mode))

@@ -1427,8 +1427,11 @@ Do this when you edit your project view."
   (setq
    gptel-model 'claude-3-7-sonnet-20250219 ;  "claude-3-opus-20240229" also available
    gptel-backend (gptel-make-anthropic "Claude"
-                   :stream t :key #'claude-get-api-key))
-  )
+                   :stream t
+                   :key #'claude-get-api-key
+                   :request-params '(:thinking (:type "enabled" :budget_tokens 2048)
+                                               :max_tokens 4096))))
+
 
 ;; =================================================================
 ;; Debugging

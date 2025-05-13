@@ -1341,8 +1341,8 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Deadgrep for searching
 ;; =================================================================
-(use-package deadgrep :ensure t)
-;; TODO: AUTOLOADS HERE
+(use-package deadgrep :ensure t
+  :bind ("C-c d" . deadgrep))
 
 ;; =================================================================
 ;; Terraform

@@ -27,6 +27,7 @@
  '(fast-lock-minimum-size nil)
  '(fill-column 77)
  '(find-file-run-dired t)
+ '(flycheck-emacs-lisp-load-path 'inherit)
  '(flycheck-gcc-language-standard "c++11")
  '(flycheck-javascript-flow-args nil)
  '(flycheck-python-flake8-executable "python3")

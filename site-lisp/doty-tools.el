@@ -32,7 +32,7 @@
 ;;
 ;;; Code:
 (require 'gptel)
-(require 'url)
+(require 'treesit)
 
 ;; === Emacs tools
 
@@ -90,19 +90,19 @@
  :confirm nil
  :include t)
 
-;; ==== File reading
+;; === File reading
 
 (defun doty-tools--buffer-or-file (buffer-or-file)
-  "Return a buffer visiting a file, if BUFFER-OR-FILE names a file.
-Otherwise a buffer with the given name, if it is the only one."
-  (if (bufferp buffer-or-file)
-      buffer-or-file
-    (if (file-exists-p buffer-or-file)
-        (find-file-noselect buffer-or-file)
-      (let ((buffers (match-buffers buffer-or-file)))
-        (if (length= buffers 1)
-            (car buffers)
-          nil)))))
+  "Return a buffer for BUFFER-OR-FILE for the well-behaved LLM tool.
+
+If it is a buffer object, just return it. If it names a file, visit the
+ file. If there is exactly one buffer that matches that name, return
+ that buffer. Otherwise return nil."
+  (cond
+   ((bufferp buffer-or-file) buffer-or-file)
+   ((file-exists-p buffer-or-file) (find-file-noselect buffer-or-file))
+   ((length= (match-buffers buffer-or-file) 1)
+    (car (match-buffers buffer-or-file)))))
 
 (defun doty-tools--open-file (filename &optional max-chars)
   "Visit FILENAME and return up to MAX-CHARS of its contents as a string.
@@ -314,6 +314,126 @@ run."
  :confirm nil
  :include t)
 
+;; === Code Indexing
+
+(defvar doty-tools--treesit-queries
+  nil
+  "Tree-sitter queries that we've registered for various languages.")
+
+(defun doty-tools--register-treesit-mapper (lang query)
+  "Register a mapper based on tree-sitter for LANG (a symbol) that uses QUERY."
+  (let ((query (seq-concatenate 'list
+                                '((ERROR) @err (MISSING) @err)
+                                query)))
+    (treesit-query-validate lang query)
+    (setq doty-tools--treesit-queries
+          (assq-delete-all lang doty-tools--treesit-queries))
+    (push (cons lang (treesit-query-compile lang query))
+          doty-tools--treesit-queries)))
+
+(doty-tools--register-treesit-mapper 'python
+ `((module (expression_statement (assignment left: (identifier) @loc)))
+   (class_definition
+    name: (_) @loc
+    superclasses: (_) @loc
+    body: (block :anchor (expression_statement :anchor (string _ :*) @loc)) :?)
+   (function_definition
+    name: (_) @loc
+    parameters: (_) @loc
+    return_type: (_) :? @loc
+    body: (block :anchor (expression_statement :anchor (string _ :*) @loc)) :?)))
+
+
+(defun doty-tools--node-is-error (node)
+  "Return t if NODE is some kind of error."
+  (or (treesit-node-check node 'has-error)
+      (treesit-node-check node 'missing)))
+
+
+(defun doty-tools--map-buffer (buffer)
+  "Generate a map for BUFFER."
+  (with-current-buffer buffer
+    (let* ((registration (or (assoc (treesit-language-at (point-min))
+                                    doty-tools--treesit-queries)
+                             (error "Language '%s' not registered as a tree-sitter mapper"
+                                    (treesit-language-at (point-min)))))
+
+           (loc-queries (cdr registration))
+           (decls (treesit-query-capture (treesit-buffer-root-node) loc-queries nil nil t))
+
+           ;; Count errors.
+           (error-nodes (seq-filter #'doty-tools--node-is-error decls))
+           (error-count (length error-nodes))
+
+           ;; Remove errors, don't care anymore.
+           (decls (seq-filter (lambda (node) (not (doty-tools--node-is-error node))) decls))
+           (ranges (mapcar (lambda (node)
+                             (cons (treesit-node-start node)
+                                   (treesit-node-end node)))
+                           decls))
+
+           ;; Sort the result
+           (ranges (sort ranges :key #'car :in-place t)))
+
+      (save-excursion
+        (let* ((line-count (count-lines (point-min) (point-max)))
+               (width (1+ (floor (log line-count 10))))
+               (line-format (format "%%%dd: %%s" width))
+               (result-lines nil)
+               (line-number 1))
+
+          (if (> error-count 0)
+              (push (format "[STATUS: ERRORS] File contained %d parse errors"
+                            error-count)
+                    result-lines)
+            (push "[STATUS: SUCCESS] File parsed successfully" result-lines))
+          (push "" result-lines)
+
+          (widen)
+          (goto-char (point-min))
+          (while (and ranges (not (eobp)))
+            (let ((line-start (line-beginning-position))
+                  (line-end (line-end-position)))
+
+              ;; Remove the head of the ranges while the head is
+              ;; before the current line.
+              (while (and ranges (< (cdar ranges) line-start))
+                (setq ranges (cdr ranges)))
+
+              ;; When the range intersects this line, append this line.
+              (when (and ranges
+                         (>= (cdar ranges) line-start)
+                         (<= (caar ranges) line-end))
+
+                (push (format line-format
+                              line-number
+                              (buffer-substring-no-properties line-start line-end))
+                      result-lines))
+            (setq line-number (1+ line-number))
+            (forward-line 1)))
+
+          (mapconcat 'identity (nreverse result-lines) "\n"))))))
+
+(gptel-make-tool
+ :name "emacs_get_code_map"
+ :function #'doty-tools--map-buffer
+ :description "Returns structural outline of code files with declarations and their line numbers. Includes parse status. Cheaper than reading the entire file when supported. Supports python code.
+
+Example:
+[STATUS: ERRORS] File contained 2 parse errors
+
+10: LOG_ROOT = pathlib.Path.home() / \".local\" / \"share\" / \"goose\" / \"sessions\"
+12: class MyClass(object):
+15:     def method(self) -> int:
+19: def export_session(session: str):
+80: SESSION = \"20250505_222637_59fcedc5\""
+ :args '((:name "buffer_or_file"
+          :type string
+          :description "Buffer name or file path"))
+ :category "reading"
+ :confirm nil
+ :include t)
+
 ;; === Editing tools
 
 (defun doty-tools--insert-at-line (buffer-or-file line-number text &optional at-end)
@@ -406,6 +526,43 @@ If REPLACE-ALL is non-nil, replace all occurrences, otherwise just the
          (:name "replace_all"
           :type boolean
           :description "Replace all occurrences if true"))
+ :category "editing"
+ :confirm t
+ :include t)
+
+(defun doty-tools--delete-lines (buffer-or-file start-line &optional end-line)
+  "Delete lines from START-LINE to END-LINE in BUFFER-OR-FILE.
+If END-LINE is not provided, only delete START-LINE."
+  (let ((buffer (doty-tools--buffer-or-file buffer-or-file))
+        (end (or end-line start-line)))
+    (with-current-buffer buffer
+      (save-excursion
+        (goto-char (point-min))
+        (forward-line (1- start-line))
+        (let ((beg (point)))
+          (forward-line (1+ (- end start-line)))
+          (delete-region beg (point)))))
+    (format "Deleted lines %d to %d in %s"
+            start-line
+            end
+            (if (bufferp buffer-or-file)
+                (buffer-name buffer-or-file)
+              buffer-or-file))))
+
+(gptel-make-tool
+ :name "emacs_delete_lines"
+ :function #'doty-tools--delete-lines
+ :description "Delete specified line range."
+ :args (list '(:name "buffer_or_file"
+                :type string
+                :description "Buffer name or file path")
+             '(:name "start_line"
+                :type integer
+                :description "First line to delete")
+             '(:name "end_line"
+               :type integer
+               :optional t
+               :description "Last line to delete (optional - single line if omitted)"))
  :category "editing"
  :confirm t
  :include t)

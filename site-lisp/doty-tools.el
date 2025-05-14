@@ -43,7 +43,6 @@
     (with-current-buffer "*Help*"
       (buffer-substring-no-properties (point-min) (point-max)))))
 
-;; Emacs specific help
 (gptel-make-tool
  :name "emacs_describe_function"
  :function #'doty-tools--describe-function
@@ -298,6 +297,52 @@ run."
  :category "reading"
  :confirm nil
  :include t)
+
+;; === Editing tools
+
+(defun doty-tools--insert-at-line (buffer-or-file line-number text &optional at-end)
+  "Insert TEXT at LINE-NUMBER in BUFFER-OR-FILE.
+If AT-END is non-nil, insert at end of line, otherwise at beginning."
+  (with-current-buffer (if (bufferp buffer-or-file)
+                          buffer-or-file
+                        (find-file-noselect buffer-or-file))
+    (save-excursion
+      (save-restriction
+        (widen)
+        (goto-char (point-min))
+        (forward-line (1- line-number))
+        (if at-end
+            (end-of-line)
+          (beginning-of-line))
+        (insert text)
+        (format "Inserted text at %s of line %d in %s"
+                (if at-end "end" "beginning")
+                line-number
+                (if (bufferp buffer-or-file)
+                    (buffer-name buffer-or-file)
+                  buffer-or-file))))))
+
+(gptel-make-tool
+ :name "emacs_insert_at_line"
+ :function #'doty-tools--insert-at-line
+ :description "Insert text at the beginning or end of specified line."
+ :args '((:name "buffer_or_file"
+          :type string
+          :description "Buffer name or file path")
+         (:name "line_number"
+          :type integer
+          :description "Line to insert at")
+         (:name "text"
+          :type string
+          :description "Text to insert")
+         (:name "at_end"
+          :type boolean
+          :optional t
+          :description "If true, insert at end of line; otherwise at beginning (optional)"))
+ :category "editing"
+ :confirm t
+ :include t)
+
 
 ;; === System tools
 

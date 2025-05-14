@@ -95,17 +95,21 @@
 (defun doty-tools--buffer-or-file (buffer-or-file)
   "Return a buffer visiting a file, if BUFFER-OR-FILE names a file.
 Otherwise a buffer with the given name, if it is the only one."
-  (if (file-exists-p buffer-or-file)
-      (find-file-noselect buffer-or-file)
-    (let ((buffers (match-buffers buffer-or-file)))
-      (if (length= buffers 1)
-          (car buffers)
-        nil))))
+  (if (bufferp buffer-or-file)
+      buffer-or-file
+    (if (file-exists-p buffer-or-file)
+        (find-file-noselect buffer-or-file)
+      (let ((buffers (match-buffers buffer-or-file)))
+        (if (length= buffers 1)
+            (car buffers)
+          nil)))))
 
-(defun doty-tools--open-file (filename)
-  "Visit FILENAME and return its contents as a string."
+(defun doty-tools--open-file (filename &optional max-chars)
+  "Visit FILENAME and return up to MAX-CHARS of its contents as a string.
+
+If MAX-CHARS is not provided then the entire buffer is returned."
   (with-current-buffer (doty-tools--buffer-or-file filename)
-    (buffer-substring-no-properties (point-min) (point-max))))
+    (buffer-substring-no-properties (point-min) (min (point-max) (or max-chars 4096)))))
 
 (gptel-make-tool
  :name "emacs_open_file"
@@ -118,10 +122,15 @@ Example:
 ```
 drwxr-x---  2 john.doty ubuntu   4096 May 13 17:08 .
 -rw-r-----  1 john.doty ubuntu   6290 Jan  9 23:20 50-arc.el
-```"
+```
+"
  :args '((:name "filename"
           :type string
-          :description "The path of the file to read."))
+          :description "The path of the file to read.")
+         (:name "max-chars"
+          :type integer
+          :optional t
+          :description "The maximum number of characters to return. If this is not specified then at most 4096 characters are returned."))
  :category "reading"
  :confirm nil
  :include t)
@@ -330,7 +339,7 @@ If AT-END is non-nil, insert at end of line, otherwise at beginning."
 (gptel-make-tool
  :name "emacs_insert_at_line"
  :function #'doty-tools--insert-at-line
- :description "Insert text at the beginning or end of specified line."
+ :description "Insert text at the beginning or end of specified line. Be sure to carefully consider the context of the insertion point when modifying files!"
  :args '((:name "buffer_or_file"
           :type string
           :description "Buffer name or file path")
@@ -348,6 +357,58 @@ If AT-END is non-nil, insert at end of line, otherwise at beginning."
  :confirm t
  :include t)
 
+(defun doty-tools--replace-text (buffer-or-file from-text to-text use-regex replace-all)
+  "Replace occurrences of FROM-TEXT with TO-TEXT in BUFFER-OR-FILE.
+If USE-REGEX is non-nil, treat FROM-TEXT as a regular expression.
+
+If REPLACE-ALL is non-nil, replace all occurrences, otherwise just the
+ first one."
+  (with-current-buffer (doty-tools--buffer-or-file buffer-or-file)
+    (save-excursion
+      (save-restriction
+        (widen)
+        (goto-char (point-min))
+        (let ((count 0)
+              (search-pattern (if use-regex
+                                 (doty-tools--convert-regex from-text)
+                               from-text))
+              (search-fn (if use-regex 're-search-forward 'search-forward))
+              (case-fold-search nil))
+          (while (and (funcall search-fn search-pattern nil t)
+                      (or replace-all (= count 0)))
+            (setq count (1+ count))
+            (replace-match to-text t nil))
+          (format "Replaced %d occurrence%s of %s with %s in %s"
+                  count
+                  (if (= count 1) "" "s")
+                  from-text
+                  to-text
+                  (if (bufferp buffer-or-file)
+                      (buffer-name buffer-or-file)
+                    buffer-or-file)))))))
+
+(gptel-make-tool
+ :name "emacs_replace_text"
+ :function #'doty-tools--replace-text
+ :description "Replace occurrences of text in a buffer or file. Can use regex patterns and supports replacing single or all occurrences."
+ :args '((:name "buffer_or_file"
+          :type string
+          :description "Buffer name or file path")
+         (:name "from_text"
+          :type string
+          :description "Text to replace")
+         (:name "to_text"
+          :type string
+          :description "Replacement text")
+         (:name "use_regex"
+          :type boolean
+          :description "Whether from_text is a regex")
+         (:name "replace_all"
+          :type boolean
+          :description "Replace all occurrences if true"))
+ :category "editing"
+ :confirm t
+ :include t)
 
 ;; === System tools
 

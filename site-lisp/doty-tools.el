@@ -34,6 +34,8 @@
 (require 'gptel)
 (require 'url)
 
+;; === Emacs tools
+
 (defun doty-tools--describe-function (func-name)
   "Return the help text for function FUNC-NAME."
   (save-window-excursion
@@ -89,6 +91,8 @@
  :confirm nil
  :include t)
 
+;; ==== File reading
+
 (defun doty-tools--open-file (filename)
   "Visit FILENAME and return its contents as a string."
   (with-current-buffer (find-file-noselect filename)
@@ -109,9 +113,193 @@ drwxr-x---  2 john.doty ubuntu   4096 May 13 17:08 .
  :args '((:name "filename"
           :type string
           :description "The path of the file to read."))
- :category "devtools"
+ :category "reading"
  :confirm nil
  :include t)
+
+(defun doty-tools--read-lines (buffer-or-file start-line &optional end-line include-line-numbers)
+  "Get content from specified line range in BUFFER-OR-FILE.
+START-LINE is the beginning line number.
+Optional END-LINE is the ending line number. If nil, only START-LINE is returned.
+Optional INCLUDE-LINE-NUMBERS, if non-nil, adds line numbers to the output."
+  (with-current-buffer (if (bufferp buffer-or-file)
+                          buffer-or-file
+                        (find-file-noselect buffer-or-file))
+    (save-excursion
+      (save-restriction
+        (widen)
+        (goto-char (point-min))
+        (forward-line (1- start-line))
+        (let ((end-line (or end-line start-line))
+              (result ""))
+          (dotimes (i (- end-line start-line -1))
+            (let ((line-num (+ start-line i))
+                  (line-content (buffer-substring-no-properties
+                                 (line-beginning-position)
+                                 (line-end-position))))
+              (setq result
+                    (concat result
+                            (if include-line-numbers
+                                (format "%d: %s\n" line-num line-content)
+                              (format "%s\n" line-content)))))
+            (forward-line 1))
+          result)))))
+
+(gptel-make-tool
+ :name "emacs_read_lines"
+ :function #'doty-tools--read-lines
+ :description "Get content from specified line range in a file."
+ :args '((:name "buffer_or_file"
+          :type string
+          :description "Buffer name or file path")
+         (:name "start_line"
+          :type integer
+          :description "Starting line number")
+         (:name "end_line"
+          :type integer
+          :optional t
+          :description "Ending line number (optional)")
+         (:name "include_line_numbers"
+          :type boolean
+          :optional t
+          :description "Whether to include line numbers in output (optional)"))
+ :category "reading"
+ :confirm nil
+ :include t)
+
+(defun doty-tools--convert-regex (regex)
+  "Convert the REGEX in standard syntax to Emacs regex syntax.
+Handles common differences like | vs \\|, () vs \\(\\), etc.
+Also converts special character classes like \\d to [[:digit:]]."
+  (let ((case-fold-search nil)
+        (i 0)
+        (result "")
+        (len (length regex))
+        (escaped nil))
+    (while (< i len)
+      (let ((char (aref regex i)))
+        (cond
+         ;; Handle escaped characters and special character classes
+         (escaped
+          (setq escaped nil)
+          (cond
+           ;; Convert \d (digits) to [[:digit:]]
+           ((= char ?d)
+            (setq result (concat result "[[:digit:]]")))
+
+           ;; Convert \D (non-digits) to [^[:digit:]]
+           ((= char ?D)
+            (setq result (concat result "[^[:digit:]]")))
+
+           ;; Convert \w (word chars) to [[:alnum:]_]
+           ((= char ?w)
+            (setq result (concat result "[[:alnum:]_]")))
+
+           ;; Convert \W (non-word chars) to [^[:alnum:]_]
+           ((= char ?W)
+            (setq result (concat result "[^[:alnum:]_]")))
+
+           ;; Convert \s (whitespace) to [[:space:]]
+           ((= char ?s)
+            (setq result (concat result "[[:space:]]")))
+
+           ;; Convert \S (non-whitespace) to [^[:space:]]
+           ((= char ?S)
+            (setq result (concat result "[^[:space:]]")))
+
+           ;; Pass through other escaped characters
+           (t
+            (setq result (concat result "\\" (string char))))))
+
+         ;; Handle escape character
+         ((= char ?\\)
+          (setq escaped t))
+
+         ;; Convert | to \|
+         ((= char ?|)
+          (setq result (concat result "\\|")))
+
+         ;; Convert ( to \( and ) to \)
+         ((= char ?\()
+          (setq result (concat result "\\(")))
+         ((= char ?\))
+          (setq result (concat result "\\)")))
+
+         ;; Convert { to \{ and } to \}
+         ((= char ?{)
+          (setq result (concat result "\\{")))
+         ((= char ?})
+          (setq result (concat result "\\}")))
+
+         ;; Pass other characters through
+         (t
+          (setq result (concat result (string char))))))
+      (setq i (1+ i)))
+    result))
+
+(defun doty-tools--search-text (buffer-or-file pattern context-lines max-matches use-regex)
+  "Search for PATTERN in BUFFER-OR-FILE and return matches with context.
+
+CONTEXT-LINES is the number of lines before and after each match to
+include.
+
+MAX-MATCHES is the maximum number of matches to return.
+
+If USE-REGEX is non-nil, treat PATTERN as a regular expression, in
+standard syntax. It will be converted into Emacs syntax before being
+run."
+  (with-current-buffer (if (bufferp buffer-or-file)
+                           buffer-or-file
+                         (find-file-noselect buffer-or-file))
+    (save-excursion
+      (save-restriction
+        (widen)
+        (goto-char (point-min))
+        (let ((count 0)
+              (matches "")
+              (search-pattern (if use-regex (doty-tools--convert-regex pattern) pattern))
+              (search-fn (if use-regex 're-search-forward 'search-forward)))
+          (while (and (funcall search-fn search-pattern nil t)
+                      (< count max-matches))
+            (setq count (1+ count))
+            (let* ((match-line (line-number-at-pos))
+                   (start-line (max 1 (- match-line context-lines)))
+                   (end-line (+ match-line context-lines))
+                   (context (doty-tools--read-lines (current-buffer)
+                                                    start-line
+                                                    end-line
+                                                    t)))
+              (setq matches (concat matches
+                                    (format "Match %d (line %d):\n"
+                                           count match-line)
+                                    context
+                                    "\n"))))
+          matches)))))
+
+(gptel-make-tool
+ :name "emacs_search_text"
+ :function #'doty-tools--search-text
+ :description "Find text matching a pattern and return with context. Returns formatted matches with line numbers and surrounding context."
+ :args '((:name "buffer_or_file"
+          :type string
+          :description "Buffer name or file path")
+         (:name "pattern"
+          :type string
+          :description "Text or regex to search for")
+         (:name "context_lines"
+          :type integer
+          :description "Number of lines before/after to include")
+         (:name "max_matches"
+          :type integer
+          :description "Maximum number of matches to return")
+         (:name "use_regex"
+          :type boolean
+          :description "Whether to use regex matching"))
+ :category "reading"
+ :confirm nil
+ :include t)
+
+;; === System tools
 
 (defun doty-tools--run-async-command (callback command)
   "Run COMMAND asynchronously and call CALLBACK with the results as a string."

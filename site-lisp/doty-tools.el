@@ -92,9 +92,19 @@
 
 ;; ==== File reading
 
+(defun doty-tools--buffer-or-file (buffer-or-file)
+  "Return a buffer visiting a file, if BUFFER-OR-FILE names a file.
+Otherwise a buffer with the given name, if it is the only one."
+  (if (file-exists-p buffer-or-file)
+      (find-file-noselect buffer-or-file)
+    (let ((buffers (match-buffers buffer-or-file)))
+      (if (length= buffers 1)
+          (car buffers)
+        nil))))
+
 (defun doty-tools--open-file (filename)
   "Visit FILENAME and return its contents as a string."
-  (with-current-buffer (find-file-noselect filename)
+  (with-current-buffer (doty-tools--buffer-or-file filename)
     (buffer-substring-no-properties (point-min) (point-max))))
 
 (gptel-make-tool
@@ -118,12 +128,11 @@ drwxr-x---  2 john.doty ubuntu   4096 May 13 17:08 .
 
 (defun doty-tools--read-lines (buffer-or-file start-line &optional end-line include-line-numbers)
   "Get content from specified line range in BUFFER-OR-FILE.
-START-LINE is the beginning line number.
-Optional END-LINE is the ending line number. If nil, only START-LINE is returned.
-Optional INCLUDE-LINE-NUMBERS, if non-nil, adds line numbers to the output."
-  (with-current-buffer (if (bufferp buffer-or-file)
-                          buffer-or-file
-                        (find-file-noselect buffer-or-file))
+
+START-LINE is the beginning line number. Optional END-LINE is the ending
+line number. If nil, only START-LINE is  returned. Optional
+INCLUDE-LINE-NUMBERS, if non-nil, adds line numbers to the output."
+  (with-current-buffer (doty-tools--buffer-or-file buffer-or-file)
     (save-excursion
       (save-restriction
         (widen)
@@ -247,9 +256,7 @@ MAX-MATCHES is the maximum number of matches to return.
 If USE-REGEX is non-nil, treat PATTERN as a regular expression, in
 standard syntax. It will be converted into Emacs syntax before being
 run."
-  (with-current-buffer (if (bufferp buffer-or-file)
-                           buffer-or-file
-                         (find-file-noselect buffer-or-file))
+  (with-current-buffer (doty-tools--buffer-or-file buffer-or-file)
     (save-excursion
       (save-restriction
         (widen)
@@ -303,9 +310,7 @@ run."
 (defun doty-tools--insert-at-line (buffer-or-file line-number text &optional at-end)
   "Insert TEXT at LINE-NUMBER in BUFFER-OR-FILE.
 If AT-END is non-nil, insert at end of line, otherwise at beginning."
-  (with-current-buffer (if (bufferp buffer-or-file)
-                          buffer-or-file
-                        (find-file-noselect buffer-or-file))
+  (with-current-buffer (doty-tools--buffer-or-file buffer-or-file)
     (save-excursion
       (save-restriction
         (widen)

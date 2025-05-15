@@ -314,6 +314,41 @@ run."
  :confirm nil
  :include t)
 
+(defun doty-tools--buffer-info (buffer-or-file)
+  "Get metadata about BUFFER-OR-FILE.
+Returns file path, modified status, major mode, size, line count, and more."
+  (with-current-buffer (doty-tools--buffer-or-file buffer-or-file)
+    (let ((file-path (buffer-file-name))
+          (modified (buffer-modified-p))
+          (mode major-mode)
+          (size (buffer-size))
+          (line-count (count-lines (point-min) (point-max)))
+          (read-only buffer-read-only)
+          (coding-system buffer-file-coding-system))
+      (format "File path: %s\nModified: %s\nMajor mode: %s\nSize: %d bytes\nLine count: %d\nRead-only: %s\nEncoding: %s%s"
+              (or file-path "Buffer has no file")
+              (if modified "Yes" "No")
+              mode
+              size
+              line-count
+              (if read-only "Yes" "No")
+              (or coding-system "default")
+              (if file-path
+                  (format "\nDirectory: %s"
+                          (file-name-directory file-path))
+                "")))))
+
+(gptel-make-tool
+ :name "emacs_buffer_info"
+ :function #'doty-tools--buffer-info
+ :description "Get metadata about a buffer or file including path, modified status, major mode, size, line count, read only status, and encoding."
+ :args '((:name "buffer_or_file"
+          :type string
+          :description "Buffer name or file path"))
+ :category "reading"
+ :confirm nil
+ :include t)
+
 ;; === Code Indexing
 
 (defvar doty-tools--treesit-queries

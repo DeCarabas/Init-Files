@@ -378,6 +378,25 @@ Returns file path, modified status, major mode, size, line count, and more."
     return_type: (_) :? @loc
     body: (block :anchor (expression_statement :anchor (string _ :*) @loc)) :?)))
 
+(doty-tools--register-treesit-mapper
+ 'scala
+ `((trait_definition
+    name: (_) :? @loc
+    extend: (_) :? @loc)
+
+   (val_definition
+    (modifiers (_)) :? @loc
+    pattern: (_) @loc)
+
+   (function_definition
+    name: (_) :? @loc
+    parameters: (_) :? @loc
+    return_type: (_) :? @loc)
+
+   (class_definition
+    name: (_) :? @loc
+    class_parameters: (_) :? @loc
+    extend: (_) :? @loc)))
 
 (defun doty-tools--node-is-error (node)
   "Return t if NODE is some kind of error."
@@ -452,7 +471,7 @@ Returns file path, modified status, major mode, size, line count, and more."
 (gptel-make-tool
  :name "emacs_get_code_map"
  :function #'doty-tools--map-buffer
- :description "Returns structural outline of code files with declarations and their line numbers. Includes parse status. Cheaper than reading the entire file when supported. Supports python code.
+ :description "Returns structural outline of code files with declarations and their line numbers. Includes parse status. Cheaper than reading the entire file when supported. Supports python and scala code.
 
 Example:
 [STATUS: ERRORS] File contained 2 parse errors

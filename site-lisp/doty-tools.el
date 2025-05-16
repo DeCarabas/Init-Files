@@ -100,9 +100,12 @@ If it is a buffer object, just return it. If it names a file, visit the
  that buffer. Otherwise return nil."
   (cond
    ((bufferp buffer-or-file) buffer-or-file)
-   ((file-exists-p buffer-or-file) (find-file-noselect buffer-or-file))
+   ((file-exists-p (expand-file-name buffer-or-file))
+    (find-file-noselect (expand-file-name buffer-or-file)))
    ((length= (match-buffers buffer-or-file) 1)
-    (car (match-buffers buffer-or-file)))))
+    (car (match-buffers buffer-or-file)))
+   (t (error "file %s doesn't exist and does not name an open buffer"
+             buffer-or-file))))
 
 (defun doty-tools--open-file (filename &optional max-chars)
   "Visit FILENAME and return up to MAX-CHARS of its contents as a string.
@@ -404,9 +407,9 @@ Returns file path, modified status, major mode, size, line count, and more."
       (treesit-node-check node 'missing)))
 
 
-(defun doty-tools--map-buffer (buffer)
-  "Generate a map for BUFFER."
-  (with-current-buffer buffer
+(defun doty-tools--map-buffer (file-or-buffer)
+  "Generate a map for FILE-OR-BUFFER."
+  (with-current-buffer (doty-tools--buffer-or-file file-or-buffer)
     (let* ((registration (or (assoc (treesit-language-at (point-min))
                                     doty-tools--treesit-queries)
                              (error "Language '%s' not registered as a tree-sitter mapper"

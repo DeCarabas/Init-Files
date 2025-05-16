@@ -78,10 +78,11 @@
                    mocha modus-themes monky monokai-theme multi-term
                    mustache-mode nyan-mode paredit popup prettier-js
                    projectile protobuf-mode python-mode request rjsx-mode
-                   ruby-mode rust-mode scala-ts-mode sql-indent swift-mode
-                   switch-window terraform-mode thrift tide tree-sitter tss
-                   tuareg typescript-mode use-package vterm web-mode wgrep
-                   wgsl-mode xref-js2 xterm-color yaml-mode zig-mode))
+                   ruby-mode rust-mode scala-ts-mode simple-httpd sql-indent
+                   swift-mode switch-window terraform-mode thrift tide
+                   tree-sitter tss tuareg typescript-mode use-package uuidgen
+                   vterm web-mode wgrep wgsl-mode xref-js2 xterm-color
+                   yaml-mode zig-mode))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)
  '(safe-local-variable-values

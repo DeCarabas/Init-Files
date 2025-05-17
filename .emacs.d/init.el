@@ -1423,6 +1423,10 @@ Do this when you edit your project view."
       (error "Key file keys.json file not found at %s" keys-file))))
 
 (use-package gptel :ensure
+  :bind (:map gptel-mode-map
+              ("C-c C-g" . gptel-menu)
+              ("C-c C-t" . gptel-tools))
+
   :config
   (setq
    gptel-model 'claude-3-7-sonnet-20250219 ;  "claude-3-opus-20240229" also available

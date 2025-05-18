@@ -338,7 +338,7 @@
         '(
           (bash "https://github.com/tree-sitter/tree-sitter-bash")
           (cmake "https://github.com/uyha/tree-sitter-cmake")
-          (csharp "https://github.com/tree-sitter/tree-sitter-c-sharp")
+          (c-sharp "https://github.com/tree-sitter/tree-sitter-c-sharp")
           (css "https://github.com/tree-sitter/tree-sitter-css")
           (elisp "https://github.com/Wilfred/tree-sitter-elisp")
           (go "https://github.com/tree-sitter/tree-sitter-go")

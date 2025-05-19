@@ -342,6 +342,7 @@
           (css "https://github.com/tree-sitter/tree-sitter-css")
           (elisp "https://github.com/Wilfred/tree-sitter-elisp")
           (go "https://github.com/tree-sitter/tree-sitter-go")
+          (hlsl "https://github.com/tree-sitter-grammars/tree-sitter-hlsl")
           (html "https://github.com/tree-sitter/tree-sitter-html")
           (java "https://github.com/tree-sitter/tree-sitter-java" "master" "src")
           (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")

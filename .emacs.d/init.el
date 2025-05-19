@@ -1,4 +1,4 @@
-;;; init.el -- Summary
+;;; init.el -- Summary  -*- lexical-binding: t; -*-
 ;;; Emacs initialization file
 ;;; john@d0ty.me
 ;;;

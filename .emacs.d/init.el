@@ -1422,19 +1422,38 @@ Do this when you edit your project view."
             (error "Claude API key not found in keys.json")))
       (error "Key file keys.json file not found at %s" keys-file))))
 
+(defconst my/gptel-databricks-path
+  (expand-file-name "~/universe/experimental/john.doty/gptel-databricks/")
+  "The path to the databricks gptel backend.")
+
+(defconst my/has-gptel-databricks
+  (file-exists-p my/gptel-databricks-path)
+  "Whether or not we have the databricks gptel backend.")
+
+(defun my/get-gptel-backend ()
+  "Produce the right backend based on my environment."
+  (if my/has-gptel-databricks
+      (progn
+        (add-to-list 'load-path (directory-file-name my/gptel-databricks-path))
+        (require 'gptel-databricks)
+        (gptel-make-databricks "Databricks" :stream t))
+    (gptel-make-anthropic "Claude"
+      :stream t
+      :key #'claude-get-api-key
+      :request-params '(:thinking (:type "enabled" :budget_tokens 2048)
+                                  :max_tokens 4096))))
+
 (use-package gptel :ensure
   :bind (:map gptel-mode-map
               ("C-c C-g" . gptel-menu)
               ("C-c C-t" . gptel-tools))
 
   :config
+
   (setq
    gptel-model 'claude-3-7-sonnet-20250219 ;  "claude-3-opus-20240229" also available
-   gptel-backend (gptel-make-anthropic "Claude"
-                   :stream t
-                   :key #'claude-get-api-key
-                   :request-params '(:thinking (:type "enabled" :budget_tokens 2048)
-                                               :max_tokens 4096))))
+   gptel-backend (my/get-gptel-backend))
+  (require 'doty-tools))
 
 
 ;; =================================================================

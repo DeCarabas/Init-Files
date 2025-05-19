@@ -656,4 +656,5 @@ If END-LINE is not provided, only delete START-LINE."
  :confirm t  ;; For security, prompt the user before running any shell command
  :include t) ;; Include the command output in the conversation
 
+(provide 'doty-tools)
 ;;; doty-tools.el ends here

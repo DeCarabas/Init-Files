@@ -1431,8 +1431,7 @@ Do this when you edit your project view."
   (file-exists-p my/gptel-databricks-path)
   "Whether or not we have the databricks gptel backend.")
 
-(defun my/get-gptel-backend ()
-  "Produce the right backend based on my environment."
+(defconst my/gptel-backend
   (if my/has-gptel-databricks
       (progn
         (add-to-list 'load-path (directory-file-name my/gptel-databricks-path))
@@ -1442,7 +1441,14 @@ Do this when you edit your project view."
       :stream t
       :key #'claude-get-api-key
       :request-params '(:thinking (:type "enabled" :budget_tokens 2048)
-                                  :max_tokens 4096))))
+                                  :max_tokens 4096)))
+  "The right backend based on my environment.")
+
+(defconst my/gptel-model
+  (if my/has-gptel-databricks
+      'claude-3-7-sonnet-internal-tools
+    'claude-3-7-sonnet-20250219)
+  "Which model do we want by default?")
 
 (use-package gptel :ensure
   :bind (:map gptel-mode-map
@@ -1452,8 +1458,8 @@ Do this when you edit your project view."
   :config
 
   (setq
-   gptel-model 'claude-3-7-sonnet-20250219 ;  "claude-3-opus-20240229" also available
-   gptel-backend (my/get-gptel-backend))
+   gptel-model my/gptel-model ;  "claude-3-opus-20240229" also available
+   gptel-backend my/gptel-backend)
   (require 'doty-tools))
 
 

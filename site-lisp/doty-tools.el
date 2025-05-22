@@ -37,6 +37,15 @@
 (require 'project)
 (require 'treesit)
 
+(defun doty-tools-bool (v)
+  "Convert V into a boolean, treating :json-false as nil."
+  (and v (not (eq v :json-false))))
+
+(ert-deftest doty-tools--test--bool ()
+  (should (doty-tools-bool t))
+  (should (not (doty-tools-bool nil)))
+  (should (not (doty-tools-bool :json-false))))
+
 ;; === Testing Support
 
 (defun doty-tools--test--find-tool (name)
@@ -51,7 +60,9 @@
 This is kinda like what happens inside gptel but that's not accessible."
   (let* ((tool (doty-tools--test--find-tool name))
          ;; Ensure we have the correct JSON encoding.
-         (arg-plist (gptel--json-read-string (gptel--json-encode arg-plist)))
+         (arg-plist (progn
+                      ;; (message "ARGS: %S" (gptel--json-encode arg-plist))
+                      (gptel--json-read-string (gptel--json-encode arg-plist))))
          (arg-values (-map (lambda (arg)
                              (let ((key (intern (concat ":" (plist-get arg :name)))))
                                (plist-get arg-plist key)))
@@ -377,10 +388,11 @@ run."
       (save-restriction
         (widen)
         (goto-char (point-min))
-        (let ((count 0)
-              (matches "")
-              (search-pattern (if use-regex (doty-tools--convert-regex pattern) pattern))
-              (search-fn (if use-regex 're-search-forward 'search-forward)))
+        (let* ((use-regex (doty-tools-bool use-regex))
+               (count 0)
+               (matches "")
+               (search-pattern (if use-regex (doty-tools--convert-regex pattern) pattern))
+               (search-fn (if use-regex 're-search-forward 'search-forward)))
           (while (and (funcall search-fn search-pattern nil t)
                       (< count max-matches))
             (setq count (1+ count))
@@ -435,7 +447,7 @@ run."
                                                 :pattern "- [ ] Do it!"
                                                 :context_lines 0
                                                 :max_matches 1
-                                                :use_regex nil))))
+                                                :use_regex :json-false))))
 
       (should
        (string-equal "Match 1 (line 1):
@@ -450,7 +462,7 @@ Match 2 (line 3):
                                                 :pattern "- [ ]"
                                                 :context_lines 0
                                                 :max_matches 1000
-                                                :use_regex nil)))))))
+                                                :use_regex :json-false)))))))
 
 (ert-deftest doty-tools--test--emacs_search_text-regex ()
   "Tests for emacs_search_text without regular expressions."
@@ -704,7 +716,7 @@ If AT-END is non-nil, insert at end of line, otherwise at beginning."
 (gptel-make-tool
  :name "emacs_insert_at_line"
  :function #'doty-tools--insert-at-line
- :description "Insert text at the beginning or end of specified line. Be sure to carefully consider the context of the insertion point when modifying files, to make sure that the line you specify is where the text should actually go."
+ :description "Insert text at the beginning or end of specified line. Blanks are *not* added automatically, so be sure to include newlines where appropriate. Be sure to carefully consider the context of the insertion point when modifying files, to make sure that the line you specify is where the text should actually go."
  :args '((:name "buffer_or_file"
           :type string
           :description "Buffer name or file path")
@@ -719,7 +731,7 @@ If AT-END is non-nil, insert at end of line, otherwise at beginning."
           :optional t
           :description "If true, insert at end of line; otherwise at beginning (optional)"))
  :category "editing"
- :confirm t
+ :confirm nil
  :include t)
 
 (ert-deftest doty-tools--test--emacs_insert_line ()
@@ -750,12 +762,13 @@ If REPLACE-ALL is non-nil, replace all occurrences, otherwise just the
       (save-restriction
         (widen)
         (goto-char (point-min))
-        (let ((count 0)
-              (search-pattern (if use-regex
-                                 (doty-tools--convert-regex from-text)
-                               from-text))
-              (search-fn (if use-regex 're-search-forward 'search-forward))
-              (case-fold-search nil))
+        (let* ((use-regex (doty-tools-bool use-regex))
+               (count 0)
+               (search-pattern (if use-regex
+                                   (doty-tools--convert-regex from-text)
+                                 from-text))
+               (search-fn (if use-regex 're-search-forward 'search-forward))
+               (case-fold-search nil))
           (while (and (funcall search-fn search-pattern nil t)
                       (or replace-all (= count 0)))
             (setq count (1+ count))
@@ -789,8 +802,28 @@ If REPLACE-ALL is non-nil, replace all occurrences, otherwise just the
           :type boolean
           :description "Replace all occurrences if true"))
  :category "editing"
- :confirm t
+ :confirm nil
  :include t)
+
+(ert-deftest doty-tools--test--emacs_replace_text-no-regex ()
+  "Test emacs_replace_text with no regex."
+  (with-temp-buffer
+    (insert "- [X] `size: Int`\n")
+    (insert "- [ ] `knownSize: Int`\n")
+    (insert "- [ ] `apply(i: Int): Char`\n")
+    (doty-tools--test--invoke-tool
+     "emacs_replace_text" (list :buffer_or_file (buffer-name)
+                                :from_text "- [ ] `knownSize: Int`"
+                                :to_text "- [X] `knownSize: Int`"
+                                :use_regex :json-false
+                                :replace_all :json-false))
+    (should (equal (buffer-string)
+                   "- [X] `size: Int`
+- [X] `knownSize: Int`
+- [ ] `apply(i: Int): Char`
+"))))
+
+
 
 (defun doty-tools--delete-lines (buffer-or-file start-line &optional end-line)
   "Delete lines from START-LINE to END-LINE in BUFFER-OR-FILE.
@@ -826,7 +859,7 @@ If END-LINE is not provided, only delete START-LINE."
                :optional t
                :description "Last line to delete (optional - single line if omitted)"))
  :category "editing"
- :confirm t
+ :confirm nil
  :include t)
 
 ;; === System tools

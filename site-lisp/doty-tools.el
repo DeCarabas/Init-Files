@@ -31,8 +31,33 @@
 ;; This defines a set of tools that gptel can use to edit buffers and whatnot.
 ;;
 ;;; Code:
+(require 'dash) ;; TODO: Package requires
+(require 'ert)
 (require 'gptel)
+(require 'project)
 (require 'treesit)
+
+;; === Testing Support
+
+(defun doty-tools--test--find-tool (name)
+  "Find the registered tool named NAME for testing."
+  (alist-get name
+             (-flatten (--map (cdr it) gptel--known-tools))
+             nil nil #'equal))
+
+(defun doty-tools--test--invoke-tool (name arg-plist)
+  "Invoke the tool named NAME and pass in the provided arguments from ARG-PLIST.
+
+This is kinda like what happens inside gptel but that's not accessible."
+  (let* ((tool (doty-tools--test--find-tool name))
+         ;; Ensure we have the correct JSON encoding.
+         (arg-plist (gptel--json-read-string (gptel--json-encode arg-plist)))
+         (arg-values (-map (lambda (arg)
+                             (let ((key (intern (concat ":" (plist-get arg :name)))))
+                               (plist-get arg-plist key)))
+                           (gptel-tool-args tool))))
+    (apply (gptel-tool-function tool) arg-values)))
+
 
 ;; === Emacs tools
 
@@ -54,6 +79,15 @@
  :confirm nil
  :include t)
 
+(ert-deftest doty-tools--test--emacs_describe_function ()
+  "Tests for the emacs_describe_function tool."
+  (should
+   (string-match-p "cons is a primitive-function"
+                   (doty-tools--test--invoke-tool
+                    "emacs_describe_function" '(:func-name "cons")))))
+
+
+
 (defun doty-tools--describe-variable (variable-name)
   "Return the help text for function VARIABLE-NAME."
   (save-window-excursion
@@ -72,6 +106,15 @@
  :confirm nil
  :include t)
 
+(ert-deftest doty-tools--test--emacs_describe_variable ()
+  "Tests for doty-tools--describe-variable."
+  (should
+   (string-match-p "current-load-list is a variable"
+                   (doty-tools--test--invoke-tool
+                    "emacs_describe_variable" '(:variable-name "current-load-list")))))
+
+
+
 (defun doty-tools--apropos (pattern)
   "Invoke the help apropos function for PATTERN and return the results as a string."
   (save-window-excursion
@@ -81,7 +124,7 @@
 
 (gptel-make-tool
  :name "emacs_help_apropos"
-  :function #'doty-tools--describe-variable
+ :function #'doty-tools--apropos
  :description "Search for appropriate emacs function and variable documentation. Further information about functions and variables can be retrieved with the `emacs_describe_function` and `emacs_describe_variable` tools."
  :args '((:name "pattern"
           :type string
@@ -89,6 +132,13 @@
  :category "emacs"
  :confirm nil
  :include t)
+
+(ert-deftest doty-tools--test--emacs_help_apropos ()
+  "Tests for the emacs_help_apropos tool."
+  (should
+   (string-match-p "with-current-buffer"
+                   (doty-tools--test--invoke-tool
+                    "emacs_help_apropos" '(:pattern "buffer")))))
 
 ;; === File reading
 
@@ -102,9 +152,9 @@ If it is a buffer object, just return it. If it names a file, visit the
    ((bufferp buffer-or-file) buffer-or-file)
    ((file-exists-p (expand-file-name buffer-or-file))
     (find-file-noselect (expand-file-name buffer-or-file)))
-   ((length= (match-buffers buffer-or-file) 1)
-    (car (match-buffers buffer-or-file)))
-   (t (error "file %s doesn't exist and does not name an open buffer"
+   ((length= (match-buffers (regexp-quote buffer-or-file)) 1)
+    (car (match-buffers (regexp-quote buffer-or-file))))
+   (t (error "File '%s' doesn't exist and does not name an open buffer"
              buffer-or-file))))
 
 (defun doty-tools--open-file (filename &optional max-chars)
@@ -168,17 +218,17 @@ INCLUDE-LINE-NUMBERS, if non-nil, adds line numbers to the output."
 (gptel-make-tool
  :name "emacs_read_lines"
  :function #'doty-tools--read-lines
- :description "Get content from specified line range in a file."
+ :description "Get content from specified line range in a file. Line 1 is the first line in the file. Lines are returned with trailing blanks, if any."
  :args '((:name "buffer_or_file"
           :type string
           :description "Buffer name or file path")
          (:name "start_line"
           :type integer
-          :description "Starting line number")
+          :description "1-based starting line number")
          (:name "end_line"
           :type integer
           :optional t
-          :description "Ending line number (optional)")
+          :description "1-based ending line number (inclusive, optional)")
          (:name "include_line_numbers"
           :type boolean
           :optional t
@@ -186,6 +236,60 @@ INCLUDE-LINE-NUMBERS, if non-nil, adds line numbers to the output."
  :category "reading"
  :confirm nil
  :include t)
+
+(ert-deftest doty-tools--test--emacs_read_lines ()
+  "Tests for emacs_read_lines."
+  (with-temp-buffer
+    (let ((name (buffer-name (current-buffer))))
+      (insert "Hello!\n")
+      (insert "World!\n")
+      (insert "Emacs!\n")
+
+      (should
+       (string-equal "Hello!\n"
+                     (doty-tools--test--invoke-tool
+                      "emacs_read_lines" (list :buffer_or_file name
+                                               :start_line 1))))
+      (should
+       (string-equal "Emacs!\n"
+                     (doty-tools--test--invoke-tool
+                      "emacs_read_lines" (list :buffer_or_file name
+                                               :start_line 3))))
+      (should
+       (string-equal "Hello!\nWorld!\n"
+                     (doty-tools--test--invoke-tool
+                      "emacs_read_lines" (list :buffer_or_file name
+                                               :start_line 1
+                                               :end_line 2)))))))
+
+(ert-deftest doty-tools--test--emacs_read_lines-line-numbers ()
+  "Tests for emacs_read_lines with line numbers."
+  (with-temp-buffer
+    (let ((name (buffer-name (current-buffer))))
+      (insert "Hello!\n")
+      (insert "World!\n")
+      (insert "Emacs!\n")
+
+      (should
+       (string-equal "1: Hello!\n"
+                     (doty-tools--test--invoke-tool
+                      "emacs_read_lines" (list :buffer_or_file name
+                                               :start_line 1
+                                               :include_line_numbers t))))
+      (should
+       (string-equal "3: Emacs!\n"
+                     (doty-tools--test--invoke-tool
+                      "emacs_read_lines" (list :buffer_or_file name
+                                               :start_line 3
+                                               :include_line_numbers t))))
+      (should
+       (string-equal "1: Hello!\n2: World!\n"
+                     (doty-tools--test--invoke-tool
+                      "emacs_read_lines" (list :buffer_or_file name
+                                               :start_line 1
+                                               :end_line 2
+                                               :include_line_numbers t)))))))
+
 
 (defun doty-tools--convert-regex (regex)
   "Convert the REGEX in standard syntax to Emacs regex syntax.
@@ -317,6 +421,55 @@ run."
  :confirm nil
  :include t)
 
+(ert-deftest doty-tools--test--emacs_search_text-no-regex ()
+  "Tests for emacs_search_text without regular expressions."
+  (with-temp-buffer
+    (let ((name (buffer-name (current-buffer))))
+      (insert "- [ ] Do it!\n")
+      (insert "- [X] Done\n")
+      (insert "- [ ] Another task\n")
+      (should
+       (string-equal "Match 1 (line 1):\n1: - [ ] Do it!\n\n"
+                     (doty-tools--test--invoke-tool
+                      "emacs_search_text" (list :buffer_or_file name
+                                                :pattern "- [ ] Do it!"
+                                                :context_lines 0
+                                                :max_matches 1
+                                                :use_regex nil))))
+
+      (should
+       (string-equal "Match 1 (line 1):
+1: - [ ] Do it!
+
+Match 2 (line 3):
+3: - [ ] Another task
+
+"
+                     (doty-tools--test--invoke-tool
+                      "emacs_search_text" (list :buffer_or_file name
+                                                :pattern "- [ ]"
+                                                :context_lines 0
+                                                :max_matches 1000
+                                                :use_regex nil)))))))
+
+(ert-deftest doty-tools--test--emacs_search_text-regex ()
+  "Tests for emacs_search_text without regular expressions."
+  (with-temp-buffer
+    (let ((name (buffer-name (current-buffer))))
+      (insert "- [ ] Do it!\n")
+      (insert "- [X] Done\n")
+      (insert "- [ ] Another task\n")
+      (should
+       (string-equal "Match 1 (line 2):\n2: - [X] Done\n\n"
+                     (doty-tools--test--invoke-tool
+                      "emacs_search_text" (list :buffer_or_file name
+                                                :pattern "D.ne"
+                                                :context_lines 0
+                                                :max_matches 1
+                                                :use_regex t)))))))
+
+
+
 (defun doty-tools--buffer-info (buffer-or-file)
   "Get metadata about BUFFER-OR-FILE.
 Returns file path, modified status, major mode, size, line count, and more."
@@ -351,6 +504,41 @@ Returns file path, modified status, major mode, size, line count, and more."
  :category "reading"
  :confirm nil
  :include t)
+
+(defun doty-tools--get-project-root ()
+  "Get the root directory of the current project."
+  (project-root (project-current)))
+
+(gptel-make-tool
+ :name "get_project_root"
+ :function #'project-root
+ :description "Get the root directory of the current project."
+ :args ()
+ :category "reading"
+ :confirm nil
+ :include t)
+
+(defun doty-tools--search-project-regex (callback regex)
+  "Search the current project for instances of a given REGEX.
+
+Call CALLBACK when done."
+  (let ((output-buffer (generate-new-buffer " *async-search-output*")))
+    (with-current-buffer output-buffer
+      ;; Make buffer lightweight - disable undo, make read-only
+      (buffer-disable-undo)
+      (setq-local inhibit-modification-hooks t)
+      (setq-local inhibit-read-only t)) ; Temporarily allow writing by the process
+
+    (set-process-sentinel
+     (with-connection-local-variables
+      (let* ((quoted-regex (shell-quote-argument regex))
+             (rg-command (format "rg %s" quoted-regex)))
+        (start-file-process-shell-command "gptel-async-search" output-buffer rg-command)))
+     (lambda (_process event)
+       (when (string-match "finished" event)
+         (with-current-buffer output-buffer
+           (funcall callback (buffer-string)))
+         (kill-buffer output-buffer))))))
 
 ;; === Code Indexing
 
@@ -516,7 +704,7 @@ If AT-END is non-nil, insert at end of line, otherwise at beginning."
 (gptel-make-tool
  :name "emacs_insert_at_line"
  :function #'doty-tools--insert-at-line
- :description "Insert text at the beginning or end of specified line. Be sure to carefully consider the context of the insertion point when modifying files!"
+ :description "Insert text at the beginning or end of specified line. Be sure to carefully consider the context of the insertion point when modifying files, to make sure that the line you specify is where the text should actually go."
  :args '((:name "buffer_or_file"
           :type string
           :description "Buffer name or file path")
@@ -636,8 +824,7 @@ If END-LINE is not provided, only delete START-LINE."
       (setq-local inhibit-read-only t)) ; Temporarily allow writing by the process
 
     (set-process-sentinel
-     (start-process "gptel-async-command" output-buffer
-                    shell-file-name shell-command-switch command)
+     (start-file-process-shell-command "gptel-async-command" output-buffer command)
      (lambda (process event)
        (when (string-match "finished" event)
          (with-current-buffer output-buffer

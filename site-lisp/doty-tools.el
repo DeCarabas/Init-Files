@@ -710,7 +710,7 @@ If AT-END is non-nil, insert at end of line, otherwise at beginning."
           :description "Buffer name or file path")
          (:name "line_number"
           :type integer
-          :description "Line to insert at")
+          :description "1-based index of line to insert at")
          (:name "text"
           :type string
           :description "Text to insert")
@@ -721,6 +721,23 @@ If AT-END is non-nil, insert at end of line, otherwise at beginning."
  :category "editing"
  :confirm t
  :include t)
+
+(ert-deftest doty-tools--test--emacs_insert_line ()
+  "Tests for the emacs_insert_line tool."
+  (with-temp-buffer
+    (doty-tools--test--invoke-tool
+     "emacs_insert_at_line" (list :buffer_or_file (buffer-name)
+                                  :line_number 1
+                                  :text "Hello"))
+    (should (equal "Hello" (buffer-string)))
+
+    (doty-tools--test--invoke-tool
+     "emacs_insert_at_line" (list :buffer_or_file (buffer-name)
+                                  :line_number 1
+                                  :text " world!"
+                                  :at_end t))
+
+    (should (equal "Hello world!" (buffer-string)))))
 
 (defun doty-tools--replace-text (buffer-or-file from-text to-text use-regex replace-all)
   "Replace occurrences of FROM-TEXT with TO-TEXT in BUFFER-OR-FILE.

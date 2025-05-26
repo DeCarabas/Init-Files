@@ -523,12 +523,25 @@ Returns file path, modified status, major mode, size, line count, and more."
 
 (gptel-make-tool
  :name "get_project_root"
- :function #'project-root
+ :function #'doty-tools--get-project-root
  :description "Get the root directory of the current project."
  :args ()
  :category "reading"
  :confirm nil
  :include t)
+
+(ert-deftest doty-tools--test--get_project_root ()
+  "Tests for the emacs_insert_line tool."
+  (let* ((tf (make-temp-file "test-project-" t)))
+    (unwind-protect
+        (with-temp-buffer
+          (let ((default-directory tf))
+            (call-process "git" nil t nil "init" ".")
+            (should
+             (equal (file-name-as-directory tf)
+                    (doty-tools--test--invoke-tool "get_project_root" ())))))
+
+      (delete-directory tf t))))
 
 (defun doty-tools--search-project-regex (callback regex)
   "Search the current project for instances of a given REGEX.

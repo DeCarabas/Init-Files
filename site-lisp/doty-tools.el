@@ -168,51 +168,67 @@ If it is a buffer object, just return it. If it names a file, visit the
 ;; (t (error "File '%s' doesn't exist and does not name an open buffer"
 ;;           buffer-or-file))))
 
-(defun doty-tools--open-file (filename &optional max-chars)
-  "Visit FILENAME and return up to MAX-CHARS of its contents as a string.
+;; NOTE: I THINK THIS TOOL ISN'T GREAT.
 
-If MAX-CHARS is not provided then the entire buffer is returned."
-  (with-current-buffer (doty-tools--buffer-or-file filename)
-    (buffer-substring-no-properties (point-min) (min (point-max) (or max-chars 4096)))))
+;; (defun doty-tools--open-file (filename &optional max-chars)
+;;   "Visit FILENAME and return up to MAX-CHARS of its contents as a string.
 
-(gptel-make-tool
- :name "emacs_open_file"
- :function #'doty-tools--open-file
- :description "Opens a file and reads content from a specified file path or displays directory information. This tool accepts relative file paths and returns different outputs based on the path type:
-- For files: Returns the complete file contents
-- For directories: Returns directory listings in Unix long format with permissions, link count, owner, group, size (bytes), modification date, and filename. First character in permissions indicates file type ('d'=directory, '-'=file).
+;; If MAX-CHARS is not provided then the entire buffer is returned."
+;;   (with-current-buffer (doty-tools--buffer-or-file filename)
+;;     (buffer-substring-no-properties (point-min) (min (point-max) (or max-chars 4096)))))
 
-Example:
-```
-drwxr-x---  2 john.doty ubuntu   4096 May 13 17:08 .
--rw-r-----  1 john.doty ubuntu   6290 Jan  9 23:20 50-arc.el
-```
-"
- :args '((:name "filename"
-          :type string
-          :description "The path of the file to read.")
-         (:name "max-chars"
-          :type integer
-          :optional t
-          :description "The maximum number of characters to return. If this is not specified then at most 4096 characters are returned."))
- :category "reading"
- :confirm nil
- :include t)
+;; (gptel-make-tool
+;;  :name "emacs_open_file"
+;;  :function #'doty-tools--open-file
+;;  :description "Opens a file and reads content from a specified file path or displays directory information. This tool accepts relative file paths and returns different outputs based on the path type:
+;; - For files: Returns the complete file contents
+;; - For directories: Returns directory listings in Unix long format with permissions, link count, owner, group, size (bytes), modification date, and filename. First character in permissions indicates file type ('d'=directory, '-'=file).
 
-(defun doty-tools--read-lines (buffer-or-file start-line &optional end-line include-line-numbers)
+;; Example:
+;; ```
+;; drwxr-x---  2 john.doty ubuntu   4096 May 13 17:08 .
+;; -rw-r-----  1 john.doty ubuntu   6290 Jan  9 23:20 50-arc.el
+;; ```
+;; "
+;;  :args '((:name "filename"
+;;           :type string
+;;           :description "The path of the file to read.")
+;;          (:name "max-chars"
+;;           :type integer
+;;           :optional t
+;;           :description "The maximum number of characters to return. If this is not specified then at most 4096 characters are returned."))
+;;  :category "reading"
+;;  :confirm nil
+;;  :include t)
+
+(defun doty-tools--read-lines (buffer-or-file start-line &optional end-line include-line-numbers no-prologue)
   "Get content from specified line range in BUFFER-OR-FILE.
 
-START-LINE is the beginning line number. Optional END-LINE is the ending
-line number. If nil, only START-LINE is  returned. Optional
-INCLUDE-LINE-NUMBERS, if non-nil, adds line numbers to the output."
+START-LINE is the beginning line number.
+
+Optional END-LINE is the ending line number. If nil, only START-LINE is
+returned.
+
+Optional INCLUDE-LINE-NUMBERS, if non-nil, adds line numbers to the output.
+
+Optional NO-PROLOGUE adds a small buffer summary to the top of the file, if
+non-nil."
   (with-current-buffer (doty-tools--buffer-or-file buffer-or-file)
+    (unless (buffer-modified-p)
+      (condition-case _
+          (revert-buffer t t t)
+        (t nil)))
     (save-excursion
       (save-restriction
         (widen)
         (goto-char (point-min))
         (forward-line (1- start-line))
-        (let ((end-line (or end-line start-line))
-              (result ""))
+        (let* ((end-line (or end-line start-line))
+               (result (if (not no-prologue)
+                           (format "Lines %d-%d of %d:\n"
+                                   start-line end-line
+                                   (count-lines (point-min) (point-max)))
+                         "")))
           (dotimes (i (- end-line start-line -1))
             (let ((line-num (+ start-line i))
                   (line-content (buffer-substring-no-properties
@@ -229,7 +245,23 @@ INCLUDE-LINE-NUMBERS, if non-nil, adds line numbers to the output."
 (gptel-make-tool
  :name "emacs_read_lines"
  :function #'doty-tools--read-lines
- :description "Get content from specified line range in a file. Line 1 is the first line in the file. Lines are returned with trailing blanks, if any."
+ :description "Opens a file and reads content from a specified file path or displays directory information. Lines are returned with trailing blanks, if any. Line 1 is the first line. There is no guarantee that the last line is blank. This tool accepts relative file paths and returns different outputs based on the path type:
+- For files: Returns the complete file contents
+- For directories: Returns directory listings in Unix long format with permissions, link count, owner, group, size (bytes), modification date, and filename. First character in permissions indicates file type ('d'=directory, '-'=file).
+
+Example:
+```
+drwxr-x---  2 john.doty ubuntu   4096 May 13 17:08 .
+-rw-r-----  1 john.doty ubuntu   6290 Jan  9 23:20 50-arc.el
+```
+
+In all cases, the response is prefixed with a single line containing the line range being returned, e.g.:
+
+```
+Lines 1-1 of 267:
+```
+
+Returning line numbers is required if the file is to be edited."
  :args '((:name "buffer_or_file"
           :type string
           :description "Buffer name or file path")
@@ -257,17 +289,17 @@ INCLUDE-LINE-NUMBERS, if non-nil, adds line numbers to the output."
       (insert "Emacs!\n")
 
       (should
-       (string-equal "Hello!\n"
+       (string-equal "Lines 1-1 of 3:\nHello!\n"
                      (doty-tools--test--invoke-tool
                       "emacs_read_lines" (list :buffer_or_file name
                                                :start_line 1))))
       (should
-       (string-equal "Emacs!\n"
+       (string-equal "Lines 3-3 of 3:\nEmacs!\n"
                      (doty-tools--test--invoke-tool
                       "emacs_read_lines" (list :buffer_or_file name
                                                :start_line 3))))
       (should
-       (string-equal "Hello!\nWorld!\n"
+       (string-equal "Lines 1-2 of 3:\nHello!\nWorld!\n"
                      (doty-tools--test--invoke-tool
                       "emacs_read_lines" (list :buffer_or_file name
                                                :start_line 1
@@ -282,19 +314,19 @@ INCLUDE-LINE-NUMBERS, if non-nil, adds line numbers to the output."
       (insert "Emacs!\n")
 
       (should
-       (string-equal "1: Hello!\n"
+       (string-equal "Lines 1-1 of 3:\n1: Hello!\n"
                      (doty-tools--test--invoke-tool
                       "emacs_read_lines" (list :buffer_or_file name
                                                :start_line 1
                                                :include_line_numbers t))))
       (should
-       (string-equal "3: Emacs!\n"
+       (string-equal "Lines 3-3 of 3:\n3: Emacs!\n"
                      (doty-tools--test--invoke-tool
                       "emacs_read_lines" (list :buffer_or_file name
                                                :start_line 3
                                                :include_line_numbers t))))
       (should
-       (string-equal "1: Hello!\n2: World!\n"
+       (string-equal "Lines 1-2 of 3:\n1: Hello!\n2: World!\n"
                      (doty-tools--test--invoke-tool
                       "emacs_read_lines" (list :buffer_or_file name
                                                :start_line 1
@@ -402,7 +434,7 @@ run."
                    (context (doty-tools--read-lines (current-buffer)
                                                     start-line
                                                     end-line
-                                                    t)))
+                                                    t t)))
               (setq matches (concat matches
                                     (format "Match %d (line %d):\n"
                                            count match-line)
@@ -531,7 +563,7 @@ Returns file path, modified status, major mode, size, line count, and more."
  :include t)
 
 (ert-deftest doty-tools--test--get_project_root ()
-  "Tests for the emacs_insert_line tool."
+  "Tests for the get_project_root tool."
   (let* ((tf (make-temp-file "test-project-" t)))
     (unwind-protect
         (with-temp-buffer
@@ -558,7 +590,7 @@ Returns file path, modified status, major mode, size, line count, and more."
  :include t)
 
 (ert-deftest doty-tools--test--get_current_directory ()
-  "Tests for the emacs_insert_line tool."
+  "Tests for the get_current_directory tool."
   (let* ((tf (make-temp-file "test-cd-" t)))
     (unwind-protect
         (with-temp-buffer
@@ -608,7 +640,8 @@ Call CALLBACK when done."
     (push (cons lang (treesit-query-compile lang query))
           doty-tools--treesit-queries)))
 
-(doty-tools--register-treesit-mapper 'python
+(doty-tools--register-treesit-mapper
+ 'python
  `((module (expression_statement (assignment left: (identifier) @loc)))
    (class_definition
     name: (_) @loc
@@ -639,6 +672,29 @@ Call CALLBACK when done."
     name: (_) :? @loc
     class_parameters: (_) :? @loc
     extend: (_) :? @loc)))
+
+(doty-tools--register-treesit-mapper
+ 'rust
+ `((mod_item
+    name: (_) :? @loc)
+
+   (struct_item
+    (visibility_modifier (_)) :? @loc
+    type_parameters: (_) :? @loc
+    name: (_) @loc
+    body: (_) @loc)
+
+   (impl_item
+    type_parameters: (_) :? @loc
+    trait: (_) :? @loc
+    type: (_) :? @loc)
+
+   (function_item
+    (visibility_modifier (_)) :? @loc
+    name: (_) :? @loc
+    type_parameters: (_) :? @loc
+    parameters: (_) :? @loc
+    return_type: (_) :? @loc)))
 
 (defun doty-tools--node-is-error (node)
   "Return t if NODE is some kind of error."
@@ -713,7 +769,7 @@ Call CALLBACK when done."
 (gptel-make-tool
  :name "emacs_get_code_map"
  :function #'doty-tools--map-buffer
- :description "Returns structural outline of code files with declarations and their line numbers. Includes parse status. Cheaper than reading the entire file when supported. Supports python and scala code.
+ :description "Returns structural outline of code files with declarations and their line numbers. Includes parse status. Cheaper than reading the entire file when supported. Supports python, scala, and rust code.
 
 Example:
 [STATUS: ERRORS] File contained 2 parse errors
@@ -739,8 +795,12 @@ If AT-END is non-nil, insert at end of line, otherwise at beginning."
     (save-excursion
       (save-restriction
         (widen)
-        (goto-char (point-min))
-        (forward-line (1- line-number))
+        (if (> line-number 0)
+            (progn
+              (goto-char (point-min))
+              (forward-line (1- line-number)))
+          (goto-char (point-max))
+          (forward-line (1+ line-number)))
         (if at-end
             (end-of-line)
           (beginning-of-line))
@@ -755,7 +815,7 @@ If AT-END is non-nil, insert at end of line, otherwise at beginning."
 (gptel-make-tool
  :name "emacs_insert_at_line"
  :function #'doty-tools--insert-at-line
- :description "Insert text at the beginning or end of specified line. Blanks are *not* added automatically, so be sure to include newlines where appropriate. Be sure to carefully consider the context of the insertion point when modifying files, to make sure that the line you specify is where the text should actually go."
+ :description "Insert text at the beginning or end of specified line. Negative numbers are indexed from the end of the buffer. Line 1 is the first line. Line -1 is the last line. Blanks are *not* added automatically, so be sure to include newlines where appropriate. Be sure to carefully consider the context of the insertion point when modifying files, to make sure that the line you specify is where the text should actually go. If inserting at the beginning of the file, insert at the beginning line 1. If inserting at the end of the file, insert at the end of line -1."
  :args '((:name "buffer_or_file"
           :type string
           :description "Buffer name or file path")
@@ -788,7 +848,32 @@ If AT-END is non-nil, insert at end of line, otherwise at beginning."
                                   :text " world!"
                                   :at_end t))
 
-    (should (equal "Hello world!" (buffer-string)))))
+    (should (equal "Hello world!" (buffer-string)))
+
+    (doty-tools--test--invoke-tool
+     "emacs_insert_at_line" (list :buffer_or_file (buffer-name)
+                                  :line_number 1
+                                  :text "Here is the message:\n"))
+
+    (should (equal "Here is the message:\nHello world!" (buffer-string)))
+
+    (doty-tools--test--invoke-tool
+     "emacs_insert_at_line" (list :buffer_or_file (buffer-name)
+                                  :line_number -2
+                                  :text "No really:\n"))
+
+    (should (equal "No really:\nHere is the message:\nHello world!" (buffer-string)))
+
+    (doty-tools--test--invoke-tool
+     "emacs_insert_at_line" (list :buffer_or_file (buffer-name)
+                                  :line_number -1
+                                  :text "\nThat's all!"
+                                  :at_end t))
+
+    (should (equal "No really:\nHere is the message:\nHello world!\nThat's all!" (buffer-string)))
+
+    ))
+
 
 (defun doty-tools--replace-text (buffer-or-file from-text to-text use-regex replace-all)
   "Replace occurrences of FROM-TEXT with TO-TEXT in BUFFER-OR-FILE.

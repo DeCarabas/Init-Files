@@ -161,12 +161,12 @@ If it is a buffer object, just return it. If it names a file, visit the
  that buffer. Otherwise return nil."
   (cond
    ((bufferp buffer-or-file) buffer-or-file)
-   ((file-exists-p (expand-file-name buffer-or-file))
-    (find-file-noselect (expand-file-name buffer-or-file)))
    ((length= (match-buffers (regexp-quote buffer-or-file)) 1)
     (car (match-buffers (regexp-quote buffer-or-file))))
-   (t (error "File '%s' doesn't exist and does not name an open buffer"
-             buffer-or-file))))
+   (t
+    (find-file-noselect (expand-file-name buffer-or-file)))))
+;; (t (error "File '%s' doesn't exist and does not name an open buffer"
+;;           buffer-or-file))))
 
 (defun doty-tools--open-file (filename &optional max-chars)
   "Visit FILENAME and return up to MAX-CHARS of its contents as a string.
@@ -543,6 +543,32 @@ Returns file path, modified status, major mode, size, line count, and more."
 
       (delete-directory tf t))))
 
+
+(defun doty-tools--get-current-directory ()
+  "Get the directory that relative paths are resolved to."
+  default-directory)
+
+(gptel-make-tool
+ :name "get_current_directory"
+ :function #'doty-tools--get-current-directory
+ :description "Get the directory that relative paths are resolved relative to."
+ :args ()
+ :category "reading"
+ :confirm nil
+ :include t)
+
+(ert-deftest doty-tools--test--get_current_directory ()
+  "Tests for the emacs_insert_line tool."
+  (let* ((tf (make-temp-file "test-cd-" t)))
+    (unwind-protect
+        (with-temp-buffer
+          (let ((default-directory tf))
+            (should
+             (equal tf
+                    (doty-tools--test--invoke-tool "get_current_directory" ())))))
+
+      (delete-directory tf t))))
+
 (defun doty-tools--search-project-regex (callback regex)
   "Search the current project for instances of a given REGEX.
 
@@ -785,7 +811,7 @@ If REPLACE-ALL is non-nil, replace all occurrences, otherwise just the
           (while (and (funcall search-fn search-pattern nil t)
                       (or replace-all (= count 0)))
             (setq count (1+ count))
-            (replace-match to-text t nil))
+            (replace-match to-text t (not use-regex)))
           (format "Replaced %d occurrence%s of %s with %s in %s"
                   count
                   (if (= count 1) "" "s")
@@ -836,7 +862,17 @@ If REPLACE-ALL is non-nil, replace all occurrences, otherwise just the
 - [ ] `apply(i: Int): Char`
 "))))
 
-
+(ert-deftest doty-tools--test--emacs_replace_text-no-regex-backslash ()
+  "Test emacs_replace_text with no regex."
+  (with-temp-buffer
+    (insert "WOAH / MAN\n")
+    (doty-tools--test--invoke-tool
+     "emacs_replace_text" (list :buffer_or_file (buffer-name)
+                                :from_text "WOAH / MAN"
+                                :to_text "WOAH \\ MAN"
+                                :use_regex :json-false))
+    (should (equal (buffer-string)
+                   "WOAH \\ MAN\n"))))
 
 (defun doty-tools--delete-lines (buffer-or-file start-line &optional end-line)
   "Delete lines from START-LINE to END-LINE in BUFFER-OR-FILE.

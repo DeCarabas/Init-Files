@@ -236,7 +236,7 @@ non-nil."
                                  (line-end-position))))
               (setq result
                     (concat result
-                            (if include-line-numbers
+                            (if (doty-tools-bool include-line-numbers)
                                 (format "%d: %s\n" line-num line-content)
                               (format "%s\n" line-content)))))
             (forward-line 1))
@@ -801,12 +801,12 @@ If AT-END is non-nil, insert at end of line, otherwise at beginning."
               (forward-line (1- line-number)))
           (goto-char (point-max))
           (forward-line (1+ line-number)))
-        (if at-end
+        (if (doty-tools-bool at-end)
             (end-of-line)
           (beginning-of-line))
         (insert text)
         (format "Inserted text at %s of line %d in %s"
-                (if at-end "end" "beginning")
+                (if (doty-tools-bool at-end) "end" "beginning")
                 line-number
                 (if (bufferp buffer-or-file)
                     (buffer-name buffer-or-file)

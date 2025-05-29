@@ -5,6 +5,8 @@ import:
     move: yes
 convert:
     dest: /var/media/mp3
-    auto: no
+    auto_keep: yes
+    copy_album_art: yes
     embed: yes
     never_convert_lossy_files: yes
+    hardlink: true

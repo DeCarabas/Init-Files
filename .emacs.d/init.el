@@ -192,6 +192,9 @@
          ((string-equal (downcase (system-name)) "unstablesurface")
           "Input Mono Narrow:pixelsize=28:weight=normal")
 
+         ((string-equal (downcase (system-name)) "oldconvert")
+          "Input Mono Narrow:pixelsize=28:weight=normal")
+
          (t
           (font-candidate
            "Input Mono Narrow:pixelsize=14:weight=normal"

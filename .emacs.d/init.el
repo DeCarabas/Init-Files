@@ -1455,6 +1455,7 @@ Do this when you edit your project view."
               ("C-c C-g" . gptel-menu)
               ("C-c C-t" . gptel-tools))
 
+  :commands (gptel gptel-menu gptel-tools)
   :config
 
   (setq

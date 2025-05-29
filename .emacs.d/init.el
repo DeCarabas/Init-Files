@@ -1464,6 +1464,8 @@ Do this when you edit your project view."
   (setq
    gptel-model my/gptel-model ;  "claude-3-opus-20240229" also available
    gptel-backend my/gptel-backend)
+  (if (file-exists-p "~/llm-hints.md")
+      (gptel-add-file (expand-file-name "~/llm-hints.md")))
   (require 'doty-tools))
 
 

@@ -31,6 +31,7 @@
 ;; These are just helper functions that support the rest of Doty's tools.
 
 ;;; Code:
+(require 'ert)
 (require 'dash)
 (require 'gptel)
 

@@ -1466,7 +1466,8 @@ Do this when you edit your project view."
    gptel-backend my/gptel-backend)
   (if (file-exists-p "~/llm-hints.md")
       (gptel-add-file (expand-file-name "~/llm-hints.md")))
-  (require 'doty-tools))
+  (require 'doty-tools)
+  (require 'doty-tools-buffer-map))
 
 
 ;; =================================================================

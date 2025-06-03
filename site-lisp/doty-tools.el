@@ -98,9 +98,13 @@
 (defun doty-tools--apropos (pattern)
   "Invoke the help apropos function for PATTERN and return the results as a string."
   (save-window-excursion
+    (when-let (existing-buffer (get-buffer "*Apropos*"))
+      (kill-buffer existing-buffer))
     (apropos pattern)
-    (with-current-buffer "*Apropos*"
-      (buffer-substring-no-properties (point-min) (point-max)))))
+    (if-let* ((apropos-buffer (get-buffer "*Apropos*")))
+        (with-current-buffer apropos-buffer
+          (buffer-substring-no-properties (point-min) (point-max)))
+      "")))
 
 (gptel-make-tool
  :name "emacs_help_apropos"
@@ -118,7 +122,12 @@
   (should
    (string-match-p "with-current-buffer"
                    (doty-tools--test--invoke-tool
-                    "emacs_help_apropos" '(:pattern "buffer")))))
+                    "emacs_help_apropos" '(:pattern "buffer"))))
+
+  (should
+   (string-match-p ""
+                   (doty-tools--test--invoke-tool
+                    "emacs_help_apropos" '(:pattern "argle-3324-nonsense")))))
 
 ;; === File reading
 

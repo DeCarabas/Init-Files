@@ -564,30 +564,25 @@ Returns file path, modified status, major mode, size, line count, and more."
 
       (delete-directory tf t))))
 
-(defun doty-tools--search-project-regex (callback regex)
-  "Search the current project for instances of a given REGEX.
 
-Call CALLBACK when done."
-  (let ((output-buffer (generate-new-buffer " *async-search-output*")))
-    (with-current-buffer output-buffer
-      ;; Make buffer lightweight - disable undo, make read-only
-      (buffer-disable-undo)
-      (setq-local inhibit-modification-hooks t)
-      (setq-local inhibit-read-only t)) ; Temporarily allow writing by the process
+(defun doty-tools--search-project (callback regex)
+  "Search the current project for REGEX with ripgrep, asynchronously.
 
-    (set-process-sentinel
-     (with-connection-local-variables
-      (let* ((quoted-regex (shell-quote-argument regex))
-             (rg-command (format "rg %s" quoted-regex)))
-        (start-file-process-shell-command "gptel-async-search" output-buffer rg-command)))
-     (lambda (_process event)
-       (when (string-match "finished" event)
-         (with-current-buffer output-buffer
-           (funcall callback (buffer-string)))
-         (kill-buffer output-buffer))))))
+Calls CALLBACK when done."
+  (let ((command (concat "rg " (shell-quote-argument regex))))
+    (doty-tools--run-async-command callback command)))
 
-;; === Code Indexing
-
+(gptel-make-tool
+ :name "search_project"
+ :function #'doty-tools--search-project
+ :description "Search the current project with `ripgrep` (rg)."
+ :args '((:name "regex"
+          :type string
+          :description "Regular expression to search for"))
+ :async t
+ :category "reading"
+ :confirm nil
+ :include t)
 
 ;; === Editing tools
 
@@ -803,10 +798,13 @@ If END-LINE is not provided, only delete START-LINE."
 
 (defun doty-tools--run-async-command (callback command)
   "Run COMMAND asynchronously and call CALLBACK with the results as a string."
-  (let ((output-buffer (generate-new-buffer " *async-command-output*")))
+  (let ((output-buffer (generate-new-buffer " *async-command-output*"))
+        (project-root (doty-tools--get-project-root)))
     (with-current-buffer output-buffer
       ;; Make buffer lightweight - disable undo, make read-only
       (buffer-disable-undo)
+      (when project-root
+        (setq-local default-directory project-root))
       (setq-local inhibit-modification-hooks t)
       (setq-local inhibit-read-only t)) ; Temporarily allow writing by the process
 
@@ -821,7 +819,7 @@ If END-LINE is not provided, only delete START-LINE."
 (gptel-make-tool
  :name "shell_command"
  :function #'doty-tools--run-async-command
- :description "Run a shell command asynchronously and return its output as a string. The command is executed in a subprocess and the standard output and error are captured."
+ :description "Run a shell command asynchronously and return its output as a string. The command is executed in a subprocess and the standard output and error are captured. The working directory of the command is the project root."
  :args (list '(:name "command"
                :type string
                :description "The shell command to execute"))

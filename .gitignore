@@ -12,10 +12,7 @@
 .config/configstore/nodemon.json
 .config/configstore/update-notifier-npm.json
 .config/configstore/update-notifier-yo.json
-.config/deluge/deluged.log
-.config/deluge/deluged.pid
-.config/deluge/ssl/
-.config/deluge/state/
+.config/deluge
 .config/fish/fish_history
 .config/fish/fish_variables
 .config/fish/generated_completions
@@ -30,6 +27,7 @@
 .emacs.d/eln-cache
 .emacs.d/ido.last
 .emacs.d/server
+.emacs.d/tree-sitter
 .emacs.d/url/cookies
 .ipython/profile_default/history.sqlite
 _viminfo

@@ -697,13 +697,14 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; C#-Mode configuration.
 ;; =================================================================
+
 (use-package csharp-mode :ensure t
 
   :preface
   (defun my-csharp-mode-hook ()
     "My C# mode hook."
-    (require 'prettysharp)
-    (prettysharp-mode)
+    ;; (require 'prettysharp)
+    ;; (prettysharp-mode)
     (turn-on-font-lock)
     (c-set-style "ms-csharp"))
 
@@ -722,11 +723,11 @@ Or, uh, Objective C, I guess."
   ;;   :config
   ;;   (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp)))
 
-  (use-package prettysharp
-    :commands prettysharp-mode
-    :config
-    (if (file-executable-p "c:/src/prettysharp/prettysharp.exe")
-        (setq prettysharp-command "c:/src/prettysharp/prettysharp.exe")))
+  ;; (use-package prettysharp
+  ;;   :commands prettysharp-mode
+  ;;   :config
+  ;;   (if (file-executable-p "c:/src/prettysharp/prettysharp.exe")
+  ;;       (setq prettysharp-command "c:/src/prettysharp/prettysharp.exe")))
 
   (add-hook 'csharp-mode-hook 'my-csharp-mode-hook)
   (c-add-style "ms-csharp"
@@ -749,9 +750,16 @@ Or, uh, Objective C, I guess."
                                      (substatement-open     . 0)
                                      (arglist-intro         . +)
                                      (arglist-close         . 0)
-                                     )))))
+                                     ))))
 
+  ;; Fix up record indentation (and parameter list indentation too.)
+  (push
+   '((parent-is "parameter_list") parent-bol csharp-ts-mode-indent-offset)
+   (cdar csharp-ts-mode--indent-rules)))
 
+;; (use-package csharp-lsp-decompile
+;;   :config
+;;   (csharp-lsp-decompile-enable))
 
 ;; =================================================================
 ;; "XML" Support
@@ -1143,13 +1151,13 @@ Or, uh, Objective C, I guess."
         (remove 'ansi-color-process-output
                 comint-output-filter-functions)))
 
-;; ag
-(global-set-key (kbd "M-p") 'ag-project-regexp)
+;; ;; ag
+;; (global-set-key (kbd "M-p") 'ag-project-regexp)
 
-(defun doty-term ()
-  "Start a shell, the way doty wants it right now."
-  (interactive)
-  (ansi-term "screen"))
+;; (defun doty-term ()
+;;   "Start a shell, the way doty wants it right now."
+;;   (interactive)
+;;   (ansi-term "screen"))
 
 
 ;; =================================================================
@@ -1483,5 +1491,11 @@ Do this when you edit your project view."
 ;; =================================================================
 (use-package wgsl-mode :ensure
   :mode "\\.wgsl\\'")
+
+;; =================================================================
+;; HLSL
+;; =================================================================
+(use-package hlsl-mode
+  :mode "\\.hlsl\\'")
 
 ;;; init.el ends here

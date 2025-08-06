@@ -159,10 +159,14 @@
 ;; Modeline format:
 (display-time-mode -1)
 
-(setq vc-ignore-dir-regexp
-      (format "\\(%s\\)\\|\\(%s\\)"
-              vc-ignore-dir-regexp
-              tramp-file-name-regexp))
+;; 2025-07-09 I used to have this set to make emacs faster and not do vc
+;; stuff over tramp but that breaks remote eglot because it breaks remote
+;; project, so we can't do that.
+;;
+;; (setq vc-ignore-dir-regexp
+;;       (format "\\(%s\\)\\|\\(%s\\)"
+;;               vc-ignore-dir-regexp
+;;               tramp-file-name-regexp))
 
 ;; ================================================================
 ;; Fonts and windows and the like, only if graphics.
@@ -1247,6 +1251,31 @@ Or, uh, Objective C, I guess."
   ;; Let tramp search $PATH as given to the $USER on the remote machine
   ;; (necessary to find 'hphpd' for instance)
   (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+
+  ;; All of this configuration comes from this guide here:
+  ;; https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
+  (setq remote-file-name-inhibit-locks t
+        tramp-use-scp-direct-remote-copying t
+        remote-file-name-inhibit-auto-save-visited t
+        tramp-copy-size-limit (* 1024 1024) ;; 1MB
+        tramp-verbose 2)
+
+  (connection-local-set-profile-variables
+   'remote-direct-async-process
+   '((tramp-direct-async-process . nil))) ;; NOTE: t here breaks eglot :(
+
+  ;; (connection-local-get-profile-variables 'remote-direct-async-process)
+
+  (connection-local-set-profiles
+   '(:application tramp :machine "arca.ssh")
+   'remote-direct-async-process)
+
+  (setq magit-tramp-pipe-stty-settings 'pty)
+
+  (with-eval-after-load 'tramp
+    (with-eval-after-load 'compile
+      (remove-hook 'compilation-mode-hook #'tramp-compile-disable-ssh-controlmaster-options)))
+
   ;; Use putty on windows
   (when (eq window-system 'w32)
     (setq tramp-default-method "plink")))

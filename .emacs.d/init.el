@@ -1437,7 +1437,8 @@ Do this when you edit your project view."
 ;; =================================================================
 ;; Jsonnet
 ;; =================================================================
-(use-package jsonnet-mode :ensure t)
+(use-package jsonnet-mode :ensure t
+  :mode "\\.jsonnet\\(\\.TEMPLATE\\)?\\'")
 
 ;; =================================================================
 ;; Fish shell

@@ -212,7 +212,9 @@ Example:
    :confirm nil
    :include t))
 
-(doty-tools-register-mappers)
+(condition-case nil
+    (doty-tools-register-mappers)
+  (error nil))
 
 (provide 'doty-tools-buffer-map)
 ;;; doty-tools-buffer-map.el ends here

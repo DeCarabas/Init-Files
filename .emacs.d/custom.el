@@ -86,6 +86,7 @@
                    yaml-mode zig-mode))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)
+ '(safe-local-variable-directories '("/home/john.doty/universe/"))
  '(safe-local-variable-values
    '((docker-image-name . "onceandfuture")
      (eval ignore-errors

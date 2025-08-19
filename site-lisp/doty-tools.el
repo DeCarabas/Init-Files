@@ -34,10 +34,17 @@
 (require 'dash) ;; TODO: Package requires
 (require 'ert)
 (require 'gptel)
+(require 'info)
 (require 'project)
 (require 'treesit)
 
 (require 'doty-tools-utils)
+
+;; BROKEN:
+
+;; (:name "emacs_search_text" :args (:buffer_or_file "common/logging/redactor/test/DatabricksLogRedactorSuite.scala" :pattern "test.*testOneRedactor" :context_lines 5 :max_matches 10 :use_regex t))
+;;
+;; invalid-regexp Invalid content of \{\}
 
 ;; === Emacs tools
 
@@ -98,7 +105,7 @@
 (defun doty-tools--apropos (pattern)
   "Invoke the help apropos function for PATTERN and return the results as a string."
   (save-window-excursion
-    (when-let (existing-buffer (get-buffer "*Apropos*"))
+    (when-let* ((existing-buffer (get-buffer "*Apropos*")))
       (kill-buffer existing-buffer))
     (apropos pattern)
     (if-let* ((apropos-buffer (get-buffer "*Apropos*")))
@@ -128,6 +135,117 @@
    (string-match-p ""
                    (doty-tools--test--invoke-tool
                     "emacs_help_apropos" '(:pattern "argle-3324-nonsense")))))
+
+
+
+(defun doty-tools--get-info-contents ()
+  "Return the contents of the *info* buffer for an LLM to read."
+  (with-current-buffer (get-buffer "*info*")
+    (goto-char 1)
+    (let ((text (concat (buffer-substring-no-properties (point-min) (point-max))
+                        "\n----\nLinks on this page are:\n"))
+          match)
+      (while (setq match (text-property-search-forward 'font-lock-face 'info-xref t))
+        (setq text (concat text
+                           (format "@ %s: %s\n"
+                                   (point)
+                                   (buffer-substring-no-properties (prop-match-beginning match)
+                                                                   (prop-match-end match))))))
+      text)))
+
+(defun doty-tools--info-apropos (pattern)
+  "Fetch the info nodes appropriate for the given PATTERN."
+  (save-excursion
+    (save-window-excursion
+      (info-apropos pattern)
+      (doty-tools--get-info-contents))))
+
+(gptel-make-tool
+ :name "emacs_info_apropos"
+ :function #'doty-tools--info-apropos
+ :description "Search for appropriate emacs documentation in the info-text system. The results come back as an info buffer- to get more information on any of the results, use the `emacs_info_follow_link` tool. e.g., using `emacs_info_apropos` with the pattern `use-package` might return:
+
+```
+File: *Apropos*,  Node: Index for ‘use-package’,  Up: Top
+
+Apropos Index
+*************
+
+Index entries that match ‘use-package’:
+
+[index]
+* Menu:
+
+* use-package configuration [modus-themes]: (modus-themes)Sample configuration with and without use-package. (line 6)
+* use-package [elisp]:                   (elisp)Named Features. (line 157)
+* configure packages using use-package [use-package]: (use-package)Configuring Packages. (line 6)
+
+----
+Links on this page are:
+@ 196: use-package configuration [modus-themes]
+@ 293: use-package [elisp]
+@ 399: configure packages using use-package [use-package]
+```
+
+And to follow the 'use-package [elisp]' link you would use the `emacs_info_follow_link` tool with the argument `293`.
+"
+ :args '((:name "pattern"
+          :type string
+          :description "The pattern to search for. It can be a word, a list of words (separated by spaces), or a regexp (using some regular expression characters). If it is a word, search for matches for that word as a substring.  If it is a list of words, search for matches for any two (or more) of those words."))
+ :category "emacs"
+ :confirm nil
+ :include t)
+
+
+(defun doty-tools--info-follow-link (position)
+  "Follow the link at POSITION in the current *info* buffer."
+  (save-excursion
+    (save-window-excursion
+      (let ((info-buffer (get-buffer "*info*")))
+        (if (not info-buffer)
+            "No info buffer to follow a link in; use another tool first!"
+          (with-current-buffer info-buffer
+            (goto-char position)
+            (Info-follow-nearest-node))
+          (doty-tools--get-info-contents))))))
+
+(gptel-make-tool
+ :name "emacs_info_follow_link"
+ :function #'doty-tools--info-follow-link
+ :description "Follow a link in info results. e.g., using `emacs_info_apropos` with the pattern `use-package` might return:
+
+```
+File: *Apropos*,  Node: Index for ‘use-package’,  Up: Top
+
+Apropos Index
+*************
+
+Index entries that match ‘use-package’:
+
+[index]
+* Menu:
+
+* use-package configuration [modus-themes]: (modus-themes)Sample configuration with and without use-package. (line 6)
+* use-package [elisp]:                   (elisp)Named Features. (line 157)
+* configure packages using use-package [use-package]: (use-package)Configuring Packages. (line 6)
+
+----
+Links on this page are:
+@ 196: use-package configuration [modus-themes]
+@ 293: use-package [elisp]
+@ 399: configure packages using use-package [use-package]
+```
+
+And to follow the 'use-package [elisp]' link you would use the `emacs_info_follow_link` tool with the argument `293`.
+"
+ :args '((:name "position"
+          :type integer
+          :description "The position where the link occurs."))
+ :category "emacs"
+ :confirm nil
+ :include t)
+
+
 
 ;; === File reading
 
@@ -514,7 +632,7 @@ Returns file path, modified status, major mode, size, line count, and more."
 
 (defun doty-tools--get-project-root ()
   "Get the root directory of the current project."
-  (project-root (project-current)))
+  (expand-file-name (project-root (project-current))))
 
 (gptel-make-tool
  :name "get_project_root"

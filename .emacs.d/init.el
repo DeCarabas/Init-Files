@@ -541,6 +541,18 @@
          ("C-c p" . 'flymake-goto-prev-error)))
 
 
+(defun rebuild-slnx ()
+  "Rebuild the solution file."
+  (interactive)
+  (with-temp-buffer
+    (let ((exit-code (process-file "buck2" nil t nil "run" "//:gen_solution")))
+      (unless (zerop exit-code)
+        (error "Error generating solution (%d): %s" exit-code (buffer-string))))
+    (message "%s" (buffer-string)))
+  (if (and (functionp 'eglot-reconnect)
+           (functionp 'eglot-current-server))
+      (eglot-reconnect (eglot-current-server))))
+
 ;; =================================================================
 ;; CC-Mode configuration.  Stuff that makes working in IDL, C, and
 ;; C++ a whole lot more tolerable.
@@ -759,7 +771,16 @@ Or, uh, Objective C, I guess."
   ;; Fix up record indentation (and parameter list indentation too.)
   (push
    '((parent-is "parameter_list") parent-bol csharp-ts-mode-indent-offset)
-   (cdar csharp-ts-mode--indent-rules)))
+   (cdar csharp-ts-mode--indent-rules))
+  (push
+   '((node-is "arrow_expression_clause") parent-bol csharp-ts-mode-indent-offset)
+   (cdar csharp-ts-mode--indent-rules))
+
+  (push
+   '((node-is "type_parameter_constraints_clause") parent-bol csharp-ts-mode-indent-offset)
+   (cdar csharp-ts-mode--indent-rules))
+
+  )
 
 ;; (use-package csharp-lsp-decompile
 ;;   :config

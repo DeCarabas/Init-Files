@@ -64,29 +64,6 @@
 (add-to-list 'load-path (directory-file-name "~/site-lisp"))
 
 ;; =================================================================
-;; FB STUFF
-;; =================================================================
-(defconst master-dir (getenv "LOCAL_ADMIN_SCRIPTS"))
-(defconst engshare-master (getenv "ADMIN_SCRIPTS"))
-(defconst is-fb-environment
-  (file-exists-p "/usr/share/emacs/site-lisp/fb-master.el")
-  "Are we running on an FB machine or not?")
-
-(when is-fb-environment
-  ;; Load the master.emacs file which apparently has stuff in it I want?
-  (load-library "/usr/share/emacs/site-lisp/fb-master.el")
-
-  ;; Set up the proxy for working properly from the devserver.
-  (if (and
-       (getenv "HOSTNAME")
-       (string-match-p ".+\.facebook\.com" (getenv "HOSTNAME")))
-      (setq url-proxy-services
-            '(("no_proxy" . "^\\(localhost\\|10.*\\)")
-              ("http" . "fwdproxy:8080")
-              ("https" . "fwdproxy:8080"))))
-  )
-
-;; =================================================================
 ;; Packages
 ;; =================================================================
 ;; See http://dotyl.ink/l/qbmhz43kju
@@ -116,8 +93,6 @@
 (require 'ffap)      ;; Am I using this?
 (require 'uniquify)  ;; Unique buffers based on file name.
 (require 'ansi-color)
-(when is-fb-environment
-  (require '50-arc))
 (require 'ert) ;; I don't know, I started getting probs.
 
 (prefer-coding-system 'utf-8)
@@ -629,7 +604,7 @@ Or, uh, Objective C, I guess."
 
 (defun my-c-mode-hook ()
   "Doty's `c-mode' hook."
-  (c-set-style (if is-fb-environment "fb-c-style" "ms-c"))
+  (c-set-style "ms-c")
   (add-hook 'before-save-hook 'clang-format-cpp-buffer))
 
 (add-hook 'c-mode-hook    'my-c-mode-hook)
@@ -870,8 +845,6 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 (defun my-python-mode-hook ()
   "My hook for `python-mode`."
-  (when is-fb-environment
-    (flycheck-select-checker `python-fb-flake8))
   (unless (and (buffer-file-name)
                (string-match-p "TARGETS" (buffer-file-name)))
     (blacken-mode)))
@@ -1112,26 +1085,6 @@ Or, uh, Objective C, I guess."
              (vv (cadr spev)))
       (setenv vn vv))))
 
-
-
-;; ;; =================================================================
-;; ;; PHP stuff
-;; ;; =================================================================
-;; (if is-fb-environment
-;;     (progn
-;;       ;; Hack support for stuff in www
-;;       (setq hack-for-hiphop-root (expand-file-name "www" "~"))
-;;       ;;(load "/home/engshare/tools/hack-for-hiphop")
-
-;;       (load-library "/usr/share/emacs/site-lisp/emacs-packages/hh-client.el")
-;;       (require 'hh-client)
-
-;;       (defun my-fb-php-hook ()
-;;         (global-set-key (kbd "M-.") 'hh-client-find-definition))
-;;       (add-hook 'php-mode-hook 'my-fb-php-hook)
-;;       ))
-
-
 ;; =================================================================
 ;; Magit stuff
 ;; =================================================================
@@ -1207,9 +1160,7 @@ Or, uh, Objective C, I guess."
   "My hook for markdown mode."
   (turn-off-auto-fill)
   (setq truncate-lines nil)
-  (setq word-wrap 't)
-  (when is-fb-environment
-    (require 'fb-note-publish)))
+  (setq word-wrap 't))
 
 (use-package markdown-mode :ensure t
   :mode "\\.md\\'"

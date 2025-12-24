@@ -1221,6 +1221,9 @@ Or, uh, Objective C, I guess."
   (add-hook 'markdown-mode-hook 'adaptive-wrap-prefix-mode)
   (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode))
 
+(use-package poly-markdown :ensure t
+  :init
+  (add-hook 'markdown-mode-hook 'poly-markdown-mode))
 
 ;; =================================================================
 ;; Rust

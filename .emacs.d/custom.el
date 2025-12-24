@@ -77,13 +77,13 @@
                    js2-mode js2-refactor json-mode jsonnet-mode lsp-hack
                    lsp-pyright lsp-ui lua-mode magit markdown-mode merlin
                    mocha modus-themes monky monokai-theme multi-term
-                   mustache-mode nyan-mode paredit popup prettier-js
-                   projectile protobuf-mode python-mode request rjsx-mode
-                   ruby-mode rust-mode scala-ts-mode simple-httpd sql-indent
-                   swift-mode switch-window terraform-mode thrift tide
-                   tree-sitter tss tuareg typescript-mode use-package uuidgen
-                   vterm web-mode wgrep wgsl-mode xref-js2 xterm-color
-                   yaml-mode zig-mode))
+                   mustache-mode nyan-mode paredit poly-markdown popup
+                   prettier-js projectile protobuf-mode python-mode request
+                   rjsx-mode ruby-mode rust-mode scala-ts-mode simple-httpd
+                   sql-indent swift-mode switch-window terraform-mode thrift
+                   tide tree-sitter tss tuareg typescript-mode use-package
+                   uuidgen vterm web-mode wgrep wgsl-mode xref-js2
+                   xterm-color yaml-mode zig-mode))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)
  '(safe-local-variable-directories '("/home/john.doty/universe/"))
@@ -127,4 +127,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(font-lock-keyword-face ((t (:slant italic)))))
+ )

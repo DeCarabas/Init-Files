@@ -6,6 +6,8 @@
 ;;; This is my .emacs.
 ;;; There are many like it, but this one is mine.
 ;;;
+;;; 2025/12/24 - Convert to straight.el from ELPA; it's been a good run.
+;;;
 ;;; 2019/03/27 - Moved back into init.el, to make profiling possible.
 ;;;
 ;;; 2016/12/03 - Just a note: been using Emacs far more heavily as my core
@@ -57,34 +59,32 @@
 (load custom-file)
 
 ;; =================================================================
+;; straight.el bootstrap
+;; =================================================================
+;; This is after the custom-set-variables thing so that straight.el
+;; picks up on customizations that we've made.
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name
+        "straight/repos/straight.el/bootstrap.el"
+        (or (bound-and-true-p straight-base-dir)
+            user-emacs-directory)))
+      (bootstrap-version 7))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+;; =================================================================
 ;; Load Path Customization
 ;; =================================================================
 
 ;; add private lisp directory to load-path.
 (add-to-list 'load-path (directory-file-name "~/site-lisp"))
-
-;; =================================================================
-;; Packages
-;; =================================================================
-;; See http://dotyl.ink/l/qbmhz43kju
-(let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
-                    (not (gnutls-available-p))))
-       (proto (if no-ssl "http" "https")))
-  (setq package-archives
-        '(("gnu"         . "https://elpa.gnu.org/packages/")
-          ("org"         . "https://orgmode.org/elpa/")
-          ))
-
-  (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
-  )
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
-
-;; Really we should be marking *everyting* here with :ensure rather than
-;; downloading it all up front.
-;;
-;;   (package-install-selected-packages))
 
 ;; =================================================================
 ;; Common stuff that's needed once
@@ -151,46 +151,40 @@
 ;; segfaulting on my devserver when it called find-font, and I'll be damned
 ;; if I'm going to debug it.)
 ;;
+(defun font-candidate (&rest fonts)
+  "Return the first font in the list of FONTS."
+  (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts))
 
 (if (display-graphic-p)
-    (let ((jd-frame-height))
-      ;; Consolas. (And, to a lesser extent, Inconsolata.)
-      ;;
-      (defun font-candidate (&rest fonts)
-        "Return existing font which first match."
-        (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts))
+    ;; Consolas. (And, to a lesser extent, Inconsolata.)
+    ;;
+    (let ((my-font-choice (cond
+                           ((string-equal (downcase (system-name)) "bifrost")
+                            "InputMonoNarrow-12")
 
-      (defvar my-font-choice
-        (cond
-         ((string-equal (downcase (system-name)) "bifrost")
-          "InputMonoNarrow-12")
+                           ((string-equal (downcase (system-name)) "fred")
+                            "InputMonoNarrow-16")
 
-         ((string-equal (downcase (system-name)) "fred")
-          "InputMonoNarrow-16")
+                           ((string-equal (downcase (system-name)) "unstablesurface")
+                            "Input Mono Narrow:pixelsize=28:weight=normal")
 
-         ((string-equal (downcase (system-name)) "unstablesurface")
-          "Input Mono Narrow:pixelsize=28:weight=normal")
+                           ((string-equal (downcase (system-name)) "oldconvert")
+                            "Input Mono Narrow:pixelsize=28:weight=normal")
 
-         ((string-equal (downcase (system-name)) "oldconvert")
-          "Input Mono Narrow:pixelsize=28:weight=normal")
-
-         (t
-          (font-candidate
-           "Input Mono Narrow:pixelsize=14:weight=normal"
-           "InputMonoNarrow-14"
-           "Consolas-10"
-           "Inconsolata-11"
-           "Monaco-14")))
-        "The font I'm using, in graphics mode.")
+                           (t
+                            (font-candidate
+                             "Input Mono Narrow:pixelsize=14:weight=normal"
+                             "InputMonoNarrow-14"
+                             "Consolas-10"
+                             "Inconsolata-11"
+                             "Monaco-14")))))
 
       ;; This is just here for playing with things.
       (set-frame-font my-font-choice)
 
-      ;;
       ;; To obtain new font string, execute eval-expression, and eval this:
       ;; (insert(prin1-to-string(w32-select-font)))
       ;; This will show the required string in the scratch buffer.
-
 
       ;; NOTE: I used to compute the height of the initial frame based on
       ;; display pixel height but it got unsustainable and I hated it.  (setq
@@ -198,7 +192,6 @@
       ;;       (cond ((> (display-pixel-height) 900) 60)
       ;;             ((> (display-pixel-height) 768) 48)
       ;;             ('t 40)))
-
 
       ;; frame settings.  default-frame-alist controls what a default frame
       ;; looks like.
@@ -213,7 +206,7 @@
               (width            . 91)))
       ))
 
-(use-package doom-themes :ensure t
+(use-package doom-themes :straight t
   :config
   (load-theme 'doom-vibrant t)
 
@@ -259,7 +252,7 @@
 (setq w32-use-w32-font-dialog t)
 
 ;; Adaptive fill for everybody!
-(use-package filladapt :ensure t
+(use-package filladapt :straight t
   :init (setq-default filladapt-mode t))
 
 (require 'ido)
@@ -268,8 +261,9 @@
 (add-hook 'before-save-hook 'whitespace-cleanup)
 
 ;; Fix path loading on MacOS X
+(straight-register-package 'exec-path-from-shell)
 (when (memq window-system '(mac ns))
-  (use-package exec-path-from-shell :ensure t)
+  (use-package exec-path-from-shell :straight t)
   (exec-path-from-shell-initialize))
 
 ;;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
@@ -359,9 +353,9 @@
 ;; =================================================================
 ;; clipetty makes the kill ring interact with the terminal.
 ;; =================================================================
+(straight-register-package 'clipetty)
 (when (getenv "TMUX")
-  (use-package clipetty
-    :ensure t
+  (use-package clipetty :straight t
     :hook (after-init . global-clipetty-mode)))
 
 ;; =================================================================
@@ -379,7 +373,7 @@
 ;; =================================================================
 ;; Company? Company.
 ;; =================================================================
-(use-package company :ensure t
+(use-package company :straight t
   :commands company-mode
   :init
   ;; 2023-08-26: Enable company mode globally.
@@ -440,7 +434,7 @@
             (eq major-mode 'csharp-ts-mode))
     (eglot-format)))
 
-(use-package eglot :ensure t
+(use-package eglot :straight t
   :commands (eglot-ensure eglot)
   :hook
   (python-mode        . eglot-ensure)
@@ -511,7 +505,7 @@
   (add-hook     'eglot-connect-hook      'my-eglot-connect-hook))
 
 ;; NOTE: elgot defers to flymake for error information.
-(use-package flymake
+(use-package flymake :straight t
   :bind (("C-c n" . 'flymake-goto-next-error)
          ("C-c p" . 'flymake-goto-prev-error)))
 
@@ -689,7 +683,7 @@ Or, uh, Objective C, I guess."
 ;; C#-Mode configuration.
 ;; =================================================================
 
-(use-package csharp-mode :ensure t
+(use-package csharp-ts-mode :straight nil
 
   :preface
   (defun my-csharp-mode-hook ()
@@ -815,7 +809,7 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Elm
 ;; =================================================================
-(use-package flycheck-elm :ensure t
+(use-package flycheck-elm :straight t
   :after (flycheck)
   :config
   (add-to-list 'flycheck-checkers 'elm))
@@ -832,7 +826,7 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Flycheck
 ;; =================================================================
-(use-package flycheck :ensure t
+(use-package flycheck :straight t
   :config
   (setq-default flycheck-temp-prefix ".flycheck")
   (setq-default flycheck-disabled-checkers
@@ -858,7 +852,7 @@ Or, uh, Objective C, I guess."
 ;;   (add-to-list 'interpreter-mode-alist '("python" . python-mode))
 ;;   (add-hook 'python-mode-hook 'my-python-mode-hook))
 
-(use-package blacken :ensure t
+(use-package blacken :straight t
   :commands (blacken-mode)
   :hook (python-mode . blacken-mode))
 
@@ -873,7 +867,7 @@ Or, uh, Objective C, I guess."
 ;; Bazel Support
 ;; =================================================================
 
-(use-package bazel :ensure t
+(use-package bazel :straight t
   :mode  (("/\\.bazelignore\\'"                     . bazelignore-mode)
           ("/\\(?:\\(?:bazel\\)?\\.bazelrc\\)\\'"   . bazelrc-mode)
           ("/.+\\.bzl\\'"                           . bazel-starlark-mode)
@@ -991,7 +985,7 @@ Or, uh, Objective C, I guess."
 ;; (add-hook 'project-find-functions #'project-find-go-module)
 ;;-----
 
-(use-package go-mode :ensure t
+(use-package go-mode :straight t
   :mode "\\.go\\'"
   :config
   (add-hook 'before-save-hook 'gofmt-before-save))
@@ -1015,7 +1009,7 @@ Or, uh, Objective C, I guess."
   (my--fix-aspell)
   (require 'ox-quip))
 
-(use-package org
+(use-package org :straight t
   :mode ("\\.org\\'" . org-mode)
   :bind (:map org-mode-map
               ("C-c l" . org-store-link)
@@ -1048,16 +1042,16 @@ Or, uh, Objective C, I guess."
 ;;     (tide-hl-identifier-mode)
 ;;     (eldoc-mode +1)))
 
-(use-package typescript-mode :ensure t
+(use-package typescript-mode :straight t
   ;; 2023-09-03 Trying eglot instead of TIDE for now.
   ;; :config
   ;; (add-hook 'typescript-mode-hook 'ts/enable-eglot-or-tide)
   )
 
-(use-package add-node-modules-path :ensure t
+(use-package add-node-modules-path :straight t
   :hook (typescript-mode . add-node-modules-path))
 
-(use-package prettier-js :ensure t
+(use-package prettier-js :straight t
   :hook (typescript-mode . prettier-js-mode))
 
 ;; 2023-09-03 Trying eglot instead of TIDE for now.
@@ -1088,7 +1082,7 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Magit stuff
 ;; =================================================================
-(use-package magit :ensure t
+(use-package magit :straight t
   :bind (("C-x g" . magit-status)
          ("C-c g" . magit-dispatch)
          ("C-c f" . magit-file-dispatch)))
@@ -1096,15 +1090,14 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Mercurial stuff
 ;; =================================================================
-;; I remove Hg from VC-mode because it is SO SLOW.
-(setq vc-handled-backends (remove 'Hg vc-handled-backends))
-;; But I have monky enabled so I can use it instead.
-(use-package monky
-  :ensure t
-  :config
-  (setq monky-process-type 'cmdserver)
-  :bind
-  ("C-x h" . monky-status))
+;; ;; I remove Hg from VC-mode because it is SO SLOW.
+;; (setq vc-handled-backends (remove 'Hg vc-handled-backends))
+;; ;; But I have monky enabled so I can use it instead.
+;; (use-package monky :straight t
+;;   :config
+;;   (setq monky-process-type 'cmdserver)
+;;   :bind
+;;   ("C-x h" . monky-status))
 
 ;; =================================================================
 ;; Shell stuff
@@ -1122,7 +1115,7 @@ Or, uh, Objective C, I guess."
 (add-hook 'shell-mode-hook 'my-shell-mode-hook)
 
 ;; xterm-color
-(use-package xterm-color :ensure t
+(use-package xterm-color :straight t
   :config
   (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter)
   (setq comint-output-filter-functions
@@ -1162,24 +1155,31 @@ Or, uh, Objective C, I guess."
   (setq truncate-lines nil)
   (setq word-wrap 't))
 
-(use-package markdown-mode :ensure t
+(use-package markdown-mode :straight t
   :mode "\\.md\\'"
   :config (add-hook 'markdown-mode-hook 'my-markdown-mode-hook))
 
-(use-package adaptive-wrap :ensure t
+(use-package adaptive-wrap :straight t
   :commands adaptive-wrap-prefix-mode
   :init
   (add-hook 'markdown-mode-hook 'adaptive-wrap-prefix-mode)
   (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode))
 
-(use-package poly-markdown :ensure t
+(use-package poly-markdown :straight t
   :init
-  (add-hook 'markdown-mode-hook 'poly-markdown-mode))
+  (add-hook 'markdown-mode-hook 'poly-markdown-mode)
+  :config
+  ;; NOTE: This hook is required to keep from resetting the line-wrap stuff every time we switch modes.
+  (add-hook 'polymode-after-switch-buffer-hook
+            (lambda (_old _new)
+              (setq truncate-lines nil)
+              (setq word-wrap t)
+              (visual-line-mode 1))))
 
 ;; =================================================================
 ;; Rust
 ;; =================================================================
-(use-package rust-mode :ensure t
+(use-package rust-mode :straight t
   :mode "\\.rs\\'"
   :commands rust-format-buffer ; 2023-10-26 Make this command available even when the mode isn't used.
   :config
@@ -1201,11 +1201,12 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Clojure
 ;; =================================================================
-(use-package clojure-mode :ensure t
+(straight-register-package 'cider)
+(use-package clojure-mode :straight t
     :mode (("\\.clj\\'" . clojure-mode)
            ("\\.edn\\'" . clojure-mode))
     :config
-    (use-package cider :ensure t
+    (use-package cider :straight t
       :config
       ;; Put TARGETS in clojure-build-tool-files so that directories with TARGETS
       ;; get identified as projects.
@@ -1217,7 +1218,7 @@ Or, uh, Objective C, I guess."
 ;; ================================================================
 ;; TRAMP
 ;; ================================================================
-(use-package tramp
+(use-package tramp :straight t
   :config
   ;; Since we're going to be doing this a lot, the minibar message tramp
   ;; spits out for every file access is both spammy, distracting, and often
@@ -1259,16 +1260,8 @@ Or, uh, Objective C, I guess."
 ;; ================================================================
 ;; Zig
 ;; ================================================================
-(use-package zig-mode :ensure t
-    :mode (("\\.zig\\'" . zig-mode))
-    :config
-    (require 'lsp) ;; There's a use-package somewhere else...?
-    (add-to-list 'lsp-language-id-configuration '(zig-mode . "zig"))
-    (lsp-register-client
-     (make-lsp-client
-      :new-connection (lsp-stdio-connection "<path to zls>")
-      :major-modes '(zig-mode)
-      :server-id 'zls)))
+(use-package zig-mode :straight t
+    :mode (("\\.zig\\'" . zig-mode)))
 
 ;; ================================================================
 ;; Pico-8
@@ -1279,7 +1272,8 @@ Or, uh, Objective C, I guess."
   (setq lua-indent-level 1)
   (set-fill-column 32))
 
-(use-package pico8-mode
+(use-package pico8-mode ;; :straight t (site-lisp)
+  :straight (pico8-mode :type git :host github :repo "Kaali/pico8-mode")
   :mode (("\\.p8\\'" . pico8-mode))
   :config (add-hook 'pico8-mode-hook 'my-pico8-hook))
 
@@ -1294,7 +1288,7 @@ Or, uh, Objective C, I guess."
   (setq truncate-lines nil)
   (visual-line-mode))
 
-(use-package ink-mode :ensure t
+(use-package ink-mode :straight t
   :mode (("\\.ink\\'" . ink-mode))
   :bind (:map ink-mode-map
               ("M-." . ink-follow-link-at-point)
@@ -1316,7 +1310,7 @@ Or, uh, Objective C, I guess."
     ((file-directory-p "/mnt/c/Users/john/Dropbox") "/mnt/c/Users/john/Dropbox")))
   "Where is my dropbox?")
 
-(use-package howm :ensure t
+(use-package howm :straight t
   :init
   ;; Directory configuration
   ;;
@@ -1352,31 +1346,31 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Protocol Buffers
 ;; =================================================================
-(use-package protobuf-mode :ensure t)
+(use-package protobuf-mode :straight t)
 
 ;; =================================================================
 ;; Deadgrep for searching
 ;; =================================================================
-(use-package deadgrep :ensure t
+(use-package deadgrep :straight t
   :bind ("C-c d" . deadgrep))
 
 ;; =================================================================
 ;; Terraform
 ;; =================================================================
-(use-package terraform-mode :ensure t
+(use-package terraform-mode :straight t
   :mode "\\.tf(vars)?\\'"
   :config (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))
 
 ;; =================================================================
 ;; Earthly
 ;; =================================================================
-(use-package earthfile-mode :ensure t
+(use-package earthfile-mode :straight t
   :mode ("\\.earth\\'" "Earthfile\\'"))
 
 ;; =================================================================
 ;; Java
 ;; =================================================================
-(use-package eglot-java :ensure t
+(use-package eglot-java :straight t
   :after (eglot)
   :hook
   (java-mode  . eglot-java-mode))
@@ -1384,18 +1378,18 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; SQL?
 ;; =================================================================
-(use-package sql-indent :ensure t)
+(use-package sql-indent :straight t)
 
 ;; =================================================================
 ;; Swift
 ;; =================================================================
-(use-package swift-mode :ensure t
+(use-package swift-mode :straight t
   :mode "\\.swift\\(interface\\)?\\'")
 
 ;; =================================================================
 ;; Scala
 ;; =================================================================
-(use-package scala-ts-mode :ensure t
+(use-package scala-ts-mode :straight t
   :mode "\\.scala\\'"
   :interpreter ("scala" . scala-mode)
   )
@@ -1412,81 +1406,89 @@ Do this when you edit your project view."
 ;; =================================================================
 ;; Jsonnet
 ;; =================================================================
-(use-package jsonnet-mode :ensure t
+(use-package jsonnet-mode :straight t
   :mode "\\.jsonnet\\(\\.TEMPLATE\\)?\\'")
 
 ;; =================================================================
 ;; Fish shell
 ;; =================================================================
-(use-package fish-mode :ensure)
+(use-package fish-mode :straight t)
 
 ;; =================================================================
 ;; AI Shit
 ;; =================================================================
-(defun claude-get-api-key ()
-  "Get Claude API key from ~/.config/io.datasette.llm/keys.json file."
-  (let* ((keys-file (expand-file-name "~/.config/io.datasette.llm/keys.json"))
-         (json-object-type 'hash-table)
-         (json-array-type 'list)
-         (json-key-type 'string))
-    (if (file-exists-p keys-file)
-        (let* ((json-data (with-temp-buffer
-                            (insert-file-contents keys-file)
-                            (json-read-from-string (buffer-string))))
-               (claude-key (gethash "claude" json-data)))
-          (if claude-key
-              claude-key
-            (error "Claude API key not found in keys.json")))
-      (error "Key file keys.json file not found at %s" keys-file))))
-
-(defconst my/gptel-databricks-path
-  (expand-file-name "~/universe/experimental/john.doty/gptel-databricks/")
-  "The path to the databricks gptel backend.")
-
-(defconst my/has-gptel-databricks
-  (file-exists-p my/gptel-databricks-path)
-  "Whether or not we have the databricks gptel backend.")
-
-(defconst my/gptel-backend
-  (if my/has-gptel-databricks
-      (progn
-        (add-to-list 'load-path (directory-file-name my/gptel-databricks-path))
-        (require 'gptel-databricks)
-        (gptel-make-databricks "Databricks" :stream t))
-    (gptel-make-anthropic "Claude"
-      :stream t
-      :key #'claude-get-api-key
-      :request-params '(:thinking (:type "enabled" :budget_tokens 2048)
-                                  :max_tokens 4096)))
-  "The right backend based on my environment.")
-
-(defconst my/gptel-model
-  (if my/has-gptel-databricks
-      'claude-3-7-sonnet-internal-tools
-    'claude-3-7-sonnet-20250219)
-  "Which model do we want by default?")
-
-(use-package gptel :ensure
-  :bind (:map gptel-mode-map
-              ("C-c C-g" . gptel-menu)
-              ("C-c C-t" . gptel-tools))
-
-  :commands (gptel gptel-menu gptel-tools)
+(use-package claude-code-ide
+  :straight (:type git :host github :repo "manzaltu/claude-code-ide.el")
+  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
   :config
+  (setq claude-code-ide-terminal-backend 'eat)
+  (setq claude-code-ide-use-side-window nil)
+  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
 
-  (setq
-   gptel-model my/gptel-model ;  "claude-3-opus-20240229" also available
-   gptel-backend my/gptel-backend)
-  (if (file-exists-p "~/llm-hints.md")
-      (gptel-add-file (expand-file-name "~/llm-hints.md")))
-  (require 'doty-tools)
-  (require 'doty-tools-buffer-map))
+;; (defun claude-get-api-key ()
+;;   "Get Claude API key from ~/.config/io.datasette.llm/keys.json file."
+;;   (let* ((keys-file (expand-file-name "~/.config/io.datasette.llm/keys.json"))
+;;          (json-object-type 'hash-table)
+;;          (json-array-type 'list)
+;;          (json-key-type 'string))
+;;     (if (file-exists-p keys-file)
+;;         (let* ((json-data (with-temp-buffer
+;;                             (insert-file-contents keys-file)
+;;                             (json-read-from-string (buffer-string))))
+;;                (claude-key (gethash "claude" json-data)))
+;;           (if claude-key
+;;               claude-key
+;;             (error "Claude API key not found in keys.json")))
+;;       (error "Key file keys.json file not found at %s" keys-file))))
+
+;; (defconst my/gptel-databricks-path
+;;   (expand-file-name "~/universe/experimental/john.doty/gptel-databricks/")
+;;   "The path to the databricks gptel backend.")
+
+;; (defconst my/has-gptel-databricks
+;;   (file-exists-p my/gptel-databricks-path)
+;;   "Whether or not we have the databricks gptel backend.")
+
+;; (defconst my/gptel-backend
+;;   (if my/has-gptel-databricks
+;;       (progn
+;;         (add-to-list 'load-path (directory-file-name my/gptel-databricks-path))
+;;         (require 'gptel-databricks)
+;;         (gptel-make-databricks "Databricks" :stream t))
+;;     (gptel-make-anthropic "Claude"
+;;       :stream t
+;;       :key #'claude-get-api-key
+;;       :request-params '(:thinking (:type "enabled" :budget_tokens 2048)
+;;                                   :max_tokens 4096)))
+;;   "The right backend based on my environment.")
+
+;; (defconst my/gptel-model
+;;   (if my/has-gptel-databricks
+;;       'claude-3-7-sonnet-internal-tools
+;;     'claude-3-7-sonnet-20250219)
+;;   "Which model do we want by default?")
+
+;; (use-package gptel :straight t
+;;   :bind (:map gptel-mode-map
+;;               ("C-c C-g" . gptel-menu)
+;;               ("C-c C-t" . gptel-tools))
+
+;;   :commands (gptel gptel-menu gptel-tools)
+;;   :config
+
+;;   (setq
+;;    gptel-model my/gptel-model ;  "claude-3-opus-20240229" also available
+;;    gptel-backend my/gptel-backend)
+;;   (if (file-exists-p "~/llm-hints.md")
+;;       (gptel-add-file (expand-file-name "~/llm-hints.md")))
+;;   (require 'doty-tools)
+;;   (require 'doty-tools-buffer-map))
 
 
 ;; =================================================================
 ;; Debugging
 ;; =================================================================
-(use-package dap-mode :ensure
+(use-package dap-mode :straight t
   :commands dap-debug
   :config
   (require 'dap-netcore))
@@ -1494,13 +1496,18 @@ Do this when you edit your project view."
 ;; =================================================================
 ;; WGSL
 ;; =================================================================
-(use-package wgsl-mode :ensure
+(use-package wgsl-mode :straight t
   :mode "\\.wgsl\\'")
 
 ;; =================================================================
 ;; HLSL
 ;; =================================================================
-(use-package hlsl-mode
+(use-package hlsl-mode :straight nil
   :mode "\\.hlsl\\'")
+
+;; =================================================================
+;; Terminal
+;; =================================================================
+(use-package eat :straight t)
 
 ;;; init.el ends here

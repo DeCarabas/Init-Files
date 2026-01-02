@@ -1,8 +1,10 @@
-fish_add_path ~/.local/bin \
-              ~/.cargo/bin \
-              ~/bin \
-              /opt/local/sbin \
-              /opt/local/bin
+fish_add_path \
+    ~/.local/bin \
+    ~/.cargo/bin \
+    ~/bin \
+    /opt/local/sbin \
+    /opt/local/bin \
+    ~/.npm-global/bin
 
 fish_add_path --append \
               ~/devtools/buck/bin \

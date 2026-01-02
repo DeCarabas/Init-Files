@@ -24,6 +24,7 @@
  '(company-minimum-prefix-length 1)
  '(css-indent-offset 2)
  '(custom-safe-themes t)
+ '(eglot-code-action-indications '(eldoc-hint))
  '(fast-lock-cache-directories '("~/flc-cache"))
  '(fast-lock-minimum-size nil)
  '(fill-column 77)

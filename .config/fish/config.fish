@@ -1,17 +1,17 @@
 fish_add_path \
     ~/.local/bin \
     ~/.cargo/bin \
-    ~/bin \
+    ~/.deno/bin \
     /opt/local/sbin \
     /opt/local/bin \
-    ~/.npm-global/bin
+    ~/.npm-global/bin \
+    ~/.dotnet/tools
 
 fish_add_path --append \
               ~/devtools/buck/bin \
               /snap/bin \
               ~/go/bin \
               /nix/var/nix/profiles/default/bin \
-              ~/Library/Python/3.10/bin \
               /opt/awscli/bin
 
 if command -s pyenv > /dev/null
@@ -28,12 +28,7 @@ if test -n "$CODER_WORKSPACE_ID$CODER"
 end
 
 if test -d /home/linuxbrew/.linuxbrew
-  set -x HOMEBREW_PREFIX "/home/linuxbrew/.linuxbrew"
-  set -x HOMEBREW_CELLAR "/home/linuxbrew/.linuxbrew/Cellar"
-  set -x HOMEBREW_REPOSITORY "/home/linuxbrew/.linuxbrew/Homebrew"
-  set PATH "/home/linuxbrew/.linuxbrew/bin" "/home/linuxbrew/.linuxbrew/sbin" $PATH
-  set MANPATH "/home/linuxbrew/.linuxbrew/share/man" $MANPATH
-  set INFOPATH "/home/linuxbrew/.linuxbrew/share/info" $INFOPATH
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv fish)"
 end
 
 if [ -n "$INSIDE_EMACS" ]

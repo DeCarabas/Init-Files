@@ -52,6 +52,7 @@
  '(mouse-buffer-menu-mode-mult 0)
  '(mouse-wheel-progressive-speed nil)
  '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
+ '(mpc-host "/run/user/1000/mpd/socket")
  '(nrepl-use-ssh-fallback-for-remote-hosts t)
  '(omnisharp-server-executable-path nil)
  '(org-adapt-indentation t)
@@ -62,29 +63,8 @@
  '(org-odd-levels-only t)
  '(org-todo-keywords '((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED")))
  '(package-check-signature nil)
- '(package-selected-packages
-   '(adaptive-wrap add-node-modules-path ag async auto-complete
-                   auto-complete-nxml bazel blacken cider clang-format
-                   clipetty clojure-mode color-theme-monokai
-                   color-theme-sanityinc-solarized
-                   color-theme-sanityinc-tomorrow company company-jedi
-                   company-lsp compat cquery dap-mode dap-netcore
-                   dash-functional deadgrep dockerfile-mode doom-themes
-                   earthfile-mode editorconfig eglot eglot-java elm-mode esup
-                   exec-path-from-shell filladapt fish-mode flycheck
-                   flycheck-elm flycheck-rust flymake flyspell fsharp-mode
-                   geiser gnu-elpa-keyring-update go-autocomplete go-mode
-                   gptel graphviz-dot-mode hack-mode haxe-mode howm ink-mode
-                   js2-mode js2-refactor json-mode jsonnet-mode lsp-hack
-                   lsp-pyright lsp-ui lua-mode magit markdown-mode merlin
-                   mocha modus-themes monky monokai-theme multi-term
-                   mustache-mode nyan-mode paredit poly-markdown popup
-                   prettier-js projectile protobuf-mode python-mode request
-                   rjsx-mode ruby-mode rust-mode scala-ts-mode simple-httpd
-                   sql-indent swift-mode switch-window terraform-mode thrift
-                   tide tree-sitter tss tuareg typescript-mode use-package
-                   uuidgen vterm web-mode wgrep wgsl-mode xref-js2
-                   xterm-color yaml-mode zig-mode))
+ '(package-selected-packages '(claudemacs))
+ '(package-vc-selected-packages '((claudemacs :url "https://github.com/cpoile/claudemacs")))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)
  '(safe-local-variable-directories '("/home/john.doty/universe/"))

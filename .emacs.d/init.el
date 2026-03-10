@@ -6,6 +6,8 @@
 ;;; This is my .emacs.
 ;;; There are many like it, but this one is mine.
 ;;;
+;;; 2026/02/02 - Go back. Yeesh. I do *not* like straight.el.
+;;;
 ;;; 2025/12/24 - Convert to straight.el from ELPA; it's been a good run.
 ;;;
 ;;; 2019/03/27 - Moved back into init.el, to make profiling possible.
@@ -47,6 +49,8 @@
 (require 'server)
 (if (not (server-running-p)) (server-start))
 
+(setq frame-resize-pixelwise t)
+
 ;; =================================================================
 ;; Various bits of path setup
 ;; =================================================================
@@ -59,32 +63,28 @@
 (load custom-file)
 
 ;; =================================================================
-;; straight.el bootstrap
-;; =================================================================
-;; This is after the custom-set-variables thing so that straight.el
-;; picks up on customizations that we've made.
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name
-        "straight/repos/straight.el/bootstrap.el"
-        (or (bound-and-true-p straight-base-dir)
-            user-emacs-directory)))
-      (bootstrap-version 7))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-
-;; =================================================================
 ;; Load Path Customization
 ;; =================================================================
-
 ;; add private lisp directory to load-path.
 (add-to-list 'load-path (directory-file-name "~/site-lisp"))
+
+;; =================================================================
+;; Packages
+;; =================================================================
+;; See http://dotyl.ink/l/qbmhz43kju
+(let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
+                    (not (gnutls-available-p))))
+       (proto (if no-ssl "http" "https")))
+  (setq package-archives
+        '(("gnu"         . "https://elpa.gnu.org/packages/")
+          ("org"         . "https://orgmode.org/elpa/")
+          ))
+
+  (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
+  )
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
 
 ;; =================================================================
 ;; Common stuff that's needed once
@@ -206,7 +206,7 @@
               (width            . 91)))
       ))
 
-(use-package doom-themes :straight t
+(use-package doom-themes :ensure t
   :config
   (load-theme 'doom-vibrant t)
 
@@ -252,7 +252,7 @@
 (setq w32-use-w32-font-dialog t)
 
 ;; Adaptive fill for everybody!
-(use-package filladapt :straight t
+(use-package filladapt :ensure t
   :init (setq-default filladapt-mode t))
 
 (require 'ido)
@@ -261,9 +261,8 @@
 (add-hook 'before-save-hook 'whitespace-cleanup)
 
 ;; Fix path loading on MacOS X
-(straight-register-package 'exec-path-from-shell)
 (when (memq window-system '(mac ns))
-  (use-package exec-path-from-shell :straight t)
+  (use-package exec-path-from-shell :ensure t)
   (exec-path-from-shell-initialize))
 
 ;;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
@@ -353,9 +352,8 @@
 ;; =================================================================
 ;; clipetty makes the kill ring interact with the terminal.
 ;; =================================================================
-(straight-register-package 'clipetty)
 (when (getenv "TMUX")
-  (use-package clipetty :straight t
+  (use-package clipetty :ensure t
     :hook (after-init . global-clipetty-mode)))
 
 ;; =================================================================
@@ -373,7 +371,7 @@
 ;; =================================================================
 ;; Company? Company.
 ;; =================================================================
-(use-package company :straight t
+(use-package company :ensure t
   :commands company-mode
   :init
   ;; 2023-08-26: Enable company mode globally.
@@ -434,7 +432,7 @@
             (eq major-mode 'csharp-ts-mode))
     (eglot-format)))
 
-(use-package eglot :straight t
+(use-package eglot :ensure t
   :commands (eglot-ensure eglot)
   :hook
   (python-mode        . eglot-ensure)
@@ -483,8 +481,8 @@
   ;;                  `(python-mode . (,py-executable)))))
 
   ;; 2023-09-03 Re-work the way that the JS/Deno switch is handled.
-  (add-to-list 'eglot-server-programs
-               '((js-mode typescript-mode) . ts/server-program))
+  ;; (add-to-list 'eglot-server-programs
+  ;;              '((js-mode typescript-mode) . ts/server-program))
 
   ;; 2023-10-26 Use cargo clippy instead of cargo check
   (add-to-list 'eglot-server-programs
@@ -505,7 +503,7 @@
   (add-hook     'eglot-connect-hook      'my-eglot-connect-hook))
 
 ;; NOTE: elgot defers to flymake for error information.
-(use-package flymake :straight t
+(use-package flymake :ensure t
   :bind (("C-c n" . 'flymake-goto-next-error)
          ("C-c p" . 'flymake-goto-prev-error)))
 
@@ -683,7 +681,7 @@ Or, uh, Objective C, I guess."
 ;; C#-Mode configuration.
 ;; =================================================================
 
-(use-package csharp-ts-mode :straight nil
+(use-package csharp-ts-mode
 
   :preface
   (defun my-csharp-mode-hook ()
@@ -809,7 +807,7 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Elm
 ;; =================================================================
-(use-package flycheck-elm :straight t
+(use-package flycheck-elm :ensure t
   :after (flycheck)
   :config
   (add-to-list 'flycheck-checkers 'elm))
@@ -826,7 +824,7 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Flycheck
 ;; =================================================================
-(use-package flycheck :straight t
+(use-package flycheck :ensure t
   :config
   (setq-default flycheck-temp-prefix ".flycheck")
   (setq-default flycheck-disabled-checkers
@@ -852,7 +850,7 @@ Or, uh, Objective C, I guess."
 ;;   (add-to-list 'interpreter-mode-alist '("python" . python-mode))
 ;;   (add-hook 'python-mode-hook 'my-python-mode-hook))
 
-(use-package blacken :straight t
+(use-package blacken :ensure t
   :commands (blacken-mode)
   :hook (python-mode . blacken-mode))
 
@@ -867,7 +865,7 @@ Or, uh, Objective C, I guess."
 ;; Bazel Support
 ;; =================================================================
 
-(use-package bazel :straight t
+(use-package bazel :ensure t
   :mode  (("/\\.bazelignore\\'"                     . bazelignore-mode)
           ("/\\(?:\\(?:bazel\\)?\\.bazelrc\\)\\'"   . bazelrc-mode)
           ("/.+\\.bzl\\'"                           . bazel-starlark-mode)
@@ -985,7 +983,7 @@ Or, uh, Objective C, I guess."
 ;; (add-hook 'project-find-functions #'project-find-go-module)
 ;;-----
 
-(use-package go-mode :straight t
+(use-package go-mode :ensure t
   :mode "\\.go\\'"
   :config
   (add-hook 'before-save-hook 'gofmt-before-save))
@@ -1009,7 +1007,7 @@ Or, uh, Objective C, I guess."
   (my--fix-aspell)
   (require 'ox-quip))
 
-(use-package org :straight t
+(use-package org :ensure t
   :mode ("\\.org\\'" . org-mode)
   :bind (:map org-mode-map
               ("C-c l" . org-store-link)
@@ -1042,16 +1040,16 @@ Or, uh, Objective C, I guess."
 ;;     (tide-hl-identifier-mode)
 ;;     (eldoc-mode +1)))
 
-(use-package typescript-mode :straight t
+(use-package typescript-mode :ensure t
   ;; 2023-09-03 Trying eglot instead of TIDE for now.
   ;; :config
   ;; (add-hook 'typescript-mode-hook 'ts/enable-eglot-or-tide)
   )
 
-(use-package add-node-modules-path :straight t
+(use-package add-node-modules-path :ensure t
   :hook (typescript-mode . add-node-modules-path))
 
-(use-package prettier-js :straight t
+(use-package prettier-js :ensure t
   :hook (typescript-mode . prettier-js-mode))
 
 ;; 2023-09-03 Trying eglot instead of TIDE for now.
@@ -1082,7 +1080,7 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Magit stuff
 ;; =================================================================
-(use-package magit :straight t
+(use-package magit :ensure t
   :bind (("C-x g" . magit-status)
          ("C-c g" . magit-dispatch)
          ("C-c f" . magit-file-dispatch)))
@@ -1093,7 +1091,7 @@ Or, uh, Objective C, I guess."
 ;; ;; I remove Hg from VC-mode because it is SO SLOW.
 ;; (setq vc-handled-backends (remove 'Hg vc-handled-backends))
 ;; ;; But I have monky enabled so I can use it instead.
-;; (use-package monky :straight t
+;; (use-package monky :ensure t
 ;;   :config
 ;;   (setq monky-process-type 'cmdserver)
 ;;   :bind
@@ -1115,7 +1113,7 @@ Or, uh, Objective C, I guess."
 (add-hook 'shell-mode-hook 'my-shell-mode-hook)
 
 ;; xterm-color
-(use-package xterm-color :straight t
+(use-package xterm-color :ensure t
   :config
   (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter)
   (setq comint-output-filter-functions
@@ -1155,17 +1153,17 @@ Or, uh, Objective C, I guess."
   (setq truncate-lines nil)
   (setq word-wrap 't))
 
-(use-package markdown-mode :straight t
+(use-package markdown-mode :ensure t
   :mode "\\.md\\'"
   :config (add-hook 'markdown-mode-hook 'my-markdown-mode-hook))
 
-(use-package adaptive-wrap :straight t
+(use-package adaptive-wrap :ensure t
   :commands adaptive-wrap-prefix-mode
   :init
   (add-hook 'markdown-mode-hook 'adaptive-wrap-prefix-mode)
   (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode))
 
-(use-package poly-markdown :straight t
+(use-package poly-markdown :ensure t
   :init
   (add-hook 'markdown-mode-hook 'poly-markdown-mode)
   :config
@@ -1179,7 +1177,7 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Rust
 ;; =================================================================
-(use-package rust-mode :straight t
+(use-package rust-mode :ensure t
   :mode "\\.rs\\'"
   :commands rust-format-buffer ; 2023-10-26 Make this command available even when the mode isn't used.
   :config
@@ -1201,12 +1199,11 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Clojure
 ;; =================================================================
-(straight-register-package 'cider)
-(use-package clojure-mode :straight t
+(use-package clojure-mode :ensure t
     :mode (("\\.clj\\'" . clojure-mode)
            ("\\.edn\\'" . clojure-mode))
     :config
-    (use-package cider :straight t
+    (use-package cider :ensure t
       :config
       ;; Put TARGETS in clojure-build-tool-files so that directories with TARGETS
       ;; get identified as projects.
@@ -1218,7 +1215,7 @@ Or, uh, Objective C, I guess."
 ;; ================================================================
 ;; TRAMP
 ;; ================================================================
-(use-package tramp :straight t
+(use-package tramp :ensure t
   :config
   ;; Since we're going to be doing this a lot, the minibar message tramp
   ;; spits out for every file access is both spammy, distracting, and often
@@ -1260,7 +1257,7 @@ Or, uh, Objective C, I guess."
 ;; ================================================================
 ;; Zig
 ;; ================================================================
-(use-package zig-mode :straight t
+(use-package zig-mode :ensure t
     :mode (("\\.zig\\'" . zig-mode)))
 
 ;; ================================================================
@@ -1272,10 +1269,10 @@ Or, uh, Objective C, I guess."
   (setq lua-indent-level 1)
   (set-fill-column 32))
 
-(use-package pico8-mode ;; :straight t (site-lisp)
-  :straight (pico8-mode :type git :host github :repo "Kaali/pico8-mode")
-  :mode (("\\.p8\\'" . pico8-mode))
-  :config (add-hook 'pico8-mode-hook 'my-pico8-hook))
+;; (use-package pico8-mode ;; :ensure t (site-lisp)
+;;   :straight (pico8-mode :type git :host github :repo "Kaali/pico8-mode")
+;;   :mode (("\\.p8\\'" . pico8-mode))
+;;   :config (add-hook 'pico8-mode-hook 'my-pico8-hook))
 
 ;; ================================================================
 ;; Ink
@@ -1288,7 +1285,7 @@ Or, uh, Objective C, I guess."
   (setq truncate-lines nil)
   (visual-line-mode))
 
-(use-package ink-mode :straight t
+(use-package ink-mode :ensure t
   :mode (("\\.ink\\'" . ink-mode))
   :bind (:map ink-mode-map
               ("M-." . ink-follow-link-at-point)
@@ -1310,7 +1307,7 @@ Or, uh, Objective C, I guess."
     ((file-directory-p "/mnt/c/Users/john/Dropbox") "/mnt/c/Users/john/Dropbox")))
   "Where is my dropbox?")
 
-(use-package howm :straight t
+(use-package howm :ensure t
   :init
   ;; Directory configuration
   ;;
@@ -1346,31 +1343,31 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Protocol Buffers
 ;; =================================================================
-(use-package protobuf-mode :straight t)
+(use-package protobuf-mode :ensure t)
 
 ;; =================================================================
 ;; Deadgrep for searching
 ;; =================================================================
-(use-package deadgrep :straight t
+(use-package deadgrep :ensure t
   :bind ("C-c d" . deadgrep))
 
 ;; =================================================================
 ;; Terraform
 ;; =================================================================
-(use-package terraform-mode :straight t
+(use-package terraform-mode :ensure t
   :mode "\\.tf(vars)?\\'"
   :config (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))
 
 ;; =================================================================
 ;; Earthly
 ;; =================================================================
-(use-package earthfile-mode :straight t
+(use-package earthfile-mode :ensure t
   :mode ("\\.earth\\'" "Earthfile\\'"))
 
 ;; =================================================================
 ;; Java
 ;; =================================================================
-(use-package eglot-java :straight t
+(use-package eglot-java :ensure t
   :after (eglot)
   :hook
   (java-mode  . eglot-java-mode))
@@ -1378,18 +1375,18 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; SQL?
 ;; =================================================================
-(use-package sql-indent :straight t)
+(use-package sql-indent :ensure t)
 
 ;; =================================================================
 ;; Swift
 ;; =================================================================
-(use-package swift-mode :straight t
+(use-package swift-mode :ensure t
   :mode "\\.swift\\(interface\\)?\\'")
 
 ;; =================================================================
 ;; Scala
 ;; =================================================================
-(use-package scala-ts-mode :straight t
+(use-package scala-ts-mode :ensure t
   :mode "\\.scala\\'"
   :interpreter ("scala" . scala-mode)
   )
@@ -1406,24 +1403,28 @@ Do this when you edit your project view."
 ;; =================================================================
 ;; Jsonnet
 ;; =================================================================
-(use-package jsonnet-mode :straight t
+(use-package jsonnet-mode :ensure t
   :mode "\\.jsonnet\\(\\.TEMPLATE\\)?\\'")
 
 ;; =================================================================
 ;; Fish shell
 ;; =================================================================
-(use-package fish-mode :straight t)
+(use-package fish-mode :ensure t)
 
 ;; =================================================================
 ;; AI Shit
 ;; =================================================================
-(use-package claude-code-ide
-  :straight (:type git :host github :repo "manzaltu/claude-code-ide.el")
-  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
-  :config
-  (setq claude-code-ide-terminal-backend 'eat)
-  (setq claude-code-ide-use-side-window nil)
-  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
+(use-package claudemacs
+  :vc (:url "https://github.com/cpoile/claudemacs")
+  :bind ("C-c C-'" . claudemacs-transient-menu))
+
+;; (use-package claude-code-ide
+;;   :straight (:type git :host github :repo "manzaltu/claude-code-ide.el")
+;;   :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
+;;   :config
+;;   (setq claude-code-ide-terminal-backend 'eat)
+;;   (setq claude-code-ide-use-side-window nil)
+;;   (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
 
 ;; (defun claude-get-api-key ()
 ;;   "Get Claude API key from ~/.config/io.datasette.llm/keys.json file."
@@ -1468,7 +1469,7 @@ Do this when you edit your project view."
 ;;     'claude-3-7-sonnet-20250219)
 ;;   "Which model do we want by default?")
 
-;; (use-package gptel :straight t
+;; (use-package gptel :ensure t
 ;;   :bind (:map gptel-mode-map
 ;;               ("C-c C-g" . gptel-menu)
 ;;               ("C-c C-t" . gptel-tools))
@@ -1488,7 +1489,7 @@ Do this when you edit your project view."
 ;; =================================================================
 ;; Debugging
 ;; =================================================================
-(use-package dap-mode :straight t
+(use-package dap-mode :ensure t
   :commands dap-debug
   :config
   (require 'dap-netcore))
@@ -1496,27 +1497,23 @@ Do this when you edit your project view."
 ;; =================================================================
 ;; WGSL
 ;; =================================================================
-(use-package wgsl-mode :straight t
+(use-package wgsl-mode :ensure t
   :mode "\\.wgsl\\'")
 
 ;; =================================================================
 ;; HLSL
 ;; =================================================================
-(use-package hlsl-mode :straight nil
+(use-package hlsl-mode ;;:ensure t
   :mode "\\.hlsl\\'")
 
 ;; =================================================================
 ;; Terminal
 ;; =================================================================
-;; (use-package eat :straight t)
-(use-package eat
-  :straight '(eat :type git
-                  :host codeberg
-                  :repo "akib/emacs-eat"
-                  :files ("*.el" ("term" "term/*.el") "*.texi"
-                          "*.ti" ("terminfo/e" "terminfo/e/*")
-                          ("terminfo/65" "terminfo/65/*")
-                          ("integration" "integration/*")
-                          (:exclude ".dir-locals.el" "*-tests.el")))
-    :bind (("C-c T" . eat-project)))
+(use-package eat :ensure t)
+
+;; =================================================================
+;; ron-mode
+;; =================================================================
+(use-package ron-mode :ensure t)
+
 ;;; init.el ends here

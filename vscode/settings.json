@@ -92,7 +92,8 @@
     "coder.doty-dev": "linux",
     "192.168.0.114": "linux",
     "coder-vscode--johndoty--doty-dev": "linux",
-    "doty-dev.johndoty.devspaces.dev.lacework.engineering": "linux"
+    "doty-dev.johndoty.devspaces.dev.lacework.engineering": "linux",
+    "short": "linux"
   },
   "java.import.maven.enabled": false,
   "remote.autoForwardPortsSource": "hybrid",

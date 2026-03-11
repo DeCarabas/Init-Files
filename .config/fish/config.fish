@@ -31,7 +31,11 @@ if test -d /home/linuxbrew/.linuxbrew
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv fish)"
 end
 
-if [ -n "$INSIDE_EMACS" ]
+if [ -n "$EAT_SHELL_INTEGRATION_DIR" ]
+
+  source ~/.config/fish/eat.fish
+
+else if [ -n "$INSIDE_EMACS" ]
   # This is here to make emacs and ansi-term work properly; I'm not *quite*
   # sure what it does but it's probably cool.
   function fish_title

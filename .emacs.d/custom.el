@@ -66,11 +66,11 @@
  '(package-selected-packages
    '(adaptive-wrap add-node-modules-path bazel blacken claudemacs clipetty
                    clojure-mode company dap-mode deadgrep doom-themes
-                   earthfile-mode eglot-java filladapt fish-mode flycheck-elm
-                   go-mode howm ink-mode jsonnet-mode magit poly-markdown
-                   prettier-js protobuf-mode ron-mode rust-mode scala-ts-mode
-                   sql-indent swift-mode terraform-mode typescript-mode
-                   wgsl-mode xterm-color zig-mode))
+                   earthfile-mode eat eglot-java filladapt fish-mode
+                   flycheck-elm go-mode howm ink-mode jsonnet-mode magit
+                   poly-markdown prettier-js protobuf-mode ron-mode rust-mode
+                   scala-ts-mode sql-indent swift-mode terraform-mode
+                   typescript-mode wgsl-mode xterm-color zig-mode))
  '(package-vc-selected-packages '((claudemacs :url "https://github.com/cpoile/claudemacs")))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)

@@ -71,17 +71,9 @@
 ;; =================================================================
 ;; Packages
 ;; =================================================================
-;; See http://dotyl.ink/l/qbmhz43kju
-(let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
-                    (not (gnutls-available-p))))
-       (proto (if no-ssl "http" "https")))
-  (setq package-archives
-        '(("gnu"         . "https://elpa.gnu.org/packages/")
-          ("org"         . "https://orgmode.org/elpa/")
-          ))
+(add-to-list 'package-archives '("org"   . "https://orgmode.org/elpa/"))
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 
-  (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
-  )
 (package-initialize)
 (unless package-archive-contents
   (package-refresh-contents))

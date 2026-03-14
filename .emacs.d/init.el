@@ -867,7 +867,7 @@ Or, uh, Objective C, I guess."
           ("/.+\\.tilt\\'"                          . bazel-starlark-mode)
           ("/Tiltfile$"                             . bazel-starlark-mode)
           ("BUCK"                                   . bazel-build-mode)
-          ("/..bxl\\'"                              . bazel-starlark-mode)
+          ("/.+\\.bxl\\'"                           . bazel-starlark-mode)
           ))
 
 (defun my/open-bazel-build ()

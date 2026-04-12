@@ -63,14 +63,7 @@
  '(org-odd-levels-only t)
  '(org-todo-keywords '((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED")))
  '(package-check-signature nil)
- '(package-selected-packages
-   '(adaptive-wrap add-node-modules-path bazel blacken claudemacs clipetty
-                   clojure-mode company dap-mode deadgrep doom-themes
-                   earthfile-mode eat eglot-java filladapt fish-mode
-                   flycheck-elm go-mode howm ink-mode jsonnet-mode magit
-                   poly-markdown prettier-js protobuf-mode ron-mode rust-mode
-                   scala-ts-mode sql-indent swift-mode terraform-mode
-                   typescript-mode wgsl-mode xterm-color zig-mode))
+ '(package-selected-packages nil)
  '(package-vc-selected-packages '((claudemacs :url "https://github.com/cpoile/claudemacs")))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)

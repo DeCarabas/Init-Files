@@ -673,7 +673,7 @@ Or, uh, Objective C, I guess."
 ;; C#-Mode configuration.
 ;; =================================================================
 
-(use-package csharp-ts-mode
+(use-package csharp-mode
 
   :preface
   (defun my-csharp-mode-hook ()
@@ -683,50 +683,9 @@ Or, uh, Objective C, I guess."
     (turn-on-font-lock)
     (c-set-style "ms-csharp"))
 
-  :mode "\\.cs\\'"
+  :mode ("\\.cs\\'" . csharp-ts-mode)
 
   :config
-  ;; 2023-09-03 Stop using omnisharp
-  ;; 2025-04-19 Still not using omnisharp, use it through eglot maybe
-  ;; (use-package omnisharp :ensure t
-  ;;   :commands omnisharp-mode
-  ;;   :bind (:map omnisharp-mode-map
-  ;;               ([remap xref-find-definitions] . omnisharp-go-to-definition)
-  ;;               ([remap xref-find-references] . omnisharp-find-usages)
-  ;;               ;; `xref-pop-marker-stack' works as expected.
-  ;;               )
-  ;;   :config
-  ;;   (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp)))
-
-  ;; (use-package prettysharp
-  ;;   :commands prettysharp-mode
-  ;;   :config
-  ;;   (if (file-executable-p "c:/src/prettysharp/prettysharp.exe")
-  ;;       (setq prettysharp-command "c:/src/prettysharp/prettysharp.exe")))
-
-  (add-hook 'csharp-mode-hook 'my-csharp-mode-hook)
-  (c-add-style "ms-csharp"
-               '((c-basic-offset . 4)
-                 (c-comment-only-line-offset . (0 . 0))
-                 (c-offsets-alist . ((c                     . c-lineup-C-comments)
-                                     (inclass               . +)
-                                     (namespace-open        . 0)
-                                     (namespace-close       . 0)
-                                     (innamespace           . +)
-                                     (class-open            . 0)
-                                     (class-close           . 0)
-                                     (defun-open            . 0)
-                                     (defun-close           . 0)
-                                     (defun-block-intro     . +)
-                                     (inline-open           . 0)
-                                     (statement-block-intro . +)
-                                     (brace-list-intro      . +)
-                                     (block-open            . -)
-                                     (substatement-open     . 0)
-                                     (arglist-intro         . +)
-                                     (arglist-close         . 0)
-                                     ))))
-
   ;; Fix up record indentation (and parameter list indentation too.)
   (push
    '((parent-is "parameter_list") parent-bol csharp-ts-mode-indent-offset)
@@ -734,7 +693,6 @@ Or, uh, Objective C, I guess."
   (push
    '((node-is "arrow_expression_clause") parent-bol csharp-ts-mode-indent-offset)
    (cdar csharp-ts-mode--indent-rules))
-
   (push
    '((node-is "type_parameter_constraints_clause") parent-bol csharp-ts-mode-indent-offset)
    (cdar csharp-ts-mode--indent-rules))

@@ -477,9 +477,9 @@
   ;;              '((js-mode typescript-mode) . ts/server-program))
 
   ;; 2023-10-26 Use cargo clippy instead of cargo check
-  (add-to-list 'eglot-server-programs
-               '((rust-mode rust-ts-mode) . ("rust-analyzer" :initializationOptions
-                                             (:check (:command "clippy")))))
+  ;; (add-to-list 'eglot-server-programs
+  ;;              '((rust-mode rust-ts-mode) . ("rust-analyzer" :initializationOptions
+  ;;                                            (:check (:command "clippy")))))
 
   ;; 2024-09-19 Metals stuff
   (add-to-list 'eglot-server-programs
@@ -690,12 +690,26 @@ Or, uh, Objective C, I guess."
   (push
    '((parent-is "parameter_list") parent-bol csharp-ts-mode-indent-offset)
    (cdar csharp-ts-mode--indent-rules))
+
   (push
    '((node-is "arrow_expression_clause") parent-bol csharp-ts-mode-indent-offset)
    (cdar csharp-ts-mode--indent-rules))
   (push
+   '((parent-is "arrow_expression_clause") parent-bol csharp-ts-mode-indent-offset)
+   (cdar csharp-ts-mode--indent-rules))
+
+  (push
+   '((parent-is "arrow_expression_clause") parent-bol csharp-ts-mode-indent-offset)
+   (cdar csharp-ts-mode--indent-rules))
+
+  (push
    '((node-is "type_parameter_constraints_clause") parent-bol csharp-ts-mode-indent-offset)
    (cdar csharp-ts-mode--indent-rules))
+
+  (push
+   '((parent-is "element_binding_expression") parent-bol csharp-ts-mode-indent-offset)
+   (cdar csharp-ts-mode--indent-rules))
+
 
   )
 

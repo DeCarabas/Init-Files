@@ -710,6 +710,14 @@ Or, uh, Objective C, I guess."
    '((parent-is "element_binding_expression") parent-bol csharp-ts-mode-indent-offset)
    (cdar csharp-ts-mode--indent-rules))
 
+  (push
+   '((match "]" "element_binding_expression") parent-bol 0)
+   (cdar csharp-ts-mode--indent-rules))
+
+  (push
+   '((parent-is "member_access_expression") parent-bol csharp-ts-mode-indent-offset)
+   (cdar csharp-ts-mode--indent-rules))
+
 
   )
 

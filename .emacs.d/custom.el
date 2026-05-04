@@ -63,8 +63,19 @@
  '(org-odd-levels-only t)
  '(org-todo-keywords '((sequence "TODO" "|" "DONE" "ABANDONED" "DEFERRED")))
  '(package-check-signature nil)
- '(package-selected-packages nil)
- '(package-vc-selected-packages '((claudemacs :url "https://github.com/cpoile/claudemacs")))
+ '(package-selected-packages
+   '(adaptive-wrap add-node-modules-path bazel blacken cider claude-code-ide
+                   claudemacs company dap-mode deadgrep doom-themes
+                   earthfile-mode eat editorconfig eglot-java
+                   exec-path-from-shell filladapt fish-mode flycheck-elm
+                   ghostel go-mode gptel howm ink-mode jsonnet-mode lua-mode
+                   magit modus-themes monky poly-markdown prettier-js
+                   protobuf-mode request ron-mode rust-mode scala-ts-mode
+                   sql-indent swift-mode terraform-mode typescript-mode vterm
+                   wgsl-mode xterm-color zig-mode))
+ '(package-vc-selected-packages
+   '((claude-code-ide :url "https://github.com/manzaltu/claude-code-ide.el")
+     (claudemacs :url "https://github.com/cpoile/claudemacs")))
  '(reb-re-syntax 'string)
  '(rmail-mail-new-frame t)
  '(safe-local-variable-directories '("/home/john.doty/universe/"))

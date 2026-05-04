@@ -1386,17 +1386,36 @@ Do this when you edit your project view."
 ;; =================================================================
 ;; AI Shit
 ;; =================================================================
-(use-package claudemacs
-  :vc (:url "https://github.com/cpoile/claudemacs")
-  :bind ("C-c C-'" . claudemacs-transient-menu))
+;; (use-package claudemacs
+;;   :vc (:url "https://github.com/cpoile/claudemacs")
+;;   :bind ("C-c C-'" . claudemacs-transient-menu))
 
-;; (use-package claude-code-ide
-;;   :straight (:type git :host github :repo "manzaltu/claude-code-ide.el")
-;;   :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
-;;   :config
-;;   (setq claude-code-ide-terminal-backend 'eat)
-;;   (setq claude-code-ide-use-side-window nil)
-;;   (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
+;; Ghostel: libghostty-vt terminal emulator.
+;; Auto-downloads the pre-built native module on first use.
+(use-package ghostel
+  :ensure t
+  :custom
+  ;; Auto-install the native module without prompting.  Set to 'ask
+  ;; if you'd rather be prompted the first time.
+  (ghostel-module-auto-install t))
+
+(use-package vterm
+  :ensure t)
+
+;; Claude Code IDE: bidirectional MCP bridge to claude-code CLI.
+;; Not on MELPA yet, install via :vc from GitHub.
+(use-package claude-code-ide
+  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
+  :bind ("C-c C-'" . claude-code-ide-menu)
+  :custom
+  ;; Use ghostel for the terminal buffer.  Other options: 'vterm, 'eat.
+  (claude-code-ide-terminal-backend 'vterm)
+  ;; Show Claude's proposed edits in ediff before applying.  Default t.
+  (claude-code-ide-use-ide-diff t)
+  :config
+  ;; Expose Emacs's xref/tree-sitter/project/diagnostics to Claude
+  ;; via MCP tools.  This is the bidirectional-bridge part.
+  (claude-code-ide-emacs-tools-setup))
 
 ;; (defun claude-get-api-key ()
 ;;   "Get Claude API key from ~/.config/io.datasette.llm/keys.json file."

@@ -252,10 +252,9 @@
 ;; Cleanup all the whitespaces.
 (add-hook 'before-save-hook 'whitespace-cleanup)
 
-;; Fix path loading on MacOS X
-(when (memq window-system '(mac ns))
-  (use-package exec-path-from-shell :ensure t)
-  (exec-path-from-shell-initialize))
+;; Fix path loading on MacOS X... and KDE 44 apparently
+(use-package exec-path-from-shell :ensure t)
+(exec-path-from-shell-initialize)
 
 ;;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
 (defun unfill-paragraph (&optional region)

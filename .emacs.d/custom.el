@@ -66,11 +66,10 @@
  '(package-selected-packages
    '(adaptive-wrap add-node-modules-path bazel blacken cider claude-code-ide
                    claudemacs company dap-mode deadgrep doom-themes
-                   earthfile-mode eat editorconfig eglot-java
-                   exec-path-from-shell filladapt fish-mode flycheck-elm
-                   ghostel go-mode gptel howm ink-mode jsonnet-mode lua-mode
-                   magit modus-themes monky poly-markdown prettier-js
-                   protobuf-mode request ron-mode rust-mode scala-ts-mode
+                   earthfile-mode eat eglot-java exec-path-from-shell
+                   filladapt fish-mode flycheck-elm ghostel go-mode howm
+                   ink-mode jsonnet-mode magit markdown-mode poly-markdown
+                   prettier-js protobuf-mode ron-mode rust-mode scala-ts-mode
                    sql-indent swift-mode terraform-mode typescript-mode vterm
                    wgsl-mode xterm-color zig-mode))
  '(package-vc-selected-packages

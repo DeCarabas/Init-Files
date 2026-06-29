@@ -1275,7 +1275,10 @@ Or, uh, Objective C, I guess."
    (cond
     ((file-directory-p "~/Dropbox (Personal)") "~/Dropbox (Personal)")
     ((file-directory-p "~/Dropbox") "~/Dropbox")
-    ((file-directory-p "/mnt/c/Users/john/Dropbox") "/mnt/c/Users/john/Dropbox")))
+    ((file-directory-p "/mnt/c/Users/john/Dropbox") "/mnt/c/Users/john/Dropbox")
+    ;; No dropbox on this machine (e.g. a remote dev box); keep things
+    ;; relative to home so notes land in ~/notes/howm.
+    (t "~")))
   "Where is my dropbox?")
 
 (use-package howm :ensure t

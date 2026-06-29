@@ -1103,7 +1103,7 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; OCAML stuff
 ;; =================================================================
-(require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
+(require 'opam-user-setup (expand-file-name "opam-user-setup.el" init-dir))
 
 ;; =================================================================
 ;; Insert timestamp

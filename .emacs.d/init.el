@@ -252,6 +252,7 @@
                '("[ \t]*[*+-][ \t]+" bullet)))
 
 (require 'ido)
+(setq ido-auto-merge-work-directories-length -1)
 
 ;; Cleanup all the whitespaces.
 (add-hook 'before-save-hook 'whitespace-cleanup)

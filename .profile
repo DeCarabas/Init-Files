@@ -29,3 +29,8 @@ fi
 if [ -f "$HOME/.cargo/env" ] ; then
    . "$HOME/.cargo/env"
 fi
+
+# deno
+if [ -f "$HOME/.deno/env" ] ; then
+   . "/home/doty/.deno/env"
+fi

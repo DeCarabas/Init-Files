@@ -15,6 +15,7 @@
     defaultBranch = main
 [rebase]
     updateRefs = true
+    autoStash = true
 [credential "helperselector"]
     selected = manager
 [credential "https://git.d0ty.me"]

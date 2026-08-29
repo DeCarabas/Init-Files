@@ -16,3 +16,7 @@
     user = DeCarabas
 [safe]
     directory = /home/linuxbrew/.linuxbrew/Homebrew/Library/Taps/homebrew/homebrew-core
+[http]
+	lowSpeedLimit = 1000
+	lowSpeedTime = 60
+	postBuffer = 524288000

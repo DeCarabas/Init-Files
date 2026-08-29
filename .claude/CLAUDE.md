@@ -1,4 +1,8 @@
-- For all tasks use your judgement to decide an appropriate lower power model and run that in a subagent. As of 7/31/2026 Opus 5 is very good at building software, almost as good as you, so if you're considering writing some code you should strongly consider using Opus 5. (And you should bug me to re-visit this advice if it seems like it might be out of date.)
+- For nontrivial tasks use your judgement to decide an appropriate lower power model and run that in a subagent. As of 7/31/2026 Opus 5 is very good at building software, almost as good as you, so if you're considering writing some code you should strongly consider using Opus 5. (And you should bug me to re-visit this advice if it seems like it might be out of date.)
+
+- When I ask a question like "Can you ..." I almost always am asking you about a capability, NOT commanding you to do something. Err on the side of answering *but not doing* without explicit consent.
+
+- Answer questions as tersely as you can. Assume that I will understand the terms that you use, and I will ask for clarification if I do not understand. Likewise, keep your justifications complete but otherwise terse. I will ask you to elaborate if they don't make sense.
 
 # Writing Code
 
@@ -34,15 +38,22 @@ Better:
 
 (Why even talk about concurrency here? It is irrelevant for the code at hand.)
 
+- "Yap" is shorthand for a comment that is words without communication: it exists to be written, not to be read. If I flag a comment as yap, or if you're about to write one, ask: what here is actually non-obvious? What would a future reader need that the code doesn't already say? Is this the right spot for it? Does it need to exist at all? The term is diagnostic, not an insult. Common shapes include:
+
+  - A long comment on a trivial definition.
+  - A long header on a big function with nothing in the body where the subtleties actually live. (This is "misplaced" yap: break it up and move the pieces next to the code they describe.)
+  - A comment that paraphrases the prompt or task rather than describing what the code does.
+  - A comment about why we're not doing it the old way, instead of what we're doing now and why it must be this way. (This is the timeless-comments rule above.)
+
 - Always make changes in a worktree.
 
-- Never commit work that you want merged to the worktree without explicit permission, so that the work can be reviewed locally. Once reviewed and/or given explicit permisison you may commit and continue.
+- Never commit work to the worktree without explicit permission, so that the work can be reviewed locally. Once reviewed and/or given explicit permission you may commit and continue.
 
 - Worktrees are merged to main via fast-forward/rebase, never via a merge commit. Always rebase before merging. NEVER MERGE TO MAIN WITHOUT EXPLICIT CONFIRMATION.
 
 # Reviewing Code
 
-- When reviewing code, if you see a bug, just tell me the bug, as tersely as you can. Don't describe the bug in detail or suggest a fix- I will ask for more information if necessary. A good review comment is:
+- When reviewing code, if you see a bug, just tell me the bug, as tersely as you can. Don't describe the bug in detail or suggest a fix. I will ask for more information if necessary. A good review comment is:
 
 ```
 Bug: typo at Player.cs:155. The linear branch of PeriodToFrequency uses Period (capital P, the VoiceState field) instead of period (the parameter)
@@ -58,8 +69,6 @@ Bug: typo at Player.cs:155. The linear branch of PeriodToFrequency uses Period (
 
 Should be (4608 - period) / 768. As written, the linear branch ignores its argument and uses this.Period (the base period field), which means the Frequency getter at line 141 — which passes EffectivePeriod in — would silently compute the frequency from the un-modulated base period in linear mode. All vibrato/arpeggio/glissando modulation would vanish from the audio output. The AmigaPeriod branch above it correctly uses lowercase period, so the inconsistency is easy to spot once you look.
 ```
-
-- Answer questions as tersely as you can. Assume that I will understand the terms that you use, and I will ask for clarification if I do not understand. Likewise, keep your justifications complete but otherwise terse- I will ask you to elaborate if they don't make sense.
 
 # C# guidelines
 

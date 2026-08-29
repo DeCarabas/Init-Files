@@ -1,0 +1,9 @@
+# Everything is ignored except hand-written configuration
+*
+!.gitignore
+!CLAUDE.md
+!settings.json
+!keybindings.json
+!skills/
+!agents/
+!commands/

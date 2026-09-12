@@ -66,12 +66,13 @@
  '(package-selected-packages
    '(adaptive-wrap add-node-modules-path bazel blacken cider claude-code-ide
                    claudemacs company dap-mode deadgrep doom-themes
-                   earthfile-mode eat eglot-java exec-path-from-shell
-                   filladapt fish-mode flycheck-elm ghostel go-mode howm
-                   ink-mode jsonnet-mode magit markdown-mode poly-markdown
-                   prettier-js protobuf-mode ron-mode rust-mode scala-ts-mode
-                   sql-indent swift-mode terraform-mode typescript-mode vterm
-                   wgsl-mode xterm-color zig-mode))
+                   earthfile-mode eat edit-indirect eglot-java
+                   exec-path-from-shell filladapt fish-mode flycheck-elm
+                   ghostel go-mode howm ink-mode jsonnet-mode magit
+                   markdown-mode poly-markdown prettier-js protobuf-mode
+                   ron-mode rust-mode scala-ts-mode sql-indent swift-mode
+                   terraform-mode typescript-mode vterm wgsl-mode xterm-color
+                   zig-mode))
  '(package-vc-selected-packages
    '((claude-code-ide :url "https://github.com/manzaltu/claude-code-ide.el")
      (claudemacs :url "https://github.com/cpoile/claudemacs")))

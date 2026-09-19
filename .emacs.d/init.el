@@ -594,9 +594,11 @@ No-op before Emacs 31."
 (add-to-list 'auto-mode-alist '("\\.h\\'"   . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.w\\'"   . c++-mode))
 
-(add-to-list 'auto-mode-alist '("makefile"  . makefile-mode))
-(add-to-list 'auto-mode-alist '("sources"   . makefile-mode))
-(add-to-list 'auto-mode-alist '("dirs"      . makefile-mode))
+;; 2026-09-19 Probably OK to stop forcing makefile mode, and to stop supporting
+;; the NT build system.
+;; (add-to-list 'auto-mode-alist '("makefile"  . makefile-mode))
+;; (add-to-list 'auto-mode-alist '("sources"   . makefile-mode))
+;; (add-to-list 'auto-mode-alist '("dirs"      . makefile-mode))
 
 ;; My c-mode stuff:
 (c-add-style "ms-c"

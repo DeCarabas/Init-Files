@@ -245,7 +245,11 @@
 
 ;; Adaptive fill for everybody!
 (use-package filladapt :ensure t
-  :init (setq-default filladapt-mode t))
+  :init
+  (setq-default filladapt-mode t)
+  :config
+  (add-to-list 'filladapt-token-table
+               '("[ \t]*[*+-][ \t]+" bullet)))
 
 (require 'ido)
 

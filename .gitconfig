@@ -20,3 +20,7 @@
 	lowSpeedLimit = 1000
 	lowSpeedTime = 60
 	postBuffer = 524288000
+[rebase]
+	autoStash = true
+[merge]
+	autostash = true

@@ -301,42 +301,80 @@
 ;;
 ;; 2023-08-26 Wow, like what am I even doing? This goes at the top of the
 ;; various things because we're going to be playing with modes and whatnot.
-
+;;
+;; 2026-09-19 Well however *I* might feel about tree-sitter (and I have
+;; opinions!) it is getting increasingly well-supported in emacs and so this
+;; form I have here is kinda the way it is done. Still conditional since
+;; there are emacs installations out there wihtout tree-sitter.
+(require 'treesit nil t)
 (when (and (functionp 'treesit-available-p) (treesit-available-p))
-  (require 'treesit)
-  (setq treesit-language-source-alist
-        '(
-          (bash "https://github.com/tree-sitter/tree-sitter-bash")
-          (cmake "https://github.com/uyha/tree-sitter-cmake")
-          (c-sharp "https://github.com/tree-sitter/tree-sitter-c-sharp")
-          (css "https://github.com/tree-sitter/tree-sitter-css")
-          (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-          (go "https://github.com/tree-sitter/tree-sitter-go")
-          (hlsl "https://github.com/tree-sitter-grammars/tree-sitter-hlsl")
-          (html "https://github.com/tree-sitter/tree-sitter-html")
-          (java "https://github.com/tree-sitter/tree-sitter-java" "master" "src")
-          (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-          (json "https://github.com/tree-sitter/tree-sitter-json")
-          (make "https://github.com/alemuller/tree-sitter-make")
-          (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-          (python "https://github.com/tree-sitter/tree-sitter-python")
-          (rust "https://github.com/tree-sitter/tree-sitter-rust")
-          (scala "https://github.com/tree-sitter/tree-sitter-scala")
-          (toml "https://github.com/tree-sitter/tree-sitter-toml")
-          (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-          (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-          (yaml "https://github.com/ikatyang/tree-sitter-yaml")
-          ))
 
-  (add-to-list 'major-mode-remap-alist '(rust-mode . rust-ts-mode))
-  (add-to-list 'major-mode-remap-alist '(scala-mode . scala-ts-mode))
-  (add-to-list 'major-mode-remap-alist '(csharp-mode . csharp-ts-mode))
-  )
+  ;; If this emacs can do automatic mode re-mapping then let it do so.
+  (if (boundp 'treesit-enabled-modes)
+      (setopt treesit-enabled-modes t)
+    ;; ...otherwise here is where we remap things.
+    (add-to-list 'major-mode-remap-alist '(rust-mode . rust-ts-mode))
+    (add-to-list 'major-mode-remap-alist '(scala-mode . scala-ts-mode))
+    (add-to-list 'major-mode-remap-alist '(csharp-mode . csharp-ts-mode))
+    (add-to-list 'major-mode-remap-alist '(python-mode . python-ts-mode)))
+
+  ;; Likewise, if we can, let emacs fetch missing grammars on demand
+  (when (boundp 'treesit-auto-install-grammar)
+    (setopt treesit-auto-install-grammar 'ask)))
+
+(defvar my/treesit-language-source-alist
+  '(
+    (bash "https://github.com/tree-sitter/tree-sitter-bash")
+    (cmake "https://github.com/uyha/tree-sitter-cmake")
+    (c-sharp "https://github.com/tree-sitter/tree-sitter-c-sharp")
+    (css "https://github.com/tree-sitter/tree-sitter-css")
+    (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+    (go "https://github.com/tree-sitter/tree-sitter-go")
+    (hlsl "https://github.com/tree-sitter-grammars/tree-sitter-hlsl")
+    (html "https://github.com/tree-sitter/tree-sitter-html")
+    (java "https://github.com/tree-sitter/tree-sitter-java")
+    (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
+    (json "https://github.com/tree-sitter/tree-sitter-json")
+    (make "https://github.com/alemuller/tree-sitter-make")
+    (markdown "https://github.com/tree-sitter-grammars/tree-sitter-markdown" nil "tree-sitter-markdown/src")
+    (markdown-inline "https://github.com/tree-sitter-grammars/tree-sitter-markdown" nil "tree-sitter-markdown-inline/src")
+    (python "https://github.com/tree-sitter/tree-sitter-python")
+    (rust "https://github.com/tree-sitter/tree-sitter-rust")
+    (scala "https://github.com/tree-sitter/tree-sitter-scala")
+    (toml "https://github.com/tree-sitter-grammars/tree-sitter-toml")
+    (tsx "https://github.com/tree-sitter/tree-sitter-typescript" nil "tsx/src")
+    (typescript "https://github.com/tree-sitter/tree-sitter-typescript" nil "typescript/src")
+    (yaml "https://github.com/tree-sitter-grammars/tree-sitter-yaml")
+    )
+  "My list of tree-sitter grammars.")
+
+(defun my/treesit-harvest-builtin-grammar-sources ()
+  "Force built-in modes to register into `treesit-language-source-alist'.
+No-op before Emacs 31."
+  ;; Walk through the built-in treesit-major-mode-remap-alist and pull out the
+  ;; major mode symbols, then just do the autoload which will force the entry
+  ;; into treesit-language-source-alist.
+  (dolist (m (mapcar #'cdr (bound-and-true-p treesit-major-mode-remap-alist)))
+    (ignore-errors (autoload-do-load (indirect-function m))))
+  ;; Not every ts-mode is in the remap alist.
+  (dolist (f '(markdown-ts-mode treesit-x))
+    (require f nil t))
+  treesit-language-source-alist)
 
 (defun install-known-tree-sitter-grammars ()
   "Install all known tree-sitter grammars."
   (interactive)
-  (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist)))
+  ;; Force the built-in list to be populated....
+  (my/treesit-harvest-builtin-grammar-sources)
+  ;; Now merge my list of grammar sources with the existing one, to fill in
+  ;; any gaps.
+  (dolist (src my/treesit-language-source-alist)
+    (unless (assq (car src) treesit-language-source-alist)
+      (add-to-list 'treesit-language-source-alist src t)))
+  ;; And now I can install everything.
+  (mapc #'treesit-install-language-grammar
+        (mapcar #'car my/treesit-language-source-alist))
+  (message "Installed all known grammars"))
 
 ;; 2023-08-28 Maybe I like line numbers everywhere? Who can say?
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)

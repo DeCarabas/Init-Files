@@ -35,3 +35,4 @@ vscode/History
 vscode/globalStorage
 vscode/workspaceStorage
 .config/htop/htoprc
+__pycache__

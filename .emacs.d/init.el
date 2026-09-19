@@ -810,11 +810,11 @@ Or, uh, Objective C, I guess."
 ;; =================================================================
 ;; Python Support
 ;; =================================================================
-(defun my-python-mode-hook ()
-  "My hook for `python-mode`."
-  (unless (and (buffer-file-name)
-               (string-match-p "TARGETS" (buffer-file-name)))
-    (blacken-mode)))
+;; (defun my-python-mode-hook ()
+;;   "My hook for `python-mode`."
+;;   (unless (and (buffer-file-name)
+;;                (string-match-p "TARGETS" (buffer-file-name)))
+;;     (blacken-mode)))
 
 ;; (use-package python-mode :ensure
 ;;   :init
@@ -825,9 +825,9 @@ Or, uh, Objective C, I guess."
 ;;   (add-to-list 'interpreter-mode-alist '("python" . python-mode))
 ;;   (add-hook 'python-mode-hook 'my-python-mode-hook))
 
-(use-package blacken :ensure t
-  :commands (blacken-mode)
-  :hook (python-mode . blacken-mode))
+;; (use-package blacken :ensure t
+;;   :commands (blacken-mode)
+;;   :hook (python-mode . blacken-mode))
 
 ;; 2023-08-23 Disabling all this nonsense for now; I'm using pyright at
 ;;            work and don't feel like maintaining this stuff.

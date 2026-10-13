@@ -1555,4 +1555,14 @@ Do this when you edit your project view."
 ;; =================================================================
 (use-package ron-mode :ensure t)
 
+;; =================================================================
+;; aphelia for formatting
+;; =================================================================
+(use-package apheleia :ensure t
+  :init (apheleia-global-mode +1)
+  :config
+  (when (executable-find "ruff")
+    (dolist (m '(python-mode python-ts-mode))
+      (setf (alist-get m apheleia-mode-alist) '(ruff-isort ruff)))))
+
 ;;; init.el ends here
